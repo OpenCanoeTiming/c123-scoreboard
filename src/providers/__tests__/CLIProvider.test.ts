@@ -516,7 +516,7 @@ describe('CLIProvider', () => {
       expect(errorCallback).toHaveBeenCalledWith(
         expect.objectContaining({
           code: 'PARSE_ERROR',
-          message: 'Failed to parse WebSocket message',
+          message: 'Failed to parse WebSocket message as JSON',
           timestamp: expect.any(Number),
         })
       )

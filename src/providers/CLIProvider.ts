@@ -7,6 +7,18 @@ import type {
   EventInfoData,
   ProviderError,
 } from './types'
+import {
+  isObject,
+  isArray,
+  safeString,
+  safeNumber,
+  validateTopMessage,
+  validateCompMessage,
+  validateOnCourseMessage,
+  validateControlMessage,
+  validateTextMessage,
+  validateResultRow,
+} from './utils/validation'
 
 /**
  * CLIProvider options
@@ -231,10 +243,25 @@ export class CLIProvider implements DataProvider {
   }
 
   private handleMessage(data: string): void {
-    try {
-      const message = JSON.parse(data)
-      const type = message.msg || message.type
+    let message: unknown
 
+    try {
+      message = JSON.parse(data)
+    } catch (err) {
+      console.warn('Failed to parse WebSocket message as JSON:', err)
+      this.emitError('PARSE_ERROR', 'Failed to parse WebSocket message as JSON', err)
+      return
+    }
+
+    if (!isObject(message)) {
+      console.warn('WebSocket message is not an object:', message)
+      this.emitError('VALIDATION_ERROR', 'WebSocket message is not an object')
+      return
+    }
+
+    const type = message.msg || message.type
+
+    try {
       switch (type) {
         case 'top':
           this.handleTopMessage(message)
@@ -257,48 +284,75 @@ export class CLIProvider implements DataProvider {
         case 'daytime':
           this.handleDayTimeMessage(message)
           break
+        default:
+          // Unknown message type - ignore silently (may be extension messages)
+          break
       }
     } catch (err) {
-      console.warn('Failed to parse WebSocket message:', err)
-      this.emitError('PARSE_ERROR', 'Failed to parse WebSocket message', err)
+      console.warn(`Failed to process ${type} message:`, err)
+      this.emitError('PARSE_ERROR', `Failed to process ${type} message`, err)
     }
   }
 
-  private handleTopMessage(message: { msg: string; data: Record<string, unknown> }): void {
-    const payload = message.data
+  private handleTopMessage(message: Record<string, unknown>): void {
+    const validation = validateTopMessage(message)
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid top message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
 
     const results: ResultsData = {
       results: this.parseResults(payload),
-      raceName: (payload.RaceName as string) || '',
-      raceStatus: (payload.RaceStatus as string) || '',
-      highlightBib: payload.HighlightBib ? String(payload.HighlightBib) : null,
+      raceName: safeString(payload.RaceName),
+      raceStatus: safeString(payload.RaceStatus),
+      highlightBib: payload.HighlightBib ? safeString(payload.HighlightBib) : null,
     }
 
     this.resultsCallbacks.forEach((cb) => cb(results))
   }
 
   private parseResults(payload: Record<string, unknown>): ResultsData['results'] {
-    const list = payload.list as Array<Record<string, unknown>> | undefined
-    if (!list || !Array.isArray(list)) {
+    const list = payload.list
+    if (!isArray(list)) {
       return []
     }
 
-    return list.map((row) => ({
-      rank: Number(row.Rank) || 0,
-      bib: String(row.Bib || '').trim(),
-      name: String(row.Name || ''),
-      familyName: String(row.FamilyName || ''),
-      givenName: String(row.GivenName || ''),
-      club: String(row.Club || ''),
-      nat: String(row.Nat || ''),
-      total: String(row.Total || ''),
-      pen: Number(row.Pen) || 0,
-      behind: String(row.Behind || '').replace('&nbsp;', ''),
-    }))
+    return list
+      .filter((row) => {
+        const validation = validateResultRow(row)
+        if (!validation.valid) {
+          console.warn('Skipping invalid result row:', validation.error)
+          return false
+        }
+        return true
+      })
+      .map((row) => {
+        const r = row as Record<string, unknown>
+        return {
+          rank: safeNumber(r.Rank, 0),
+          bib: safeString(r.Bib).trim(),
+          name: safeString(r.Name),
+          familyName: safeString(r.FamilyName),
+          givenName: safeString(r.GivenName),
+          club: safeString(r.Club),
+          nat: safeString(r.Nat),
+          total: safeString(r.Total),
+          pen: safeNumber(r.Pen, 0),
+          behind: safeString(r.Behind).replace('&nbsp;', ''),
+        }
+      })
   }
 
-  private handleCompMessage(message: { msg: string; data: Record<string, unknown> }): void {
-    const payload = message.data
+  private handleCompMessage(message: Record<string, unknown>): void {
+    const validation = validateCompMessage(message)
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid comp message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
     const current = this.parseCompetitor(payload)
 
     const onCourseData: OnCourseData = {
@@ -309,11 +363,18 @@ export class CLIProvider implements DataProvider {
     this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
   }
 
-  private handleOnCourseMessage(message: { msg: string; data: Record<string, unknown>[] }): void {
-    const competitors = message.data || []
+  private handleOnCourseMessage(message: Record<string, unknown>): void {
+    const validation = validateOnCourseMessage(message)
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid oncourse message: ${validation.error}`)
+      return
+    }
+
+    const competitors = message.data as unknown[]
 
     const parsed = competitors
-      .map((c) => this.parseCompetitor(c))
+      .filter((c) => isObject(c))
+      .map((c) => this.parseCompetitor(c as Record<string, unknown>))
       .filter((c): c is OnCourseCompetitor => c !== null)
 
     const onCourseData: OnCourseData = {
@@ -330,42 +391,55 @@ export class CLIProvider implements DataProvider {
     }
 
     return {
-      bib: String(data.Bib || ''),
-      name: String(data.Name || ''),
-      club: String(data.Club || ''),
-      nat: String(data.Nat || ''),
-      raceId: String(data.RaceId || ''),
-      time: String(data.Time || ''),
-      total: String(data.Total || ''),
-      pen: Number(data.Pen) || 0,
-      gates: String(data.Gates || ''),
-      dtStart: data.dtStart ? String(data.dtStart) : null,
-      dtFinish: data.dtFinish ? String(data.dtFinish) : null,
-      ttbDiff: String(data.TTBDiff || ''),
-      ttbName: String(data.TTBName || ''),
-      rank: Number(data.Rank) || 0,
+      bib: safeString(data.Bib),
+      name: safeString(data.Name),
+      club: safeString(data.Club),
+      nat: safeString(data.Nat),
+      raceId: safeString(data.RaceId),
+      time: safeString(data.Time),
+      total: safeString(data.Total),
+      pen: safeNumber(data.Pen, 0),
+      gates: safeString(data.Gates),
+      dtStart: data.dtStart ? safeString(data.dtStart) : null,
+      dtFinish: data.dtFinish ? safeString(data.dtFinish) : null,
+      ttbDiff: safeString(data.TTBDiff),
+      ttbName: safeString(data.TTBName),
+      rank: safeNumber(data.Rank, 0),
     }
   }
 
-  private handleControlMessage(message: { msg: string; data: Record<string, string> }): void {
-    const payload = message.data
+  private handleControlMessage(message: Record<string, unknown>): void {
+    const validation = validateControlMessage(message)
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid control message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
 
     const visibility: VisibilityState = {
-      displayCurrent: payload.displayCurrent === '1',
-      displayTop: payload.displayTop === '1',
-      displayTitle: payload.displayTitle === '1',
-      displayTopBar: payload.displayTopBar === '1',
-      displayFooter: payload.displayFooter === '1',
-      displayDayTime: payload.displayDayTime === '1',
-      displayOnCourse: payload.displayOnCourse === '1',
+      displayCurrent: safeString(payload.displayCurrent) === '1',
+      displayTop: safeString(payload.displayTop) === '1',
+      displayTitle: safeString(payload.displayTitle) === '1',
+      displayTopBar: safeString(payload.displayTopBar) === '1',
+      displayFooter: safeString(payload.displayFooter) === '1',
+      displayDayTime: safeString(payload.displayDayTime) === '1',
+      displayOnCourse: safeString(payload.displayOnCourse) === '1',
     }
 
     this.visibilityCallbacks.forEach((cb) => cb(visibility))
   }
 
-  private handleTitleMessage(message: { msg: string; data: { text: string } }): void {
+  private handleTitleMessage(message: Record<string, unknown>): void {
+    const validation = validateTextMessage(message, 'title')
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid title message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
     const info: EventInfoData = {
-      title: message.data?.text || '',
+      title: safeString(payload.text),
       infoText: '',
       dayTime: '',
     }
@@ -373,21 +447,35 @@ export class CLIProvider implements DataProvider {
     this.eventInfoCallbacks.forEach((cb) => cb(info))
   }
 
-  private handleInfoTextMessage(message: { msg: string; data: { text: string } }): void {
+  private handleInfoTextMessage(message: Record<string, unknown>): void {
+    const validation = validateTextMessage(message, 'infotext')
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid infotext message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
     const info: EventInfoData = {
       title: '',
-      infoText: message.data?.text || '',
+      infoText: safeString(payload.text),
       dayTime: '',
     }
 
     this.eventInfoCallbacks.forEach((cb) => cb(info))
   }
 
-  private handleDayTimeMessage(message: { msg: string; data: { time: string } }): void {
+  private handleDayTimeMessage(message: Record<string, unknown>): void {
+    const validation = validateTextMessage(message, 'daytime')
+    if (!validation.valid) {
+      this.emitError('VALIDATION_ERROR', `Invalid daytime message: ${validation.error}`)
+      return
+    }
+
+    const payload = message.data as Record<string, unknown>
     const info: EventInfoData = {
       title: '',
       infoText: '',
-      dayTime: message.data?.time || '',
+      dayTime: safeString(payload.time),
     }
 
     this.eventInfoCallbacks.forEach((cb) => cb(info))
