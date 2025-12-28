@@ -253,7 +253,7 @@ describe('CLIProvider', () => {
         initialReconnectDelay: 1000,
       })
 
-      let connectPromise = provider.connect()
+      const connectPromise = provider.connect()
       MockWebSocket.instances[0].simulateOpen()
       await connectPromise
 
