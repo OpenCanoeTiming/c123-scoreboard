@@ -199,13 +199,13 @@
 Dulezite aktualni info: C123 i CLI bezi na IP 192.168.68.108 a poskytuji jednoducha skoro staticka data - je vhodne tyto moduly implementovat a castene otestovat (automaticky)
 
 ### CLIProvider (po ověření UI)
-- [ ] `src/providers/CLIProvider.ts` - WebSocket připojení
-- [ ] Constructor přijímá URL (ws://host:8081)
-- [ ] Connect/Disconnect s Promise
-- [ ] Exponential backoff reconnect: 1s → 2s → 4s → 8s → 16s → 30s
-- [ ] Message parsing (top, oncourse, comp, control, title, infotext, daytime)
-- [ ] Testy pro CLIProvider
-- [ ] **Commit:** "feat: CLIProvider with reconnect"
+- [x] `src/providers/CLIProvider.ts` - WebSocket připojení
+- [x] Constructor přijímá URL (ws://host:8081)
+- [x] Connect/Disconnect s Promise
+- [x] Exponential backoff reconnect: 1s → 2s → 4s → 8s → 16s → 30s
+- [x] Message parsing (top, oncourse, comp, control, title, infotext, daytime)
+- [x] Testy pro CLIProvider
+- [x] **Commit:** "feat: CLIProvider with reconnect"
 
 ### C123Provider (budoucnost)
 - [ ] `src/providers/C123Provider.ts` - TCP socket, XML parsing
@@ -821,6 +821,8 @@ Dulezite aktualni info: C123 i CLI bezi na IP 192.168.68.108 a poskytuji jednodu
 ## Fáze 7: Testování a dokumentace
 
 !maximum zvladnout automaticky, proti recording, pomoci playwright atd
+
+napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a bude ti vracet souhrnny vystup, at nemusi jednotlive testy spoustet, provaded a vyhodnocovat claude code!
 
 ### 7.1  testování - příprava
 - [ ] Použít ReplayProvider s testovací nahrávkou

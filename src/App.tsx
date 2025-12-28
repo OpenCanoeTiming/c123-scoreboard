@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { ScoreboardProvider, useScoreboard } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
+import { CLIProvider } from '@/providers/CLIProvider'
+import type { DataProvider } from '@/providers/types'
 import {
   ScoreboardLayout,
   TopBar,
@@ -96,14 +98,13 @@ function App() {
   const urlParams = useMemo(() => getUrlParams(), [])
 
   // Create DataProvider instance based on source parameter
-  // TODO: Add CLIProvider when implemented (source === 'cli')
-  const provider = useMemo(() => {
+  const provider = useMemo((): DataProvider => {
     if (urlParams.source === 'cli') {
-      // CLIProvider not yet implemented - fall back to replay with warning
-      console.warn(
-        `CLIProvider not yet implemented. Use ?source=replay or implement CLIProvider.`
-      )
-      console.info(`Configured host would be: ws://${urlParams.host}`)
+      return new CLIProvider(urlParams.host, {
+        autoReconnect: true,
+        initialReconnectDelay: 1000,
+        maxReconnectDelay: 30000,
+      })
     }
 
     return new ReplayProvider('/recordings/rec-2025-12-28T09-34-10.jsonl', {
