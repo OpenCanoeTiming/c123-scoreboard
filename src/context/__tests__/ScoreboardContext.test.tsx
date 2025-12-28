@@ -4,7 +4,49 @@ import { createElement, type ReactNode } from 'react'
 import { ScoreboardProvider, useScoreboard } from '../ScoreboardContext'
 import { DEPARTING_TIMEOUT } from '../constants'
 import type { DataProvider, Unsubscribe, ResultsData, OnCourseData, EventInfoData } from '@/providers/types'
-import type { ConnectionStatus, VisibilityState } from '@/types'
+import type { ConnectionStatus, VisibilityState, OnCourseCompetitor, Result } from '@/types'
+
+/**
+ * Factory to create a full OnCourseCompetitor for tests
+ */
+function createOnCourseCompetitor(overrides: Partial<OnCourseCompetitor> = {}): OnCourseCompetitor {
+  return {
+    bib: '42',
+    name: 'Test Athlete',
+    club: 'Test Club',
+    nat: 'CZE',
+    raceId: 'R1',
+    time: '90.50',
+    total: '92.50',
+    pen: 2,
+    gates: '0,0,2,0',
+    dtStart: '2025-12-28T10:00:00',
+    dtFinish: null,
+    ttbDiff: '',
+    ttbName: '',
+    rank: 1,
+    ...overrides,
+  }
+}
+
+/**
+ * Factory to create a full Result for tests
+ */
+function createResult(overrides: Partial<Result> = {}): Result {
+  return {
+    rank: 1,
+    bib: '42',
+    name: 'Test Athlete',
+    familyName: 'Athlete',
+    givenName: 'Test',
+    club: 'Test Club',
+    nat: 'CZE',
+    total: '90.50',
+    pen: 0,
+    behind: '',
+    ...overrides,
+  }
+}
 
 // Helper to create a mock DataProvider
 function createMockProvider(overrides: Partial<DataProvider> = {}): DataProvider & {
@@ -138,9 +180,7 @@ describe('ScoreboardContext', () => {
 
       act(() => {
         mockProvider.triggerResults({
-          results: [
-            { rank: 1, bib: '42', name: 'Test Athlete', time: '90.50', penalty: 0, behind: '' },
-          ],
+          results: [createResult()],
           raceName: 'K1M Semifinal',
           raceStatus: 'In Progress',
           highlightBib: null,
@@ -161,11 +201,13 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor42 = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+
       // First, set competitor on course
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '42', name: 'Test Athlete' },
-          onCourse: [{ bib: '42', name: 'Test Athlete' }],
+          current: competitor42,
+          onCourse: [competitor42],
         })
       })
 
@@ -189,11 +231,13 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other Athlete' })
+
       // Set a DIFFERENT competitor on course
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '99', name: 'Other Athlete' },
-          onCourse: [{ bib: '99', name: 'Other Athlete' }],
+          current: competitor99,
+          onCourse: [competitor99],
         })
       })
 
@@ -284,11 +328,14 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const first = createOnCourseCompetitor({ bib: '42', name: 'First Athlete' })
+      const second = createOnCourseCompetitor({ bib: '99', name: 'Second Athlete' })
+
       // Set first competitor
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '42', name: 'First Athlete' },
-          onCourse: [{ bib: '42', name: 'First Athlete' }],
+          current: first,
+          onCourse: [first],
         })
       })
 
@@ -298,8 +345,8 @@ describe('ScoreboardContext', () => {
       // Change to different competitor
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '99', name: 'Second Athlete' },
-          onCourse: [{ bib: '99', name: 'Second Athlete' }],
+          current: second,
+          onCourse: [second],
         })
       })
 
@@ -315,11 +362,13 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+
       // Set competitor
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '42', name: 'Test Athlete' },
-          onCourse: [{ bib: '42', name: 'Test Athlete' }],
+          current: competitor,
+          onCourse: [competitor],
         })
       })
 
@@ -341,10 +390,12 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+
       // Set and then change competitor
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '42', name: 'Test Athlete' },
+          current: competitor,
           onCourse: [],
         })
       })
@@ -373,10 +424,12 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+
       // Set and then change competitor
       act(() => {
         mockProvider.triggerOnCourse({
-          current: { bib: '42', name: 'Test Athlete' },
+          current: competitor,
           onCourse: [],
         })
       })
@@ -414,19 +467,19 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
+      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Current' })
+
       // Populate state with data
       act(() => {
         mockProvider.triggerResults({
-          results: [
-            { rank: 1, bib: '42', name: 'Test', time: '90.50', penalty: 0, behind: '' },
-          ],
+          results: [createResult()],
           raceName: 'Test Race',
           raceStatus: 'Running',
           highlightBib: '42',
         })
         mockProvider.triggerOnCourse({
-          current: { bib: '99', name: 'Current' },
-          onCourse: [{ bib: '99', name: 'Current' }],
+          current: competitor99,
+          onCourse: [competitor99],
         })
       })
 
@@ -506,7 +559,6 @@ describe('ScoreboardContext', () => {
           displayTopBar: true,
           displayFooter: false,
           displayDayTime: true,
-          displayInfoText: false,
           displayOnCourse: true,
         })
       })

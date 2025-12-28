@@ -1,0 +1,58 @@
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  padding: var(--spacing-md, 1rem);
+  background-color: var(--color-bg-secondary, #1a1a2e);
+  border-radius: var(--border-radius, 4px);
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  text-align: center;
+  max-width: 400px;
+}
+
+.errorIcon {
+  font-size: 2rem;
+}
+
+.errorTitle {
+  margin: 0;
+  font-size: var(--font-size-lg, 1.25rem);
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.errorMessage {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary, #a0a0b0);
+  word-break: break-word;
+}
+
+.retryButton {
+  margin-top: var(--spacing-sm, 0.5rem);
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-md, 1rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text-primary, #ffffff);
+  background-color: var(--color-accent, #3b82f6);
+  border: none;
+  border-radius: var(--border-radius, 4px);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+  background-color: var(--color-accent-hover, #2563eb);
+}
+
+.retryButton:focus {
+  outline: 2px solid var(--color-accent, #3b82f6);
+  outline-offset: 2px;
+}

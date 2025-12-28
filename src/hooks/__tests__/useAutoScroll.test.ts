@@ -85,12 +85,14 @@ describe('useAutoScroll', () => {
     vi.unstubAllGlobals()
   })
 
-  // Helper to run raf callbacks
-  const flushRaf = () => {
+  // Helper to run raf callbacks (prefixed with _ to suppress unused warning)
+  const _flushRaf = () => {
     const callbacks = [...rafCallbacks]
     rafCallbacks = []
     callbacks.forEach((cb) => cb(performance.now()))
   }
+  // Silence linter for helper
+  void _flushRaf
 
   describe('initial state', () => {
     it('starts in IDLE phase', () => {

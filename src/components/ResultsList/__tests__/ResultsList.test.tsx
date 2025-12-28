@@ -13,16 +13,21 @@ vi.mock('@/hooks/useHighlight', () => ({
     highlightBib: null,
     isActive: false,
     timeRemaining: 0,
+    progress: 0,
   })),
 }))
 
 vi.mock('@/hooks/useLayout', () => ({
   useLayout: vi.fn(() => ({
     layoutMode: 'vertical',
+    viewportWidth: 1080,
+    viewportHeight: 1920,
     visibleRows: 10,
     rowHeight: 40,
-    fontSize: 16,
     showFooter: true,
+    headerHeight: 100,
+    footerHeight: 60,
+    fontSizeCategory: 'medium' as const,
   })),
 }))
 
@@ -157,10 +162,14 @@ describe('ResultsList', () => {
     it('hides penalty and behind columns on ledwall layout', () => {
       vi.mocked(useLayout).mockReturnValue({
         layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
         visibleRows: 5,
         rowHeight: 60,
-        fontSize: 24,
         showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
       })
 
       const results = [createResult({ pen: 2, behind: '1.23' })]
@@ -177,10 +186,14 @@ describe('ResultsList', () => {
     it('shows all columns on vertical layout', () => {
       vi.mocked(useLayout).mockReturnValue({
         layoutMode: 'vertical',
+        viewportWidth: 1080,
+        viewportHeight: 1920,
         visibleRows: 10,
         rowHeight: 40,
-        fontSize: 16,
         showFooter: true,
+        headerHeight: 100,
+        footerHeight: 60,
+        fontSizeCategory: 'medium',
       })
 
       const results = [createResult({ pen: 2, behind: '1.23' })]
@@ -199,6 +212,7 @@ describe('ResultsList', () => {
         highlightBib: '42',
         isActive: true,
         timeRemaining: 4000,
+        progress: 0.2,
       })
 
       const results = [
@@ -219,6 +233,7 @@ describe('ResultsList', () => {
         highlightBib: '42',
         isActive: false,
         timeRemaining: 0,
+        progress: 1,
       })
 
       const results = [createResult({ bib: '42' })]
@@ -236,6 +251,7 @@ describe('ResultsList', () => {
         highlightBib: '999',
         isActive: true,
         timeRemaining: 5000,
+        progress: 0,
       })
 
       const results = [
@@ -329,8 +345,8 @@ describe('ResultRow', () => {
       render(<ResultRow result={result} />)
 
       // The behind column should be empty (last column, no + prefix)
-      const cells = screen.getAllByText((content, element) => {
-        return element?.className?.includes('behind') && content === ''
+      const cells = screen.queryAllByText((content, element): boolean => {
+        return Boolean(element?.className?.includes('behind') && content === '')
       })
       expect(cells.length).toBeGreaterThanOrEqual(0)
     })
@@ -395,7 +411,7 @@ describe('ResultRow', () => {
       const result = createResult()
       const { container } = render(<ResultRow result={result} isHighlighted={true} />)
 
-      const row = container.firstChild
+      const row = container.firstChild as HTMLElement
       expect(row?.className).toContain('highlighted')
     })
 
@@ -403,7 +419,7 @@ describe('ResultRow', () => {
       const result = createResult()
       const { container } = render(<ResultRow result={result} isHighlighted={false} />)
 
-      const row = container.firstChild
+      const row = container.firstChild as HTMLElement
       expect(row?.className).not.toContain('highlighted')
     })
 
@@ -411,7 +427,7 @@ describe('ResultRow', () => {
       const result = createResult()
       const { container } = render(<ResultRow result={result} />)
 
-      const row = container.firstChild
+      const row = container.firstChild as HTMLElement
       expect(row?.className).not.toContain('highlighted')
     })
   })

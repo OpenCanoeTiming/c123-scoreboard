@@ -961,14 +961,14 @@ napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a 
 
 ---
 
-## Aktuální stav (2025-12-28)
+## Aktuální stav (2025-12-29)
 
 ### Technický stav
 
 ```
-Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
+Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
 ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 267 unit testů (12 test suites)
+Tests:      ✅ 329 unit testů (14 test suites)
 TypeScript: ✅ Strict mode
 ```
 
@@ -1014,16 +1014,24 @@ TypeScript: ✅ Strict mode
 
 ---
 
-## Review v0.7 (2025-12-28) - Tag: `review-ready-v0.7`
+## Review v0.8 (2025-12-29) - Tag: `review-ready-v0.8`
 
 ### Stav projektu
 
 ```
-Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
-Unit testy: ✅ 309 testů prochází (13 test suites)
+Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
+Unit testy: ✅ 329 testů prochází (14 test suites)
 ESLint:     ✅ 0 errors, 4 warnings
 TypeScript: ✅ Strict mode
 ```
+
+### Provedeno v této iteraci
+
+1. **Error Boundary implementace** - `src/components/ErrorBoundary/`
+   - Komponenta s retry funkcionalitou
+   - HOC `withErrorBoundary` pro wrapping komponent
+   - 20 unit testů
+   - Integrováno do App.tsx (CurrentCompetitor, ResultsList)
 
 ### Co nelze provést z tohoto prostředí
 
@@ -1091,8 +1099,9 @@ TypeScript: ✅ Strict mode
 
 #### B. Error Handling
 
-- [ ] Přidat React Error Boundary wrapper kolem hlavních komponent
-- [ ] Přidat fallback UI pro component failures
+- [x] Přidat React Error Boundary wrapper kolem hlavních komponent
+- [x] Přidat fallback UI pro component failures
+- [x] `src/components/ErrorBoundary/ErrorBoundary.tsx` - 20 testů
 
 #### C. Accessibility
 

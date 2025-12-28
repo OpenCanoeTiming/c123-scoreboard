@@ -12,6 +12,7 @@ import {
   TimeDisplay,
   Footer,
   ConnectionStatus,
+  ErrorBoundary,
 } from '@/components'
 
 /**
@@ -77,14 +78,18 @@ function ScoreboardContent() {
         footer={<Footer visible={visibility.displayFooter} />}
       >
         {/* Current competitor - shows departing if no current */}
-        <CurrentCompetitor
-          competitor={currentCompetitor ?? departingCompetitor}
-          visible={visibility.displayCurrent}
-          isDeparting={!currentCompetitor && !!departingCompetitor}
-        />
+        <ErrorBoundary componentName="CurrentCompetitor">
+          <CurrentCompetitor
+            competitor={currentCompetitor ?? departingCompetitor}
+            visible={visibility.displayCurrent}
+            isDeparting={!currentCompetitor && !!departingCompetitor}
+          />
+        </ErrorBoundary>
 
         {/* Results list */}
-        <ResultsList results={results} visible={visibility.displayTop} />
+        <ErrorBoundary componentName="ResultsList">
+          <ResultsList results={results} visible={visibility.displayTop} />
+        </ErrorBoundary>
 
         {/* Day time display */}
         <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />

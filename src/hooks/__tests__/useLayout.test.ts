@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useLayout, type LayoutMode } from '../useLayout'
+import { useLayout } from '../useLayout'
 
 describe('useLayout', () => {
   const originalInnerWidth = window.innerWidth
@@ -365,7 +365,7 @@ describe('useLayout', () => {
         configurable: true,
       })
 
-      const { result, rerender } = renderHook(() => useLayout())
+      const { rerender } = renderHook(() => useLayout())
 
       const initialLayoutMode = document.documentElement.style.getPropertyValue('--layout-mode')
       expect(initialLayoutMode).toBe('vertical')
@@ -524,8 +524,9 @@ describe('useLayout', () => {
     it('updates viewport dimensions on resize', async () => {
       const { result } = renderHook(() => useLayout())
 
-      const initialWidth = result.current.viewportWidth
-      const initialHeight = result.current.viewportHeight
+      // Verify initial state
+      expect(result.current.viewportWidth).toBe(1080)
+      expect(result.current.viewportHeight).toBe(1920)
 
       // Change window dimensions
       Object.defineProperty(window, 'innerWidth', {
