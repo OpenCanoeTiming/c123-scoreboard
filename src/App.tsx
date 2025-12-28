@@ -13,6 +13,32 @@ import {
 } from '@/components'
 
 /**
+ * Parse URL parameters for app configuration
+ *
+ * Supported parameters:
+ * - source: 'replay' | 'cli' (default: 'replay')
+ * - speed: number (replay speed multiplier, default: 10)
+ * - host: string (CLI server address, default: '192.168.68.108:8081')
+ * - loop: 'true' | 'false' (replay loop, default: 'true')
+ */
+function getUrlParams(): {
+  source: 'replay' | 'cli'
+  speed: number
+  host: string
+  loop: boolean
+} {
+  const params = new URLSearchParams(window.location.search)
+
+  const source = params.get('source') === 'cli' ? 'cli' : 'replay'
+  const speedParam = params.get('speed')
+  const speed = speedParam ? parseFloat(speedParam) : 10.0
+  const host = params.get('host') ?? '192.168.68.108:8081'
+  const loop = params.get('loop') !== 'false'
+
+  return { source, speed, host, loop }
+}
+
+/**
  * Main scoreboard content - uses context for data
  */
 function ScoreboardContent() {
@@ -66,15 +92,27 @@ function ScoreboardContent() {
 }
 
 function App() {
-  // Create ReplayProvider instance - in development, use recording
+  // Parse URL parameters for configuration
+  const urlParams = useMemo(() => getUrlParams(), [])
+
+  // Create DataProvider instance based on source parameter
+  // TODO: Add CLIProvider when implemented (source === 'cli')
   const provider = useMemo(() => {
+    if (urlParams.source === 'cli') {
+      // CLIProvider not yet implemented - fall back to replay with warning
+      console.warn(
+        `CLIProvider not yet implemented. Use ?source=replay or implement CLIProvider.`
+      )
+      console.info(`Configured host would be: ws://${urlParams.host}`)
+    }
+
     return new ReplayProvider('/recordings/rec-2025-12-28T09-34-10.jsonl', {
-      speed: 10.0, // 10x speed for faster testing
+      speed: urlParams.speed,
       sources: ['ws'],
       autoPlay: true,
-      loop: true,
+      loop: urlParams.loop,
     })
-  }, [])
+  }, [urlParams])
 
   return (
     <ScoreboardProvider provider={provider}>

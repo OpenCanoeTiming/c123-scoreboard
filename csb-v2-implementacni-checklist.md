@@ -653,7 +653,7 @@ Dulezite aktualni info: C123 i CLI bezi na IP 192.168.68.108 a poskytuji jednodu
 ### 5.1 App.tsx - struktura
 - [x] ScoreboardProvider wrapper
 - [x] DataProvider (ReplayProvider) instance - CLIProvider bude po ověření UI
-- [ ] URL parametry pro server address
+- [x] URL parametry pro server address (?source, ?speed, ?host, ?loop)
 
 ### 5.2 App.tsx - layout
 - [x] ScoreboardLayout
