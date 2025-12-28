@@ -976,3 +976,56 @@
 - Změněno na: ...
 - Důvod: ...
 -->
+
+---
+
+## Review 2025-12-28: Další kroky ke změnám
+
+> **Git tag:** `review-ready-v0.1`
+> **Stav:** Data layer a layout systém kompletní. UI komponenty čekají na implementaci.
+
+### Dokončené části
+- ✅ DataProvider abstrakce (ReplayProvider funguje)
+- ✅ ScoreboardContext (highlight, departing, reconnect logika)
+- ✅ Custom hooks (useLayout, useHighlight, useDeparting)
+- ✅ Utility funkce (formatTime, formatName, parseGates, detectFinish)
+- ✅ Layout systém (vertical/ledwall s CSS variables)
+- ✅ TimeDisplay komponenta (layout-aware)
+- ✅ Test coverage (132 testů prochází)
+
+### Prioritní kroky k dokončení
+
+#### P1: Kritické nedostatky
+- [ ] **ESLint konfigurace** - projekt deklaruje ESLint v package.json ale chybí .eslintrc
+- [ ] **ReplayProvider.parseResults()** - vrací prázdné pole (stub), potřeba implementovat parsování TopRow do Result[]
+
+#### P2: UI komponenty (pořadí implementace)
+1. [ ] Footer komponenta (4.5) - jednoduchá, slouží jako reference pro další
+2. [ ] TopBar komponenta (4.6) - logo, partners, pozice pro TimeDisplay
+3. [ ] Title komponenta (4.7) - event title s visibility
+4. [ ] CurrentCompetitor komponenta (4.8-4.15) - komplexní, gates, penalties, pulzující indikátor
+5. [ ] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight, scroll
+
+#### P3: Integrace
+- [ ] Propojit komponenty v App.tsx s ScoreboardContext
+- [ ] Visibility flags pro všechny komponenty
+- [ ] Departing competitor zobrazení v CurrentCompetitor
+
+#### P4: Testování
+- [ ] E2E testy v Playwright (tests/ adresář je prázdný)
+- [ ] Vizuální testy pro vertical a ledwall layouty
+- [ ] Manuální testování scénářů (cold start, závodník dojede, rychlé změny)
+
+#### P5: Budoucí rozšíření (po ověření UI)
+- [ ] CLIProvider (WebSocket) pro produkci
+- [ ] C123Provider (TCP) pro přímé připojení
+- [ ] Auto-scroll pro ResultsList
+- [ ] OnCourseDisplay komponenta
+
+### Technické poznámky z review
+
+1. **Architektura je výborná** - jasné oddělení concerns, TypeScript strict mode
+2. **Hooks jsou sofistikované** - timestamp-based expiration, RAF pro smooth updates
+3. **CSS variables** jsou dobře organizované, podporují responsive design
+4. **ReplayProvider** je funkční pro vývoj, ale parseResults() je TODO
+5. **Playwright config** je připraven, ale žádné testy nejsou napsány
