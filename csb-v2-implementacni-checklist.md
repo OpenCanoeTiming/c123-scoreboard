@@ -150,44 +150,44 @@
 > Testovací nahrávka: `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`
 
 ### 2.4.1 Základní struktura
-- [ ] `src/providers/ReplayProvider.ts` - třída implementující DataProvider
-- [ ] Constructor přijímá: source (JSONL string nebo URL)
-- [ ] Interní stav: messages[], currentIndex, playing, speed
+- [x] `src/providers/ReplayProvider.ts` - třída implementující DataProvider
+- [x] Constructor přijímá: source (JSONL string nebo URL)
+- [x] Interní stav: messages[], currentIndex, playing, speed
 
 ### 2.4.2 Načtení dat
-- [ ] Parsovat JSONL (jeden JSON na řádek)
-- [ ] Přeskočit _meta řádek
-- [ ] Uložit zprávy s jejich timestamps (ts field)
+- [x] Parsovat JSONL (jeden JSON na řádek)
+- [x] Přeskočit _meta řádek
+- [x] Uložit zprávy s jejich timestamps (ts field)
 
 ### 2.4.3 Playback engine
-- [ ] `connect()` - zahájí playback
-- [ ] setTimeout/setInterval pro scheduling zpráv
-- [ ] Respektovat relativní timestamps (ts)
-- [ ] Speed multiplier (1.0 = realtime, 2.0 = 2x rychleji)
+- [x] `connect()` - zahájí playback
+- [x] setTimeout/setInterval pro scheduling zpráv
+- [x] Respektovat relativní timestamps (ts)
+- [x] Speed multiplier (1.0 = realtime, 2.0 = 2x rychleji)
 
 ### 2.4.4 Playback controls
-- [ ] `pause(): void` - pozastavit
-- [ ] `resume(): void` - pokračovat
-- [ ] `seek(positionMs: number): void` - přeskočit
-- [ ] `setSpeed(multiplier: number): void` - změnit rychlost
+- [x] `pause(): void` - pozastavit
+- [x] `resume(): void` - pokračovat
+- [x] `seek(positionMs: number): void` - přeskočit
+- [x] `setSpeed(multiplier: number): void` - změnit rychlost
 
 ### 2.4.5 Message dispatch
-- [ ] Filtrovat podle zdroje (tcp nebo ws) - pro vývoj používat jen `ws`
-- [ ] Parsovat data podle typu zprávy
-- [ ] Volat příslušné callbacks (onResults, onOnCourse)
+- [x] Filtrovat podle zdroje (tcp nebo ws) - pro vývoj používat jen `ws`
+- [x] Parsovat data podle typu zprávy
+- [x] Volat příslušné callbacks (onResults, onOnCourse)
 
 ### 2.4.6 Testy pro ReplayProvider
-- [ ] `src/providers/__tests__/ReplayProvider.test.ts`
-- [ ] Test: načtení JSONL, správné pořadí zpráv
-- [ ] Test: speed multiplier funguje
-- [ ] Testy prochází
+- [x] `src/providers/__tests__/ReplayProvider.test.ts`
+- [x] Test: načtení JSONL, správné pořadí zpráv
+- [x] Test: speed multiplier funguje
+- [x] Testy prochází
 
 ### 🔍 Revize: ReplayProvider
-- [ ] Načíst testovací nahrávku
-- [ ] Ověřit že zprávy přicházejí ve správném pořadí
-- [ ] Otestovat pause/resume
-- [ ] Otestovat speed změnu
-- [ ] **Commit:** "feat: ReplayProvider for development"
+- [x] Načíst testovací nahrávku
+- [x] Ověřit že zprávy přicházejí ve správném pořadí
+- [x] Otestovat pause/resume
+- [x] Otestovat speed změnu
+- [x] **Commit:** "feat: ReplayProvider for development"
 
 ---
 
