@@ -675,36 +675,36 @@
 ---
 
 ### 5.4 Connection UI - stavy
-- [ ] Loading state: "Připojování..."
-- [ ] Waiting state: "Čekání na data..."
-- [ ] Connected: normální zobrazení
-- [ ] Reconnecting: overlay s indikátorem
+- [x] Loading state: "Připojování..."
+- [x] Waiting state: "Čekání na data..."
+- [x] Connected: normální zobrazení
+- [x] Reconnecting: overlay s indikátorem
 
 ### 5.5 Connection UI - komponenta
-- [ ] `src/components/ConnectionStatus/ConnectionStatus.tsx`
-- [ ] Zobrazit pouze při non-connected stavech
-- [ ] Overlay přes celou obrazovku
-- [ ] Spinner nebo progress
+- [x] `src/components/ConnectionStatus/ConnectionStatus.tsx`
+- [x] Zobrazit pouze při non-connected stavech
+- [x] Overlay přes celou obrazovku
+- [x] Spinner nebo progress
 
 ### 5.6 Error handling
-- [ ] Error state zobrazení
-- [ ] Retry button (manual reconnect)
+- [x] Error state zobrazení
+- [x] Retry button (manual reconnect)
 
 ### 🔍 Revize: Connection UI
-- [ ] Všechny stavy mají správné UI
-- [ ] Overlay funguje
-- [ ] **Commit:** "feat: connection status UI"
+- [x] Všechny stavy mají správné UI
+- [x] Overlay funguje
+- [x] **Commit:** "feat: connection status UI"
 
 ---
 
 ### 5.7 Visibility logika
-- [ ] Propojit visibility state s komponentami
-- [ ] displayCurrent → CurrentCompetitor
-- [ ] displayTop → ResultsList
-- [ ] displayTitle → Title
-- [ ] displayTopBar → TopBar
-- [ ] displayFooter → Footer
-- [ ] displayDayTime → TimeDisplay
+- [x] Propojit visibility state s komponentami
+- [x] displayCurrent → CurrentCompetitor
+- [x] displayTop → ResultsList
+- [x] displayTitle → Title
+- [x] displayTopBar → TopBar
+- [x] displayFooter → Footer
+- [x] displayDayTime → TimeDisplay
 
 ### 5.8 Visibility testování
 - [ ] Testovat toggle jednotlivých komponent
@@ -712,7 +712,7 @@
 
 ### 🔍 Revize: Visibility
 - [ ] Všechny visibility flags fungují
-- [ ] **Commit:** "feat: visibility controls"
+- [x] **Commit:** "feat: visibility controls"
 
 ---
 

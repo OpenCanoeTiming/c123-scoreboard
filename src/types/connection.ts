@@ -1,4 +1,4 @@
 /**
  * Connection status
  */
-export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting'
+export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'

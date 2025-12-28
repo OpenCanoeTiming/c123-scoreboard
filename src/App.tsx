@@ -9,6 +9,7 @@ import {
   ResultsList,
   TimeDisplay,
   Footer,
+  ConnectionStatus,
 } from '@/components'
 
 /**
@@ -16,37 +17,51 @@ import {
  */
 function ScoreboardContent() {
   const {
+    status,
+    error,
+    initialDataReceived,
     title,
     dayTime,
     currentCompetitor,
     departingCompetitor,
     results,
     visibility,
+    reconnect,
   } = useScoreboard()
 
   return (
-    <ScoreboardLayout
-      header={
-        <>
-          <TopBar visible={visibility.displayTopBar} />
-          <Title title={title} visible={visibility.displayTitle} />
-        </>
-      }
-      footer={<Footer visible={visibility.displayFooter} />}
-    >
-      {/* Current competitor - shows departing if no current */}
-      <CurrentCompetitor
-        competitor={currentCompetitor ?? departingCompetitor}
-        visible={visibility.displayCurrent}
-        isDeparting={!currentCompetitor && !!departingCompetitor}
+    <>
+      {/* Connection status overlay */}
+      <ConnectionStatus
+        status={status}
+        error={error}
+        initialDataReceived={initialDataReceived}
+        onRetry={reconnect}
       />
 
-      {/* Results list */}
-      <ResultsList results={results} visible={visibility.displayTop} />
+      <ScoreboardLayout
+        header={
+          <>
+            <TopBar visible={visibility.displayTopBar} />
+            <Title title={title} visible={visibility.displayTitle} />
+          </>
+        }
+        footer={<Footer visible={visibility.displayFooter} />}
+      >
+        {/* Current competitor - shows departing if no current */}
+        <CurrentCompetitor
+          competitor={currentCompetitor ?? departingCompetitor}
+          visible={visibility.displayCurrent}
+          isDeparting={!currentCompetitor && !!departingCompetitor}
+        />
 
-      {/* Day time display */}
-      <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
-    </ScoreboardLayout>
+        {/* Results list */}
+        <ResultsList results={results} visible={visibility.displayTop} />
+
+        {/* Day time display */}
+        <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
+      </ScoreboardLayout>
+    </>
   )
 }
 
