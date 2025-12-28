@@ -626,18 +626,18 @@
 - [X] ❓ Rozhodnutí: Implementovat auto-scroll teď nebo později? --> ANO Implementovat!
 
 ### Pokud auto-scroll teď:
-- [ ] `src/hooks/useAutoScroll.ts`
-- [ ] Fáze: IDLE → SCROLLING → PAUSED_AT_BOTTOM → RETURNING
-- [ ] Scroll rychlost podle layoutu
-- [ ] Pauza při dosažení konce
-- [ ] Návrat na začátek
-- [ ] Zastavit při aktivním highlight
+- [x] `src/hooks/useAutoScroll.ts`
+- [x] Fáze: IDLE → SCROLLING → PAUSED_AT_BOTTOM → RETURNING
+- [x] Scroll rychlost podle layoutu
+- [x] Pauza při dosažení konce
+- [x] Návrat na začátek
+- [x] Zastavit při aktivním highlight
 
 ### 🔍 Revize: Auto-scroll
-- [ ] Auto-scroll funguje (pokud implementován)
-- [ ] Highlight přeruší scroll
-- [ ] Timing správný
-- [ ] **Commit:** "feat: ResultsList auto-scroll"
+- [x] Auto-scroll funguje (pokud implementován)
+- [x] Highlight přeruší scroll
+- [x] Timing správný
+- [x] **Commit:** "feat: ResultsList auto-scroll"
 
 ### ❓ Rozhodnutí: Virtualizace
 - [ ] Je seznam dostatečně výkonný bez virtualizace?

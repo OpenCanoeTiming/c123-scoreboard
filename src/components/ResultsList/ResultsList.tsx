@@ -4,6 +4,7 @@ import { ResultRow } from './ResultRow'
 import type { Result } from '@/types'
 import { useHighlight } from '@/hooks/useHighlight'
 import { useLayout } from '@/hooks/useLayout'
+import { useAutoScroll } from '@/hooks/useAutoScroll'
 
 /**
  * Props for ResultsList component
@@ -38,11 +39,17 @@ interface ResultsListProps {
  * ```
  */
 export function ResultsList({ results, visible = true }: ResultsListProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const highlightedRowRef = useRef<HTMLDivElement>(null)
 
   const { highlightBib, isActive } = useHighlight()
   const { layoutMode } = useLayout()
+
+  // Auto-scroll through results when no highlight is active
+  const { containerRef } = useAutoScroll({
+    scrollSpeed: 50,
+    pauseAtBottom: 2000,
+    enabled: results.length > 0,
+  })
 
   // Whether to show optional columns based on layout
   const showPenalty = layoutMode !== 'ledwall'
