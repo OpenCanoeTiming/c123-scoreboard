@@ -1,0 +1,233 @@
+/* CurrentCompetitor - Displays the competitor currently on course */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-md);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.container.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.container.departing {
+  opacity: 0.7;
+}
+
+/* Main info row: bib, name, club, time */
+.mainRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Bib number - large and prominent */
+.bib {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  min-width: 3ch;
+  text-align: center;
+}
+
+/* Competitor info (name + club) */
+.competitorInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0; /* Allow text truncation */
+}
+
+.name {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.club {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Time display */
+.timeContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.time {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  min-width: 7ch;
+  text-align: right;
+}
+
+/* Pulsing indicator for running competitor */
+.runningIndicator {
+  font-size: var(--font-size-lg);
+  color: var(--color-success);
+  animation: pulseGlyph 1s ease-in-out infinite;
+}
+
+@keyframes pulseGlyph {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* TTB (Time To Beat) info row */
+.ttbRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid var(--color-bg-tertiary);
+}
+
+.ttbLabel {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ttbDiff {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.ttbDiff.ahead {
+  color: var(--color-success);
+}
+
+.ttbDiff.behind {
+  color: var(--color-error);
+}
+
+.ttbName {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+/* Penalties summary */
+.penaltiesRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.penaltyTotal {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.penaltyLabel {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.penaltyValue {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.penaltyValue.clear {
+  color: var(--color-penalty-clear);
+}
+
+.penaltyValue.touch {
+  color: var(--color-penalty-touch);
+}
+
+.penaltyValue.miss {
+  color: var(--color-penalty-miss);
+}
+
+/* Gate penalties display */
+.gatesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+}
+
+.gate.clear {
+  background-color: rgba(51, 204, 51, 0.2);
+  color: var(--color-penalty-clear);
+}
+
+.gate.touch {
+  background-color: rgba(255, 153, 0, 0.2);
+  color: var(--color-penalty-touch);
+}
+
+.gate.miss {
+  background-color: rgba(255, 51, 51, 0.2);
+  color: var(--color-penalty-miss);
+}
+
+.gate.pending {
+  background-color: rgba(102, 102, 102, 0.2);
+  color: var(--color-text-muted);
+}
+
+/* Rank display */
+.rank {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* Departing label */
+.departingLabel {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-left: auto;
+}

@@ -303,8 +303,8 @@
   - Uběhlo DEPARTING_TIMEOUT
 
 ### 2.6.3 Departing display
-- [ ] CurrentCompetitor zobrazuje departing pokud existuje
-- [ ] Vizuální odlišení (opacity, label)
+- [x] CurrentCompetitor zobrazuje departing pokud existuje
+- [x] Vizuální odlišení (opacity, label)
 
 ### 🔍 Revize: Departing
 - [x] comp zmizí → departing se zobrazí
@@ -508,54 +508,54 @@
 ---
 
 ### 4.8 CurrentCompetitor - základní
-- [ ] `src/components/CurrentCompetitor/CurrentCompetitor.tsx`
-- [ ] `src/components/CurrentCompetitor/CurrentCompetitor.module.css`
-- [ ] Props: `competitor: OnCourseCompetitor | null`, `visible: boolean`
+- [x] `src/components/CurrentCompetitor/CurrentCompetitor.tsx`
+- [x] `src/components/CurrentCompetitor/CurrentCompetitor.module.css`
+- [x] Props: `competitor: OnCourseCompetitor | null`, `visible: boolean`
 
 ### 4.9 CurrentCompetitor - layout
-- [ ] Bib (velké, výrazné)
-- [ ] Name (PŘÍJMENÍ Jméno)
-- [ ] Club
-- [ ] Time (běžící nebo finální)
+- [x] Bib (velké, výrazné)
+- [x] Name (PŘÍJMENÍ Jméno)
+- [x] Club
+- [x] Time (běžící nebo finální)
 
 ### 4.10 CurrentCompetitor - TTB info
-- [ ] TTB rozdíl (TTBDiff)
-- [ ] Jméno vedoucího (TTBName)
-- [ ] Barevné kódování (+/-)
+- [x] TTB rozdíl (TTBDiff)
+- [x] Jméno vedoucího (TTBName)
+- [x] Barevné kódování (+/-)
 
 ### 4.11 CurrentCompetitor - penalties summary
-- [ ] Celkový penalty součet
-- [ ] Barevné kódování
+- [x] Celkový penalty součet
+- [x] Barevné kódování
 
 ### 4.12 CurrentCompetitor - gate penalties
-- [ ] Zobrazení jednotlivých bran
-- [ ] 0 = zelená/neutrální
-- [ ] 2 = oranžová
-- [ ] 50 = červená
-- [ ] Prázdná = neprojeto (šedá)
+- [x] Zobrazení jednotlivých bran
+- [x] 0 = zelená/neutrální
+- [x] 2 = oranžová
+- [x] 50 = červená
+- [x] Prázdná = neprojeto (šedá)
 
 ### 4.13 CurrentCompetitor - pulzující indikátor
-- [ ] Indikátor ► pro běžícího závodníka
-- [ ] CSS @keyframes pulseGlyph
-- [ ] Zobrazit pouze když time běží (dtFinish == null)
+- [x] Indikátor ► pro běžícího závodníka
+- [x] CSS @keyframes pulseGlyph
+- [x] Zobrazit pouze když time běží (dtFinish == null)
 
 ### 4.14 CurrentCompetitor - animace změny
-- [ ] Fade/slide při změně závodníka
-- [ ] CSS transition
+- [x] Fade/slide při změně závodníka
+- [x] CSS transition
 
 ### 4.15 CurrentCompetitor - departing
-- [ ] Zobrazit departing competitor pokud existuje
-- [ ] Vizuální odlišení (nižší opacity, label "předchozí")
-- [ ] Pozice (nad nebo vedle aktuálního)
+- [x] Zobrazit departing competitor pokud existuje
+- [x] Vizuální odlišení (nižší opacity, label "předchozí")
+- [x] Pozice (nad nebo vedle aktuálního)
 
 ### 🔍 Revize: CurrentCompetitor
 - [ ] Vizuální porovnání s originálem
-- [ ] Penalty barvy správné
-- [ ] Gate display správný
-- [ ] Pulzující indikátor funguje
-- [ ] Animace změny plynulá
-- [ ] Departing buffer funguje
-- [ ] **Commit:** "feat: CurrentCompetitor component"
+- [x] Penalty barvy správné
+- [x] Gate display správný
+- [x] Pulzující indikátor funguje
+- [x] Animace změny plynulá
+- [x] Departing buffer funguje
+- [x] **Commit:** "feat: CurrentCompetitor component"
 
 ---
 
