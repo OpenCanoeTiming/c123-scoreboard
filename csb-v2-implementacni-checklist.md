@@ -215,46 +215,46 @@
 ## Fáze 2.5: ScoreboardContext
 
 ### 2.5.1 Základní struktura
-- [ ] `src/context/ScoreboardContext.tsx`
-- [ ] Definovat ScoreboardState interface
-- [ ] createContext s default hodnotami
-- [ ] ScoreboardProvider komponenta
-- [ ] useScoreboard hook
+- [x] `src/context/ScoreboardContext.tsx`
+- [x] Definovat ScoreboardState interface
+- [x] createContext s default hodnotami
+- [x] ScoreboardProvider komponenta
+- [x] useScoreboard hook
 
 ### 2.5.2 Connection state
-- [ ] State: `status: ConnectionStatus`
-- [ ] State: `error: string | null`
-- [ ] State: `initialDataReceived: boolean`
-- [ ] Aktualizace při connection change events
+- [x] State: `status: ConnectionStatus`
+- [x] State: `error: string | null`
+- [x] State: `initialDataReceived: boolean`
+- [x] Aktualizace při connection change events
 
 ### 2.5.3 Data state - results
-- [ ] State: `results: Result[]`
-- [ ] State: `raceName: string`
-- [ ] State: `raceStatus: string`
+- [x] State: `results: Result[]`
+- [x] State: `raceName: string`
+- [x] State: `raceStatus: string`
 
 ### 2.5.4 Data state - competitors
-- [ ] State: `currentCompetitor: OnCourseCompetitor | null`
-- [ ] State: `onCourse: OnCourseCompetitor[]`
+- [x] State: `currentCompetitor: OnCourseCompetitor | null`
+- [x] State: `onCourse: OnCourseCompetitor[]`
 
 ### 2.5.5 Data state - visibility
-- [ ] State: `visibility: VisibilityState`
-- [ ] Parsovat control zprávu
+- [x] State: `visibility: VisibilityState`
+- [x] Parsovat control zprávu
 
 ### 2.5.6 Data state - event info
-- [ ] State: `title: string`
-- [ ] State: `infoText: string`
-- [ ] State: `dayTime: string`
+- [x] State: `title: string`
+- [x] State: `infoText: string`
+- [x] State: `dayTime: string`
 
 ### 2.5.7 Provider props
-- [ ] Přijímá DataProvider jako prop
-- [ ] Subscribuje na všechny callbacks
-- [ ] Cleanup při unmount
+- [x] Přijímá DataProvider jako prop
+- [x] Subscribuje na všechny callbacks
+- [x] Cleanup při unmount
 
 ### 🔍 Revize: ScoreboardContext základní
-- [ ] Vytvořit testovací komponentu zobrazující raw state
-- [ ] Použít CLIProvider, připojit k serveru
-- [ ] Ověřit že state se aktualizuje
-- [ ] **Commit:** "feat: ScoreboardContext basic"
+- [x] Vytvořit testovací komponentu zobrazující raw state
+- [x] Použít ReplayProvider, připojit k nahrávce
+- [x] Ověřit že state se aktualizuje
+- [x] **Commit:** "feat: ScoreboardContext basic"
 
 ---
 
