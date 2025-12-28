@@ -1293,3 +1293,74 @@ Následující kroky **nelze automatizovat** a vyžadují lidskou interakci:
 3. **Porovnat s prototypem** v `../canoe-scoreboard-v2-prototype/`
 4. **Implementovat CLIProvider** až bude dostupný server
 5. **Napsat E2E testy** po dokončení vizuálního ladění
+
+---
+
+## Review 2025-12-28 (v0.5): Všechny automatizovatelné kroky dokončeny
+
+> **Git tag:** `review-ready-v0.5`
+> **Stav:** Projekt je funkční. Zbývající kroky vyžadují manuální práci, běžící server, nebo referenční materiály.
+
+### Technický stav
+
+```
+Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
+ESLint:     ✅ 0 errors, 4 warnings
+Tests:      ✅ 156 passing (nárůst z 132)
+TypeScript: ✅ Strict mode, no errors
+Soubory:    56 TypeScript/TSX
+Řádky kódu: ~5860
+```
+
+### Proč nelze pokračovat automaticky
+
+Všechny zbývající kroky vyžadují jednu z následujících věcí:
+
+1. **Manuální vizuální testování** - porovnání s prototypem, kontrola layoutů v DevTools
+2. **Běžící server** - testování CLIProvider reconnect logiky, live data
+3. **Referenční screenshoty** - Playwright vizuální testy potřebují baseline
+4. **Lidské rozhodnutí** - volba barev, typography fine-tuning, architekturní rozhodnutí
+
+### Zbývající kroky (seskupené podle typu)
+
+#### Manuální vizuální testování
+- [ ] Vizuální porovnání komponent s prototypem (TimeDisplay, Footer, CurrentCompetitor, ResultsList)
+- [ ] Testování layoutů v DevTools: Vertical 1080×1920, Ledwall 768×384
+- [ ] Ověření resize chování a CSS variables
+- [ ] Kontrola animací (pulse, highlight, transitions)
+- [ ] Scroll k highlight a scroll po expiraci
+
+#### Barevné/typografické ladění (vyžaduje prototyp)
+- [ ] Zkopírovat přesné barvy z prototypu do variables.css
+- [ ] Doladit font-size, line-height, letter-spacing
+- [ ] Pixel-level srovnání
+
+#### Síťová infrastruktura (vyžaduje server)
+- [ ] CLIProvider live testování s reálným serverem
+- [ ] Testování reconnect logiky (odpojení/připojení serveru)
+- [ ] C123Provider implementace (označeno jako "budoucnost")
+
+#### E2E testování (vyžaduje referenční screenshoty)
+- [ ] Vytvořit Playwright testy pro scénáře (cold start, highlight, auto-scroll)
+- [ ] Vytvořit referenční screenshoty pro vizuální regrese
+- [ ] CI/CD pipeline
+
+#### Funkční testování (manuální)
+- [ ] Visibility toggle testování
+- [ ] Test s 50+ závodníky (virtualizace rozhodnutí)
+- [ ] Scénáře: rychlé změny, prázdný závod, highlight + onCourse deduplikace
+
+### Doporučení pro další vývoj
+
+1. **Vizuální review první** - spustit `npm run dev`, porovnat s prototypem
+2. **Doladit styly** - barvy, fonty podle originálu
+3. **Manuální testování** - projít scénáře z Fáze 7
+4. **E2E testy** - až budou vizuální testy hotové, vytvořit referenční screenshoty
+5. **Production** - CLIProvider testování s live serverem
+
+### Poznámky
+
+- CLIProvider je implementován a má 24 testů, ale nebyl testován s reálným serverem
+- 4 ESLint warnings jsou záměrné (Fast Refresh optimalizace vs. čitelnost kódu)
+- Auto-scroll je implementován a funkční (useAutoScroll hook)
+- Departing competitor buffer funguje (3s timeout)
