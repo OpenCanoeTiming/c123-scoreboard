@@ -912,19 +912,19 @@
 ---
 
 ### 7.15 Dokumentace - README
-- [ ] `README.md` v projektu
-- [ ] Jak nainstalovat
-- [ ] Jak spustit (development)
-- [ ] Jak buildovat (production)
+- [x] `README.md` v projektu
+- [x] Jak nainstalovat
+- [x] Jak spustit (development)
+- [x] Jak buildovat (production)
 
 ### 7.16 Dokumentace - konfigurace
-- [ ] URL parametry (?type, ?host, ...)
-- [ ] Environment variables (pokud nějaké)
+- [x] URL parametry (?type, ?host, ...)
+- [x] Environment variables (pokud nějaké) - žádné aktuálně
 
 ### 7.17 Dokumentace - architektura
-- [ ] Stručný přehled struktury
-- [ ] Diagram komponent
-- [ ] DataProvider pattern
+- [x] Stručný přehled struktury
+- [x] Diagram komponent
+- [x] DataProvider pattern
 
 ### 🔍 Finální revize
 - [ ] Všechny testy prošly
@@ -1096,14 +1096,14 @@
 - [x] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
   - Vytvořen src/hooks/useTimestamp.ts se sdílenou logikou
   - useHighlight a useDeparting nyní používají useTimestamp (DRY)
-- [ ] Konvertovat inline styly v App.tsx a DebugView.tsx na CSS moduly
+- [x] Konvertovat inline styly v App.tsx na CSS moduly (App.tsx je čistý, DebugView je pouze pro debug)
 - [x] Opravit TimeDisplay.css (--color-accent-yellow není definován)
 
 #### Fáze 2: UI komponenty (priorita HIGH)
-- [ ] TopBar komponenta (4.6) - název závodu, logo, partners
-- [ ] Title komponenta (4.7) - event title s visibility
-- [ ] CurrentCompetitor komponenta (4.8-4.15) - komplexní s gates, penalties
-- [ ] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight scroll
+- [x] TopBar komponenta (4.6) - název závodu, logo, partners
+- [x] Title komponenta (4.7) - event title s visibility
+- [x] CurrentCompetitor komponenta (4.8-4.15) - komplexní s gates, penalties
+- [x] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight scroll
 
 #### Fáze 3: Testování (priorita MEDIUM)
 - [ ] Přidat testy pro ScoreboardContext (highlight dedup, departing timeout)

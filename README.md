@@ -1,73 +1,129 @@
-# React + TypeScript + Vite
+# Canoe Scoreboard v2
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Real-time scoreboard display for canoe slalom competitions. Built with React 19, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Real-time results display with automatic updates
+- Current competitor display with gate penalties visualization
+- Highlight animation when competitor finishes
+- Auto-scroll through results
+- Responsive layouts: vertical (1080×1920) and ledwall (768×384)
+- Reconnection handling with state management
 
-## React Compiler
+## Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+This starts the development server at `http://localhost:5173`. The app uses ReplayProvider by default, which replays recorded race data for development.
+
+## Building for Production
+
+```bash
+npm run build
+npm run preview  # Preview the production build
+```
+
+## Testing
+
+```bash
+npm test          # Run unit tests with Vitest
+npm run test:ui   # Run tests with UI
+npm run test:e2e  # Run Playwright E2E tests
+```
+
+## URL Parameters
+
+| Parameter | Values | Description |
+|-----------|--------|-------------|
+| `type` | `vertical`, `ledwall` | Force specific layout mode |
+
+Example: `http://localhost:5173/?type=ledwall`
+
+## Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ConnectionStatus/  # Connection status overlay
+│   ├── CurrentCompetitor/ # Current competitor display
+│   ├── EventInfo/         # TopBar and Title
+│   ├── Footer/            # Footer with sponsors
+│   ├── Layout/            # Main scoreboard layout
+│   ├── ResultsList/       # Results table
+│   └── TimeDisplay/       # Day time display
+├── context/             # React Context (ScoreboardContext)
+├── hooks/               # Custom hooks
+│   ├── useAutoScroll.ts   # Auto-scroll for results
+│   ├── useDeparting.ts    # Departing competitor logic
+│   ├── useHighlight.ts    # Highlight expiration
+│   ├── useLayout.ts       # Layout calculations
+│   └── useTimestamp.ts    # Shared timestamp logic
+├── providers/           # Data providers
+│   ├── ReplayProvider.ts  # Replay recorded data (dev)
+│   └── types.ts           # DataProvider interface
+├── styles/              # Global CSS
+│   ├── fonts.css          # Font face declarations
+│   ├── reset.css          # CSS reset
+│   └── variables.css      # CSS custom properties
+├── types/               # TypeScript types
+└── utils/               # Utility functions
+    ├── formatName.ts      # Name formatting
+    └── formatTime.ts      # Time formatting
+```
+
+## Architecture
+
+### DataProvider Pattern
+
+The app uses a DataProvider abstraction for data sources:
+
+```typescript
+interface DataProvider {
+  connect(): Promise<void>
+  disconnect(): void
+  onResults(callback: ResultsCallback): Unsubscribe
+  onOnCourse(callback: OnCourseCallback): Unsubscribe
+  onConfig(callback: ConfigCallback): Unsubscribe
+  onConnectionChange(callback: ConnectionCallback): Unsubscribe
+  readonly status: ConnectionStatus
+}
+```
+
+Current implementations:
+- **ReplayProvider**: Replays recorded JSONL data (for development)
+- **CLIProvider**: WebSocket connection to CLI server (planned)
+- **C123Provider**: Direct TCP connection to timing system (planned)
+
+### ScoreboardContext
+
+Central state management using React Context:
+- Connection status and error handling
+- Results and current competitor data
+- Highlight and departing competitor logic
+- Visibility flags for UI components
+
+### Layout System
+
+Responsive layout using CSS custom properties:
+- Automatic layout detection based on aspect ratio
+- Vertical layout: tall screens (height > width × 1.5)
+- Ledwall layout: wide screens (aspect ratio ≈ 2:1)
+- Dynamic row height and font size calculation
+
+## Recordings
+
+Test recordings are stored in `public/recordings/`. Format is JSONL with WebSocket messages.
+
+## Related Documentation
+
+- [Implementation Checklist](./csb-v2-implementacni-checklist.md)
+- [Analysis Documents](../analysis/)
