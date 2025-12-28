@@ -185,17 +185,21 @@ export function CurrentCompetitor({
 
         {/* Gate penalties visualization */}
         <div className={styles.gatesContainer} role="list" aria-label="Penalizace na branách">
-          {gates.map((penalty, index) => (
-            <div
-              key={index}
-              className={`${styles.gate} ${getGateClass(penalty)}`}
-              role="listitem"
-              aria-label={getGateAriaLabel(penalty, index + 1)}
-              title={`Brána ${index + 1}`}
-            >
-              {getGateDisplay(penalty)}
-            </div>
-          ))}
+          {gates.map((penalty, index) => {
+            // Use stable gate number as key - gates have fixed positions
+            const gateNumber = index + 1
+            return (
+              <div
+                key={`gate-${gateNumber}`}
+                className={`${styles.gate} ${getGateClass(penalty)}`}
+                role="listitem"
+                aria-label={getGateAriaLabel(penalty, gateNumber)}
+                title={`Brána ${gateNumber}`}
+              >
+                {getGateDisplay(penalty)}
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>

@@ -1181,7 +1181,7 @@ TypeScript: ✅ Strict mode
 
 #### Priority 1 - Kritické opravy
 
-- [ ] **Fix unstable key v CurrentCompetitor gates** - použít stabilní identifikátor brány
+- [x] **Fix unstable key v CurrentCompetitor gates** - použít stabilní identifikátor brány (`gate-${gateNumber}`)
 - [ ] **Přidat validaci vstupních dat v message parsing** - validovat typy před použitím
 - [ ] **Přidat error callback do DataProvider** - propagovat parse chyby do UI
 
