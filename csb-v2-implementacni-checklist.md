@@ -1235,6 +1235,63 @@ TypeScript: ✅ Strict mode
 
 ---
 
+## Review v1.1 (2025-12-29) - Tag: `review-ready-v1.1`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
+Unit testy: ✅ 387 testů prochází (15 test suites)
+ESLint:     ✅ 0 errors, 4 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Edge case testy pro rapid highlight changes**
+   - 5 nových testů v `ScoreboardContext.test.tsx`
+   - Pokrývá: rychlé změny < 100ms, 3 závodníci v 200ms, no null flash, timestamp expiration
+
+### Zbývající kroky - vyžadují manuální práci
+
+Všechny zbývající kroky v checklistu vyžadují některou z těchto podmínek:
+
+| Kategorie | Požadavek | Příklad kroků |
+|-----------|-----------|---------------|
+| Manuální testování | Prohlížeč | Cold start, highlight timeout, vizuální kontrola |
+| E2E testy | Playwright deps | `npx playwright install-deps` |
+| Live server test | Síťový přístup | `?source=cli&host=192.168.68.108:8081` |
+| C123Provider | TCP socket | Nelze v prohlížeči - potřeba proxy/backend |
+| Refaktoring | Architekturální změny | Rozdělení ScoreboardContext |
+
+### Doporučené kroky pro uživatele
+
+1. **Spustit dev server a otestovat v prohlížeči:**
+   ```bash
+   npm run dev
+   # Otevřít http://localhost:5173/?source=replay&speed=10
+   ```
+
+2. **Testovat různé layouty:**
+   - Vertical: DevTools → 1080×1920
+   - Ledwall: DevTools → 768×384
+
+3. **Ověřit scénáře:**
+   - Loading → Waiting → Data zobrazena
+   - Závodník dojede → departing buffer → highlight → scroll
+   - Highlight timeout po 5s → scroll to top
+
+4. **Vizuální porovnání:**
+   - Referenční screenshoty: `/workspace/csb-v2/analysis/reference-screenshots/`
+   - Styly JSON: `*-styles.json` pro barvy a typografii
+
+5. **Live server test (pokud dostupný):**
+   ```
+   ?source=cli&host=192.168.68.108:8081
+   ```
+
+---
+
 ## Review v0.6 (2025-12-28)
 
 ### Opravené chyby
