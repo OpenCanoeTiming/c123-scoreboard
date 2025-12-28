@@ -560,65 +560,65 @@
 ---
 
 ### 4.16 ResultsList - základní struktura
-- [ ] `src/components/ResultsList/ResultsList.tsx`
-- [ ] `src/components/ResultsList/ResultsList.module.css`
-- [ ] Props: `results: Result[]`, `visible: boolean`
-- [ ] Scroll container
+- [x] `src/components/ResultsList/ResultsList.tsx`
+- [x] `src/components/ResultsList/ResultsList.module.css`
+- [x] Props: `results: Result[]`, `visible: boolean`
+- [x] Scroll container
 
 ### 4.17 ResultsList - ResultRow
-- [ ] `src/components/ResultsList/ResultRow.tsx`
-- [ ] `src/components/ResultsList/ResultRow.module.css`
-- [ ] Props: `result: Result`, `isHighlighted: boolean`
-- [ ] Grid layout
+- [x] `src/components/ResultsList/ResultRow.tsx`
+- [x] `src/components/ResultsList/ResultRow.module.css` (shared with ResultsList.module.css)
+- [x] Props: `result: Result`, `isHighlighted: boolean`
+- [x] Grid layout
 
 ### 4.18 ResultsList - sloupce
-- [ ] Rank (pořadí)
-- [ ] Bib (startovní číslo)
-- [ ] Name (jméno závodníka)
-- [ ] Penalty (penalizace) - volitelný
-- [ ] Time (čas)
-- [ ] Behind (ztráta) - volitelný
+- [x] Rank (pořadí)
+- [x] Bib (startovní číslo)
+- [x] Name (jméno závodníka)
+- [x] Penalty (penalizace) - volitelný
+- [x] Time (čas)
+- [x] Behind (ztráta) - volitelný
 
 ### 4.19 ResultsList - responzivní sloupce
-- [ ] Vertical: všechny sloupce
-- [ ] Ledwall: skrýt Penalty a/nebo Behind
-- [ ] Použít layout hook
+- [x] Vertical: všechny sloupce
+- [x] Ledwall: skrýt Penalty a/nebo Behind
+- [x] Použít layout hook
 
 ### 4.20 ResultsList - alternující barvy
-- [ ] Sudé/liché řádky
-- [ ] CSS :nth-child(even/odd)
+- [x] Sudé/liché řádky
+- [x] CSS :nth-child(even/odd)
 
 ### 4.21 ResultsList - highlight styling
-- [ ] Props: `highlightBib: string | null`
-- [ ] Highlight row má jiné pozadí
-- [ ] Border nebo glow efekt
-- [ ] CSS @keyframes subtlePulse
+- [x] Props: `highlightBib: string | null` (via useHighlight hook)
+- [x] Highlight row má jiné pozadí
+- [x] Border nebo glow efekt
+- [x] CSS @keyframes subtlePulse
 
 ### 🔍 Revize: ResultsList základní
 - [ ] Vizuální porovnání s originálem
-- [ ] Všechny sloupce správně
-- [ ] Responzivní sloupce fungují
-- [ ] Alternující barvy
-- [ ] **Commit:** "feat: ResultsList basic"
+- [x] Všechny sloupce správně
+- [x] Responzivní sloupce fungují
+- [x] Alternující barvy
+- [x] **Commit:** "feat: ResultsList basic"
 
 ---
 
 ### 4.22 ResultsList - scroll k highlight
-- [ ] Ref na highlighted row
-- [ ] Při aktivaci highlight: scrollIntoView
-- [ ] Smooth scroll animation
-- [ ] scroll-margin pro správnou pozici
+- [x] Ref na highlighted row
+- [x] Při aktivaci highlight: scrollIntoView
+- [x] Smooth scroll animation
+- [x] scroll-margin pro správnou pozici
 
 ### 4.23 ResultsList - scroll po expiraci
-- [ ] Po expiraci highlight (5s)
-- [ ] Scroll to top
-- [ ] Smooth animation
+- [x] Po expiraci highlight (5s)
+- [x] Scroll to top
+- [x] Smooth animation
 
 ### 🔍 Revize: ResultsList scroll
 - [ ] Scroll k highlight funguje
 - [ ] Scroll po expiraci funguje
-- [ ] Smooth animace
-- [ ] **Commit:** "feat: ResultsList highlight scroll"
+- [x] Smooth animace
+- [x] **Commit:** "feat: ResultsList component"
 
 ---
 

@@ -1,0 +1,164 @@
+/* ResultsList - Scrollable list of race results */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--border-radius-md);
+  transition: opacity var(--transition-normal);
+  scroll-behavior: smooth;
+}
+
+.container.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Result row - grid layout for consistent columns */
+.row {
+  display: grid;
+  grid-template-columns:
+    minmax(32px, 48px)   /* rank */
+    minmax(40px, 56px)   /* bib */
+    1fr                   /* name */
+    minmax(48px, 64px)   /* penalty (optional) */
+    minmax(80px, 100px)  /* time */
+    minmax(60px, 80px);  /* behind (optional) */
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  align-items: center;
+  min-height: var(--row-height);
+  border-bottom: 1px solid var(--color-bg-tertiary);
+}
+
+/* Alternating row colors */
+.row:nth-child(even) {
+  background-color: var(--color-bg-secondary);
+}
+
+.row:nth-child(odd) {
+  background-color: var(--color-bg-primary);
+}
+
+/* Header row styling */
+.row.header {
+  position: sticky;
+  top: 0;
+  background-color: var(--color-bg-tertiary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 1;
+  min-height: auto;
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+/* Highlighted row - recently finished competitor */
+.row.highlighted {
+  background-color: rgba(255, 204, 0, 0.15);
+  animation: subtlePulse 2s ease-in-out infinite;
+  border-left: 3px solid var(--color-highlight);
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    background-color: rgba(255, 204, 0, 0.15);
+  }
+  50% {
+    background-color: rgba(255, 204, 0, 0.25);
+  }
+}
+
+/* Column styling */
+.rank {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.bib {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-accent);
+  text-align: center;
+}
+
+.name {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.penalty {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.penaltyClear {
+  color: var(--color-penalty-clear);
+}
+
+.penaltyTouch {
+  color: var(--color-penalty-touch);
+}
+
+.penaltyMiss {
+  color: var(--color-penalty-miss);
+}
+
+.time {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+.behind {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+/* Scroll margin for smooth scroll to highlighted row */
+.row.highlighted {
+  scroll-margin-top: calc(var(--row-height) * 2);
+  scroll-margin-bottom: calc(var(--row-height) * 2);
+}
+
+/* Ledwall layout - adjust grid for hidden columns */
+@container (max-width: 600px) {
+  .row {
+    grid-template-columns:
+      minmax(28px, 40px)   /* rank */
+      minmax(36px, 48px)   /* bib */
+      1fr                   /* name */
+      minmax(70px, 90px);  /* time */
+  }
+}
