@@ -1095,7 +1095,7 @@
   - ESLint config: allowConstantExport pro react-refresh
 - [ ] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
 - [ ] Konvertovat inline styly v App.tsx a DebugView.tsx na CSS moduly
-- [ ] Opravit TimeDisplay.css (--color-accent-yellow není definován)
+- [x] Opravit TimeDisplay.css (--color-accent-yellow není definován)
 
 #### Fáze 2: UI komponenty (priorita HIGH)
 - [ ] TopBar komponenta (4.6) - název závodu, logo, partners
