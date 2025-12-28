@@ -65,6 +65,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const [phase, setPhase] = useState<ScrollPhase>('IDLE')
   const [manuallyPaused, setManuallyPaused] = useState(false)
 
+  // Track phase in ref for animation callback
+  const phaseRef = useRef(phase)
+
   // Get highlight state - auto-scroll stops during highlight
   const { isActive: isHighlightActive } = useHighlight()
 
@@ -120,15 +123,25 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   }, [])
 
   /**
+   * Determine if scrolling should be active
+   */
+  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive
+
+  // Keep phaseRef in sync with phase state
+  useEffect(() => {
+    phaseRef.current = phase
+  }, [phase])
+
+  /**
    * Main auto-scroll effect
    */
   useEffect(() => {
     // Don't scroll if disabled, manually paused, or highlight is active
-    if (!enabled || manuallyPaused || isHighlightActive) {
-      if (phase !== 'IDLE') {
-        setPhase('IDLE')
-      }
-      return
+    if (!shouldScroll) {
+      // Reset to IDLE when scrolling is disabled
+      // Using setTimeout to avoid synchronous setState in effect
+      const timeoutId = setTimeout(() => setPhase('IDLE'), 0)
+      return () => clearTimeout(timeoutId)
     }
 
     const container = containerRef.current
@@ -156,14 +169,16 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       const pixelsPerMs = adjustedSpeed / 1000
       const scrollDelta = pixelsPerMs * deltaTime
 
-      if (phase === 'SCROLLING') {
+      const currentPhase = phaseRef.current
+
+      if (currentPhase === 'SCROLLING') {
         container.scrollTop += scrollDelta
 
         if (isAtBottom()) {
           setPhase('PAUSED_AT_BOTTOM')
           return
         }
-      } else if (phase === 'RETURNING') {
+      } else if (currentPhase === 'RETURNING') {
         container.scrollTop -= scrollDelta * 2 // Return faster
 
         if (isAtTop()) {
@@ -175,10 +190,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       animationFrameId = requestAnimationFrame(animate)
     }
 
-    // Start scrolling from IDLE
+    // Start scrolling from IDLE - use timeout to avoid sync setState
     if (phase === 'IDLE') {
-      setPhase('SCROLLING')
-      return
+      const startTimeout = setTimeout(() => setPhase('SCROLLING'), 0)
+      return () => clearTimeout(startTimeout)
     }
 
     // Handle pause at bottom
@@ -200,18 +215,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         }
       }
     }
-  }, [enabled, manuallyPaused, isHighlightActive, phase, adjustedSpeed, pauseAtBottom, isAtBottom, isAtTop])
-
-  /**
-   * Reset to top when highlight ends
-   */
-  useEffect(() => {
-    if (!isHighlightActive && containerRef.current) {
-      // After highlight ends, scroll is handled by ResultsList (scroll to top)
-      // We just need to reset our phase
-      setPhase('IDLE')
-    }
-  }, [isHighlightActive])
+  }, [shouldScroll, phase, adjustedSpeed, pauseAtBottom, isAtBottom, isAtTop])
 
   return {
     phase,

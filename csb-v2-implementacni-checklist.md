@@ -196,6 +196,8 @@
 > **Poznámka:** Tyto providery se implementují až když je UI ověřené na ReplayProvider.
 > Pořadí: nejprve CLIProvider (jednodušší, JSON), pak případně C123Provider (XML).
 
+Dulezite aktualni info: C123 i CLI bezi na IP 192.168.68.108 a poskytuji jednoducha skoro staticka data - je vhodne tyto moduly implementovat a castene otestovat (automaticky)
+
 ### CLIProvider (po ověření UI)
 - [ ] `src/providers/CLIProvider.ts` - WebSocket připojení
 - [ ] Constructor přijímá URL (ws://host:8081)
