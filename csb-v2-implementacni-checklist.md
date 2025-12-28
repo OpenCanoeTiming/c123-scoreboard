@@ -436,25 +436,25 @@
 ## Fáze 4: Základní komponenty
 
 ### 4.1 Utility funkce - formatTime
-- [ ] `src/utils/formatTime.ts`
-- [ ] Formát: "1:23.45" nebo "23.45"
-- [ ] Handle prázdné/null hodnoty
-- [ ] Handle různé vstupní formáty (string, number)
+- [x] `src/utils/formatTime.ts`
+- [x] Formát: "1:23.45" nebo "23.45"
+- [x] Handle prázdné/null hodnoty
+- [x] Handle různé vstupní formáty (string, number)
 
 ### 4.2 Utility funkce - formatName
-- [ ] `src/utils/formatName.ts`
-- [ ] Zkrácení dlouhých jmen
-- [ ] PŘÍJMENÍ Jméno formát
-- [ ] Handle prázdné hodnoty
+- [x] `src/utils/formatName.ts`
+- [x] Zkrácení dlouhých jmen
+- [x] PŘÍJMENÍ Jméno formát
+- [x] Handle prázdné hodnoty
 
 ### 4.3 Utility funkce - testy
-- [ ] Unit testy pro formatTime
-- [ ] Unit testy pro formatName
-- [ ] Edge cases (prázdné, null, nevalidní)
+- [x] Unit testy pro formatTime
+- [x] Unit testy pro formatName
+- [x] Edge cases (prázdné, null, nevalidní)
 
 ### 🔍 Revize: Utility
-- [ ] Testy prošly
-- [ ] **Commit:** "feat: utility functions"
+- [x] Testy prošly
+- [x] **Commit:** "feat: utility functions"
 
 ---
 
