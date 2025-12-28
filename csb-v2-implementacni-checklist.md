@@ -1183,7 +1183,7 @@ TypeScript: ✅ Strict mode
 
 - [x] **Fix unstable key v CurrentCompetitor gates** - použít stabilní identifikátor brány (`gate-${gateNumber}`)
 - [ ] **Přidat validaci vstupních dat v message parsing** - validovat typy před použitím
-- [ ] **Přidat error callback do DataProvider** - propagovat parse chyby do UI
+- [x] **Přidat error callback do DataProvider** - propagovat parse chyby do UI
 
 #### Priority 2 - Výkon a robustnost
 
