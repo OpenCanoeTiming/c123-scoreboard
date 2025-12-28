@@ -291,14 +291,14 @@
 ## Fáze 2.7: Departing competitor
 
 ### 2.6.1 Departing state
-- [ ] State: `departingCompetitor: OnCourseCompetitor | null`
-- [ ] State: `departedAt: number | null`
-- [ ] Konstanta: DEPARTING_TIMEOUT = 3000 (3 sekundy)
+- [x] State: `departingCompetitor: OnCourseCompetitor | null`
+- [x] State: `departedAt: number | null`
+- [x] Konstanta: DEPARTING_TIMEOUT = 3000 (3 sekundy)
 
 ### 2.6.2 Departing logika
-- [ ] Při změně comp.Bib (nový nebo prázdný)
-- [ ] Uložit předchozího jako departing s timestamp
-- [ ] Vymazat departing když:
+- [x] Při změně comp.Bib (nový nebo prázdný)
+- [x] Uložit předchozího jako departing s timestamp
+- [x] Vymazat departing když:
   - Přijde v top.HighlightBib, NEBO
   - Uběhlo DEPARTING_TIMEOUT
 
@@ -307,10 +307,10 @@
 - [ ] Vizuální odlišení (opacity, label)
 
 ### 🔍 Revize: Departing
-- [ ] comp zmizí → departing se zobrazí
-- [ ] Highlight přijde → departing zmizí
-- [ ] Timeout 3s → departing zmizí
-- [ ] **Commit:** "feat: departing competitor buffer"
+- [x] comp zmizí → departing se zobrazí
+- [x] Highlight přijde → departing zmizí
+- [x] Timeout 3s → departing zmizí
+- [x] **Commit:** "feat: departing competitor buffer"
 
 ---
 

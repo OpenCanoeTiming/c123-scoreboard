@@ -26,6 +26,12 @@ import type {
 export const HIGHLIGHT_DURATION = 5000
 
 /**
+ * Departing competitor timeout in milliseconds (3 seconds)
+ * After this time, the departing competitor is cleared if no highlight arrives
+ */
+export const DEPARTING_TIMEOUT = 3000
+
+/**
  * Scoreboard state interface
  */
 export interface ScoreboardState {
@@ -46,6 +52,10 @@ export interface ScoreboardState {
   // Competitors
   currentCompetitor: OnCourseCompetitor | null
   onCourse: OnCourseCompetitor[]
+
+  // Departing competitor (competitor who just left the course but hasn't been highlighted yet)
+  departingCompetitor: OnCourseCompetitor | null
+  departedAt: number | null
 
   // Visibility
   visibility: VisibilityState
@@ -108,6 +118,11 @@ export function ScoreboardProvider({
     useState<OnCourseCompetitor | null>(null)
   const [onCourse, setOnCourse] = useState<OnCourseCompetitor[]>([])
 
+  // Departing competitor state
+  const [departingCompetitor, setDepartingCompetitor] =
+    useState<OnCourseCompetitor | null>(null)
+  const [departedAt, setDepartedAt] = useState<number | null>(null)
+
   // Visibility
   const [visibility, setVisibility] =
     useState<VisibilityState>(defaultVisibility)
@@ -128,6 +143,8 @@ export function ScoreboardProvider({
     setHighlightTimestamp(null)
     setCurrentCompetitor(null)
     setOnCourse([])
+    setDepartingCompetitor(null)
+    setDepartedAt(null)
     setInitialDataReceived(false)
     // Keep visibility and event info - they will be updated
   }, [])
@@ -138,6 +155,8 @@ export function ScoreboardProvider({
    * Includes highlight deduplication logic:
    * - If highlightBib is in onCourse, don't activate highlight
    * - This prevents double-display of competitors still on course
+   *
+   * Also clears departing competitor when highlight arrives for them.
    */
   const handleResults = useCallback(
     (data: ResultsData) => {
@@ -160,6 +179,15 @@ export function ScoreboardProvider({
             }
             return prevBib
           })
+
+          // Clear departing if this is the departing competitor's highlight
+          setDepartingCompetitor((prev) => {
+            if (prev && prev.bib === newHighlightBib) {
+              setDepartedAt(null)
+              return null
+            }
+            return prev
+          })
         }
       } else {
         // highlightBib is null/empty from server - clear immediately
@@ -175,11 +203,28 @@ export function ScoreboardProvider({
 
   /**
    * Handle on-course data (from comp/oncourse messages)
+   *
+   * Departing logic:
+   * - When currentCompetitor changes (new or empty bib)
+   * - Store the previous competitor as departing with timestamp
+   * - Departing is cleared when highlight arrives or timeout expires
    */
-  const handleOnCourse = useCallback((data: OnCourseData) => {
-    setCurrentCompetitor(data.current)
-    setOnCourse(data.onCourse)
-  }, [])
+  const handleOnCourse = useCallback(
+    (data: OnCourseData) => {
+      // Detect competitor change for departing logic
+      setCurrentCompetitor((prevCompetitor) => {
+        // If previous competitor exists and bib is different (or new is null/empty)
+        if (prevCompetitor && prevCompetitor.bib !== data.current?.bib) {
+          // Store previous as departing
+          setDepartingCompetitor(prevCompetitor)
+          setDepartedAt(Date.now())
+        }
+        return data.current
+      })
+      setOnCourse(data.onCourse)
+    },
+    [] // No dependencies needed as we use the callback form of setCurrentCompetitor
+  )
 
   /**
    * Handle visibility data (from control messages)
@@ -262,6 +307,34 @@ export function ScoreboardProvider({
     handleConnectionChange,
   ])
 
+  /**
+   * Departing competitor timeout effect
+   * Clears departing competitor after DEPARTING_TIMEOUT if no highlight arrives
+   */
+  useEffect(() => {
+    if (!departingCompetitor || !departedAt) {
+      return
+    }
+
+    const elapsed = Date.now() - departedAt
+    const remaining = DEPARTING_TIMEOUT - elapsed
+
+    // Already expired
+    if (remaining <= 0) {
+      setDepartingCompetitor(null)
+      setDepartedAt(null)
+      return
+    }
+
+    // Set timeout for expiration
+    const timeoutId = setTimeout(() => {
+      setDepartingCompetitor(null)
+      setDepartedAt(null)
+    }, remaining)
+
+    return () => clearTimeout(timeoutId)
+  }, [departingCompetitor, departedAt])
+
   // Build context value
   const value: ScoreboardContextValue = {
     status,
@@ -274,6 +347,8 @@ export function ScoreboardProvider({
     highlightTimestamp,
     currentCompetitor,
     onCourse,
+    departingCompetitor,
+    departedAt,
     visibility,
     title,
     infoText,
