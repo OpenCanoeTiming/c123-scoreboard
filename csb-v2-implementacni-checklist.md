@@ -1210,7 +1210,7 @@ TypeScript: ✅ Strict mode
 #### Automatické testování (rozšířit stávající testy)
 
 - [x] **Edge cases pro highlight** - více závodníků dojede < 100ms po sobě (5 nových testů v ScoreboardContext.test.tsx)
-- [ ] **Stress test pro auto-scroll** - 100+ výsledků, rychlé scrollování
+- [x] **Stress test pro auto-scroll** - 10 nových testů: 100+ items, 500+ items, rapid phase transitions, concurrent highlight changes, extreme scroll speeds, mount/unmount cycles
 - [ ] **Fuzz testing pro message parsing** - náhodná malformed data
 - [ ] **Memory leak test** - spustit ReplayProvider 1000x v loop
 

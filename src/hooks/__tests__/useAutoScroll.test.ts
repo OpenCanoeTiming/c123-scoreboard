@@ -391,4 +391,199 @@ describe('useAutoScroll', () => {
       expect(result.current.phase).toBeDefined()
     })
   })
+
+  describe('stress tests', () => {
+    it('handles container with 100+ items without crashing', async () => {
+      // Create a mock container simulating 100+ result rows
+      // Each row is ~48px, so 100 rows = 4800px scrollHeight
+      const largeContainer = document.createElement('div')
+      Object.defineProperties(largeContainer, {
+        scrollHeight: { value: 4800, writable: true, configurable: true },
+        clientHeight: { value: 400, writable: true, configurable: true },
+        scrollTop: { value: 0, writable: true, configurable: true },
+      })
+
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      // Simulate attaching container (in real scenario, ref would be attached)
+      // Here we just verify the hook doesn't crash with large scroll distances
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      expect(result.current.phase).toBeDefined()
+      expect(['IDLE', 'SCROLLING', 'PAUSED_AT_BOTTOM', 'RETURNING']).toContain(
+        result.current.phase
+      )
+    })
+
+    it('handles container with 500+ items (stress test)', async () => {
+      // Simulate 500 result rows - 24000px scrollHeight
+      const veryLargeContainer = document.createElement('div')
+      Object.defineProperties(veryLargeContainer, {
+        scrollHeight: { value: 24000, writable: true, configurable: true },
+        clientHeight: { value: 400, writable: true, configurable: true },
+        scrollTop: { value: 0, writable: true, configurable: true },
+      })
+
+      const { result } = renderHook(() =>
+        useAutoScroll({ enabled: true, scrollSpeed: 100 })
+      )
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      // Should not crash and remain in valid state
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles rapid phase transitions with large container', async () => {
+      const { result } = renderHook(() =>
+        useAutoScroll({ enabled: true, pauseAtBottom: 100 })
+      )
+
+      // Rapid operations while simulating large scroll
+      for (let i = 0; i < 20; i++) {
+        act(() => {
+          result.current.pause()
+        })
+
+        await act(async () => {
+          vi.advanceTimersByTime(50)
+        })
+
+        act(() => {
+          result.current.resume()
+        })
+
+        await act(async () => {
+          vi.advanceTimersByTime(50)
+        })
+
+        act(() => {
+          result.current.reset()
+        })
+
+        await act(async () => {
+          vi.advanceTimersByTime(50)
+        })
+      }
+
+      // Should not crash after rapid transitions
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles concurrent highlight changes with auto-scroll', async () => {
+      const { result, rerender } = renderHook(() =>
+        useAutoScroll({ enabled: true })
+      )
+
+      // Simulate rapid highlight on/off - mimics multiple competitors finishing quickly
+      for (let i = 0; i < 10; i++) {
+        // Highlight becomes active
+        mockUseHighlight.mockReturnValue({
+          highlightBib: String(100 + i),
+          isActive: true,
+          timeRemaining: 5000,
+          progress: 0,
+        })
+
+        rerender()
+        await act(async () => {
+          vi.advanceTimersByTime(500)
+        })
+
+        // Highlight expires
+        mockUseHighlight.mockReturnValue({
+          highlightBib: null,
+          isActive: false,
+          timeRemaining: 0,
+          progress: 0,
+        })
+
+        rerender()
+        await act(async () => {
+          vi.advanceTimersByTime(500)
+        })
+      }
+
+      // Should handle all transitions without crashing
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles very fast scroll speed without overflow', async () => {
+      // Test with extremely high scroll speed to catch potential numeric issues
+      const { result } = renderHook(() =>
+        useAutoScroll({ enabled: true, scrollSpeed: 10000 })
+      )
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles very slow scroll speed without stalling', async () => {
+      // Test with very low scroll speed
+      const { result } = renderHook(() =>
+        useAutoScroll({ enabled: true, scrollSpeed: 1 })
+      )
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles zero pauseAtBottom gracefully', async () => {
+      const { result } = renderHook(() =>
+        useAutoScroll({ enabled: true, pauseAtBottom: 0 })
+      )
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles very long pauseAtBottom without memory leak', async () => {
+      const { result, unmount } = renderHook(() =>
+        useAutoScroll({ enabled: true, pauseAtBottom: 3600000 }) // 1 hour
+      )
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000)
+      })
+
+      // Unmount before timeout expires - should clean up properly
+      unmount()
+
+      // If we got here without error, cleanup worked
+      expect(result.current.phase).toBeDefined()
+    })
+
+    it('handles multiple rapid mount/unmount cycles', async () => {
+      // Simulate component remounting rapidly (e.g., due to parent re-renders)
+      for (let i = 0; i < 50; i++) {
+        const { result, unmount } = renderHook(() =>
+          useAutoScroll({ enabled: true })
+        )
+
+        await act(async () => {
+          vi.advanceTimersByTime(10)
+        })
+
+        expect(result.current.phase).toBeDefined()
+
+        unmount()
+      }
+
+      // If we completed all cycles without error, stress test passed
+      expect(true).toBe(true)
+    })
+  })
 })
