@@ -459,16 +459,16 @@
 ---
 
 ### 4.4 TimeDisplay komponenta
-- [ ] `src/components/TimeDisplay/TimeDisplay.tsx`
-- [ ] `src/components/TimeDisplay/TimeDisplay.module.css`
-- [ ] Props: `time: string`, `visible: boolean`
-- [ ] JetBrains Mono font
+- [x] `src/components/TimeDisplay/TimeDisplay.tsx`
+- [x] `src/components/TimeDisplay/TimeDisplay.module.css`
+- [x] Props: `time: string`, `visible: boolean`
+- [x] JetBrains Mono font
 - [ ] Pozice podle layoutu
 
 ### 🔍 Revize: TimeDisplay
 - [ ] Vizuální porovnání s originálem
-- [ ] Visibility funguje
-- [ ] **Commit:** "feat: TimeDisplay component"
+- [x] Visibility funguje
+- [x] **Commit:** "feat: TimeDisplay component"
 
 ---
 

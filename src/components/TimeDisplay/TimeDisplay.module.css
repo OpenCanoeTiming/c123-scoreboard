@@ -1,0 +1,12 @@
+.timeDisplay {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: 0.05em;
+  text-align: right;
+
+  /* Ensure consistent digit width with tabular numbers */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
