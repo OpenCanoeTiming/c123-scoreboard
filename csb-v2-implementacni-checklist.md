@@ -1187,9 +1187,9 @@ TypeScript: ✅ Strict mode
 
 #### Priority 2 - Výkon a robustnost
 
-- [ ] **Memoizovat callback funkce v useAutoScroll** - přidat useCallback na isAtBottom, isAtTop
-- [ ] **Opravit useTimestamp state pattern** - odstranit nepoužitou state hodnotu
-- [ ] **Přidat správu chybových stavů** - sledovat a zobrazovat parse/validation chyby
+- [x] **Memoizovat callback funkce v useAutoScroll** - přidat useCallback na isAtBottom, isAtTop (již bylo implementováno)
+- [x] **Opravit useTimestamp state pattern** - setNow se používá k vynucení re-renderu, pattern je záměrný a funkční
+- [x] **Přidat správu chybových stavů** - ScoreboardContext nyní subscribuje na onError callback, sleduje providerErrors (max 10), poskytuje clearProviderErrors akci
 
 #### Priority 3 - Architektura
 

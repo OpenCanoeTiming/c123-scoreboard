@@ -18,6 +18,7 @@ import type {
   ResultsData,
   OnCourseData,
   EventInfoData,
+  ProviderError,
 } from '@/providers/types'
 import { DEPARTING_TIMEOUT } from './constants'
 
@@ -29,6 +30,9 @@ export interface ScoreboardState {
   status: ConnectionStatus
   error: string | null
   initialDataReceived: boolean
+
+  // Provider errors (parse/validation errors that don't break connection)
+  providerErrors: ProviderError[]
 
   // Results data
   results: Result[]
@@ -62,6 +66,8 @@ export interface ScoreboardState {
 export interface ScoreboardContextValue extends ScoreboardState {
   // Manual reconnect trigger (for error recovery)
   reconnect: () => void
+  // Clear provider errors
+  clearProviderErrors: () => void
 }
 
 /**
@@ -94,6 +100,9 @@ export function ScoreboardProvider({
   const [status, setStatus] = useState<ConnectionStatus>(provider.status)
   const [error, setError] = useState<string | null>(null)
   const [initialDataReceived, setInitialDataReceived] = useState(false)
+
+  // Provider errors (parse/validation errors that don't break connection)
+  const [providerErrors, setProviderErrors] = useState<ProviderError[]>([])
 
   // Results data
   const [results, setResults] = useState<Result[]>([])
@@ -139,6 +148,7 @@ export function ScoreboardProvider({
     setDepartingCompetitor(null)
     setDepartedAt(null)
     setInitialDataReceived(false)
+    setProviderErrors([])
     // Keep visibility and event info - they will be updated
   }, [])
 
@@ -257,10 +267,30 @@ export function ScoreboardProvider({
   )
 
   /**
+   * Handle provider errors (parse/validation errors)
+   * Keep last 10 errors to avoid unbounded growth
+   */
+  const handleProviderError = useCallback((providerError: ProviderError) => {
+    setProviderErrors((prev) => {
+      const updated = [...prev, providerError]
+      // Keep only last 10 errors
+      return updated.slice(-10)
+    })
+  }, [])
+
+  /**
+   * Clear provider errors
+   */
+  const clearProviderErrors = useCallback(() => {
+    setProviderErrors([])
+  }, [])
+
+  /**
    * Manual reconnect trigger
    */
   const reconnect = useCallback(() => {
     setError(null)
+    setProviderErrors([])
     provider.disconnect()
     provider.connect().catch((err: Error) => {
       setError(err.message || 'Connection failed')
@@ -277,6 +307,7 @@ export function ScoreboardProvider({
     const unsubVisibility = provider.onVisibility(handleVisibility)
     const unsubEventInfo = provider.onEventInfo(handleEventInfo)
     const unsubConnection = provider.onConnectionChange(handleConnectionChange)
+    const unsubError = provider.onError(handleProviderError)
 
     // Initial connection
     provider.connect().catch((err: Error) => {
@@ -290,6 +321,7 @@ export function ScoreboardProvider({
       unsubVisibility()
       unsubEventInfo()
       unsubConnection()
+      unsubError()
       provider.disconnect()
     }
   }, [
@@ -299,6 +331,7 @@ export function ScoreboardProvider({
     handleVisibility,
     handleEventInfo,
     handleConnectionChange,
+    handleProviderError,
   ])
 
   /**
@@ -328,6 +361,7 @@ export function ScoreboardProvider({
     status,
     error,
     initialDataReceived,
+    providerErrors,
     results,
     raceName,
     raceStatus,
@@ -342,6 +376,7 @@ export function ScoreboardProvider({
     infoText,
     dayTime,
     reconnect,
+    clearProviderErrors,
   }
 
   return (
