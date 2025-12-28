@@ -968,7 +968,7 @@ napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a 
 ```
 Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
 ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 156 unit testů
+Tests:      ✅ 197 unit testů (10 test suites)
 TypeScript: ✅ Strict mode
 ```
 
@@ -1020,7 +1020,7 @@ TypeScript: ✅ Strict mode
 
 ```
 Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
-Unit testy: ✅ 156 testů prochází (8 test suites)
+Unit testy: ✅ 197 testů prochází (10 test suites)
 ESLint:     ✅ 0 errors, 4 warnings
 TypeScript: ✅ Strict mode
 ```
@@ -1066,7 +1066,7 @@ TypeScript: ✅ Strict mode
   - Test departing competitor clearing on timeout
   - Test state reset on reconnect
 
-- [ ] `src/hooks/__tests__/useAutoScroll.test.ts`
+- [x] `src/hooks/__tests__/useAutoScroll.test.ts`
   - Test IDLE → SCROLLING → PAUSED_AT_BOTTOM → RETURNING transitions
   - Test manual pause/resume/reset
   - Test ledwall speed multiplier (0.7x)
