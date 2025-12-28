@@ -473,15 +473,15 @@
 ---
 
 ### 4.5 Footer komponenta
-- [ ] `src/components/Footer/Footer.tsx`
-- [ ] `src/components/Footer/Footer.module.css`
-- [ ] Props: `visible: boolean`
-- [ ] Sponzorský banner
-- [ ] Automaticky skrytý na ledwall
+- [x] `src/components/Footer/Footer.tsx`
+- [x] `src/components/Footer/Footer.module.css`
+- [x] Props: `visible: boolean`
+- [x] Sponzorský banner
+- [x] Automaticky skrytý na ledwall
 
 ### 🔍 Revize: Footer
 - [ ] Vizuální porovnání
-- [ ] Skrytý na ledwall
+- [x] Skrytý na ledwall (via ScoreboardLayout showFooter)
 - [ ] **Commit:** "feat: Footer component"
 
 ---
