@@ -1123,6 +1123,118 @@ TypeScript: ✅ Strict mode
 
 ---
 
+## Review v0.9 (2025-12-29) - Tag: `review-ready-v0.9`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
+Unit testy: ✅ 334 testů prochází (14 test suites)
+ESLint:     ✅ 0 errors, 4 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Celkové hodnocení z code review
+
+| Oblast | Hodnocení | Poznámka |
+|--------|-----------|----------|
+| Kvalita kódu | 8/10 | Čistá architektura, dobré React patterns |
+| Architektura | 8.5/10 | Výborný DataProvider pattern |
+| TypeScript | 8/10 | Dobrá typová pokrytí, chybí runtime validace |
+| Výkon | 7/10 | Dobrý cleanup, chybí některá memoizace |
+| Error handling | 6/10 | Základní, potřebuje zlepšení |
+| Bezpečnost | 7.5/10 | Žádné injekce, chybí validace vstupu |
+
+### Nalezené problémy
+
+#### Kritické (opravit před nasazením)
+
+1. **Nestabilní key v CurrentCompetitor gates** (`src/components/CurrentCompetitor/CurrentCompetitor.tsx:190`)
+   - Používá `key={index}` pro gate penalties
+   - Může způsobit problémy při reconciliaci DOM
+
+#### Střední priorita
+
+2. **Chybějící memoizace v useAutoScroll** - `isAtBottom`, `isAtTop` callbacks nejsou memoizované
+3. **Nepoužitý state v useTimestamp** - `const [, setNow] = useState()` hodnota se nikdy nečte
+4. **Potenciální race condition v ScoreboardContext** - highlight deduplikace používá closure nad stale `onCourse`
+5. **Type casting bez validace v CLIProvider** - message parsing používá `as string` bez kontroly
+6. **Chybí propagace chyb z provideru** - parse chyby jsou logované ale nepropagované do UI
+
+#### Nízká priorita
+
+7. **getLayoutModeFromURL voláno při každé změně viewportu**
+8. **Premature optimization** - useMemo v CurrentCompetitor pro parseGates
+9. **Nekonzistentní logging úrovně** - mix console.error a console.warn
+10. **Magic numbers v layout konfiguraci** - hard-coded pixely bez dokumentace
+
+### Silné stránky kódu
+
+1. ✅ Čistý DataProvider pattern s pub/sub systémem
+2. ✅ Dobře strukturovaný Context s TypeScript interfaces
+3. ✅ Správné cleanup v hooks (timery, animation frames, subscriptions)
+4. ✅ Responzivní layout systém
+5. ✅ 334 jednotkových testů
+6. ✅ Error Boundary implementován
+
+### Další kroky k implementaci (Priority 1-4)
+
+#### Priority 1 - Kritické opravy
+
+- [ ] **Fix unstable key v CurrentCompetitor gates** - použít stabilní identifikátor brány
+- [ ] **Přidat validaci vstupních dat v message parsing** - validovat typy před použitím
+- [ ] **Přidat error callback do DataProvider** - propagovat parse chyby do UI
+
+#### Priority 2 - Výkon a robustnost
+
+- [ ] **Memoizovat callback funkce v useAutoScroll** - přidat useCallback na isAtBottom, isAtTop
+- [ ] **Opravit useTimestamp state pattern** - odstranit nepoužitou state hodnotu
+- [ ] **Přidat správu chybových stavů** - sledovat a zobrazovat parse/validation chyby
+
+#### Priority 3 - Architektura
+
+- [ ] **Rozdělit ScoreboardContext** - separovat data state od UI state pro redukci re-renderů
+- [ ] **Přidat schema validaci zpráv** - použít zod nebo podobnou knihovnu
+- [ ] **Zlepšit error logging** - konzistentní log úrovně a tracking
+- [ ] **Dokumentovat magic numbers** - přidat konfigurační komentáře pro layout thresholds
+
+#### Priority 4 - Nice to have
+
+- [ ] Odstranit premature optimizations (useMemo v CurrentCompetitor)
+- [ ] Přidat rate limiting pro malformed WebSocket zprávy
+- [ ] Přidat performance monitoring/metriky
+- [ ] Implementovat accessibility testing vedle unit testů
+
+### Testovací strategie pro vyladění funkčnosti
+
+#### Automatické testování (rozšířit stávající testy)
+
+- [ ] **Edge cases pro highlight** - více závodníků dojede < 100ms po sobě
+- [ ] **Stress test pro auto-scroll** - 100+ výsledků, rychlé scrollování
+- [ ] **Fuzz testing pro message parsing** - náhodná malformed data
+- [ ] **Memory leak test** - spustit ReplayProvider 1000x v loop
+
+#### Manuální testování scénáře (vyžaduje prohlížeč)
+
+- [ ] **Cold start scénář** - spustit app, sledovat Loading → Waiting → Data
+- [ ] **Závodník dojede scénář** - sledovat departing → highlight → scroll sekvenci
+- [ ] **Rychlé změny** - 2+ závodníci dojedou < 1s po sobě
+- [ ] **Prázdný závod** - žádné results, graceful empty state
+- [ ] **Highlight timeout** - čekat 5s, highlight zmizí, scroll to top
+
+#### Vizuální testování (vyžaduje porovnání)
+
+- [ ] **Vertical layout** - 1080×1920, porovnat s `original-live-vertical.png`
+- [ ] **Ledwall layout** - 768×384, porovnat s `original-live-ledwall.png`
+- [ ] **Barvy a typografie** - zkopírovat z `*-styles.json`
+
+#### Hardware testování (vyžaduje fyzické zařízení)
+
+- [ ] **Raspberry Pi výkon** - ověřit plynulost na cílovém hardware
+- [ ] **Skutečný TV/LED panel** - ověřit čitelnost a barvy
+
+---
+
 ## Review v0.6 (2025-12-28)
 
 ### Opravené chyby
