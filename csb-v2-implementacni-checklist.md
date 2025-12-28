@@ -317,104 +317,106 @@
 ## Fáze 2.8: Reconnect handling
 
 ### 2.7.1 State reset při reconnect
-- [ ] Při status změně na 'reconnecting':
-  - [ ] Vymazat results
-  - [ ] Vymazat currentCompetitor
-  - [ ] Vymazat onCourse
-  - [ ] Vymazat highlight
-  - [ ] Vymazat departing
-  - [ ] Nastavit initialDataReceived = false
+- [x] Při status změně na 'reconnecting':
+  - [x] Vymazat results
+  - [x] Vymazat currentCompetitor
+  - [x] Vymazat onCourse
+  - [x] Vymazat highlight
+  - [x] Vymazat departing
+  - [x] Nastavit initialDataReceived = false
 
 ### 2.7.2 Fresh start
-- [ ] Po reconnect (status → 'connected')
-- [ ] Čekat na první top zprávu
-- [ ] initialDataReceived = true
+- [x] Po reconnect (status → 'connected')
+- [x] Čekat na první top zprávu
+- [x] initialDataReceived = true
 
 ### 🔍 Revize: Reconnect
-- [ ] Odpojit server
+- [ ] Odpojit server (vyžaduje CLIProvider)
 - [ ] Ověřit že UI ukazuje reconnecting stav
 - [ ] Ověřit že data jsou vymazána
 - [ ] Znovu připojit, ověřit fresh data
-- [ ] **Commit:** "feat: reconnect state handling"
+- [x] **Commit:** "feat: reconnect state handling"
 
 ### 🔍 Revize: Celý Data Layer
-- [ ] Všechny edge cases pokryty
-- [ ] CLIProvider stabilní
-- [ ] ReplayProvider funguje pro development
-- [ ] ScoreboardContext správně zpracovává všechna data
+- [x] Všechny edge cases pokryty (v ScoreboardContext)
+- [ ] CLIProvider stabilní (bude implementován po ověření UI)
+- [x] ReplayProvider funguje pro development
+- [x] ScoreboardContext správně zpracovává všechna data
 - [ ] **Commit:** "feat: complete data layer"
 
 ### ❓ Rozhodnutí: State management
-- [ ] Je Context API dostatečný nebo potřebujeme reducer/zustand?
-- [ ] Jsou všechny edge cases pokryté?
-- [ ] Aktualizovat plán pokud potřeba
+- [x] Je Context API dostatečný nebo potřebujeme reducer/zustand?
+  - **Rozhodnutí:** Context API je dostatečný. Stav je relativně jednoduchý a aktualizace jsou časté ale ne extrémně rychlé. Případná optimalizace pomocí useMemo/useCallback je dostačující.
+- [x] Jsou všechny edge cases pokryté?
+  - **Ano:** Highlight deduplikace, departing buffer, reconnect reset
+- [x] Aktualizovat plán pokud potřeba - není potřeba změn
 
 ---
 
 ## Fáze 3: Layout systém
 
 ### 3.1 useLayout hook - viewport
-- [ ] `src/hooks/useLayout.ts`
-- [ ] Detekce viewport rozměrů (window.innerWidth/Height)
-- [ ] Event listener na resize
-- [ ] Debounce resize events (100ms)
-- [ ] Cleanup při unmount
+- [x] `src/hooks/useLayout.ts`
+- [x] Detekce viewport rozměrů (window.innerWidth/Height)
+- [x] Event listener na resize
+- [x] Debounce resize events (100ms)
+- [x] Cleanup při unmount
 
 ### 3.2 useLayout hook - layout mode
-- [ ] URL parametr `?type=vertical|ledwall`
-- [ ] Fallback na autodetekci podle aspect ratio
-- [ ] Vertical: height > width * 1.5
-- [ ] Ledwall: aspect ratio blízké 2:1
-- [ ] Return: `layoutMode: 'vertical' | 'ledwall'`
+- [x] URL parametr `?type=vertical|ledwall`
+- [x] Fallback na autodetekci podle aspect ratio
+- [x] Vertical: height > width * 1.5
+- [x] Ledwall: aspect ratio blízké 2:1
+- [x] Return: `layoutMode: 'vertical' | 'ledwall'`
 
 ### 3.3 useLayout hook - výpočty vertical
-- [ ] Definovat minimální/maximální row height
-- [ ] Výpočet visibleRows podle výšky (s rezervou pro header/footer)
-- [ ] Výpočet rowHeight
-- [ ] Výpočet fontSize kategorie
+- [x] Definovat minimální/maximální row height
+- [x] Výpočet visibleRows podle výšky (s rezervou pro header/footer)
+- [x] Výpočet rowHeight
+- [x] Výpočet fontSize kategorie
 
 ### 3.4 useLayout hook - výpočty ledwall
-- [ ] Jiné proporce než vertical
-- [ ] Méně řádků, větší font
-- [ ] Skrytý footer
+- [x] Jiné proporce než vertical
+- [x] Méně řádků, větší font
+- [x] Skrytý footer
 
 ### 3.5 useLayout hook - return value
-- [ ] Return: `{ visibleRows, rowHeight, fontSize, layoutMode, showFooter }`
-- [ ] Memoizace výpočtů
+- [x] Return: `{ visibleRows, rowHeight, fontSize, layoutMode, showFooter }`
+- [x] Memoizace výpočtů
 
 ### 3.6 CSS Variables - barvy
-- [ ] `src/styles/variables.css`
-- [ ] --color-bg-primary, --color-bg-secondary
-- [ ] --color-text-primary, --color-text-secondary
-- [ ] --color-accent, --color-highlight
-- [ ] --color-penalty-touch (2s), --color-penalty-miss (50s)
+- [x] `src/styles/variables.css`
+- [x] --color-bg-primary, --color-bg-secondary
+- [x] --color-text-primary, --color-text-secondary
+- [x] --color-accent, --color-highlight
+- [x] --color-penalty-touch (2s), --color-penalty-miss (50s)
 
 ### 3.7 CSS Variables - spacing
-- [ ] --spacing-xs, --spacing-sm, --spacing-md, --spacing-lg
-- [ ] --border-radius
+- [x] --spacing-xs, --spacing-sm, --spacing-md, --spacing-lg
+- [x] --border-radius
 
 ### 3.8 CSS Variables - typography
-- [ ] --font-family-primary (Inter)
-- [ ] --font-family-mono (JetBrains Mono)
-- [ ] --font-size-sm, --font-size-md, --font-size-lg
+- [x] --font-family-primary (Inter)
+- [x] --font-family-mono (JetBrains Mono)
+- [x] --font-size-sm, --font-size-md, --font-size-lg
 
 ### 3.9 CSS Variables - layout
-- [ ] --row-height
-- [ ] --visible-rows
-- [ ] --header-height
-- [ ] --footer-height
+- [x] --row-height
+- [x] --visible-rows
+- [x] --header-height
+- [x] --footer-height
 
 ### 3.10 useLayout hook - CSS Variables
-- [ ] Hook nastavuje CSS variables na :root
-- [ ] document.documentElement.style.setProperty()
-- [ ] Aktualizace při změně layoutu/resize
+- [x] Hook nastavuje CSS variables na :root
+- [x] document.documentElement.style.setProperty()
+- [x] Aktualizace při změně layoutu/resize
 
 ### 3.11 Layout komponenta
-- [ ] `src/components/Layout/ScoreboardLayout.tsx`
-- [ ] `src/components/Layout/ScoreboardLayout.module.css`
-- [ ] Struktura: header, main (results area), footer
-- [ ] CSS Grid layout
-- [ ] Responzivní bez transform: scale()
+- [x] `src/components/Layout/ScoreboardLayout.tsx`
+- [x] `src/components/Layout/ScoreboardLayout.module.css`
+- [x] Struktura: header, main (results area), footer
+- [x] CSS Grid layout
+- [x] Responzivní bez transform: scale()
 
 ### 🔍 Revize: Layout
 - [ ] Otestovat na různých rozlišeních (DevTools)
@@ -422,7 +424,7 @@
 - [ ] Ledwall 768x384 - správný počet řádků?
 - [ ] Resize funguje plynule?
 - [ ] CSS variables se správně aktualizují?
-- [ ] **Commit:** "feat: responsive layout system"
+- [x] **Commit:** "feat: responsive layout system"
 
 ### ❓ Rozhodnutí: Layout
 - [ ] Jsou výpočty řádků správné?
