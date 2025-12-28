@@ -1,0 +1,976 @@
+# Canoe-Scoreboard-v2 - Implementační checklist
+
+> **Souvislosti:**
+> - Kompletní analýza: [../analysis/](../analysis/)
+> - Plán reimplementace: [../analysis/08-plan-reimplementace.md](../analysis/08-plan-reimplementace.md)
+> - Síťová komunikace: [../analysis/07-sitova-komunikace.md](../analysis/07-sitova-komunikace.md)
+> - State management principy: [../analysis/03-state-management.md](../analysis/03-state-management.md)
+> - Styly a layouty: [../analysis/06-styly.md](../analysis/06-styly.md)
+> - Prerekvizita (splněna): [../analysis/10-prototype-checklist.md](../analysis/10-prototype-checklist.md) → [../canoe-scoreboard-v2-prototype/](../canoe-scoreboard-v2-prototype/)
+
+---
+
+## Jak používat tento checklist
+
+- [ ] = Nesplněno
+- [x] = Splněno
+- [~] = Částečně / Vyžaduje revizi
+- [!] = Blokováno / Problém
+
+**Revizní body** jsou označeny 🔍 - zde se zastavit, zhodnotit a případně upravit plán.
+
+**Rozhodovací body** jsou označeny ❓ - zde je potřeba rozhodnout před pokračováním.
+
+---
+
+## Fáze 0: Příprava
+
+### 0.1 Prostředí
+- [x] Node.js 18+ nainstalován
+- [x] npm/pnpm připraven
+- [x] VS Code / editor připraven
+- [x] Git inicializován v `/workspace/csb-v2/canoe-scoreboard-v2/`
+
+### 0.2 Reference materiály
+- [x] Prostudovat `08-plan-reimplementace.md` (architektura, DataProvider, edge cases)
+- [x] Prostudovat `07-sitova-komunikace.md` (protokoly CLI/C123, detekce dojetí)
+- [x] Prostudovat `06-styly.md` (barevné schéma, layouty)
+- [x] Screenshoty a prototyp pro vizuální referenci
+- [x] Ověřit dostupnost testovacích dat (`recordings/rec-2025-12-28T09-34-10.jsonl`)
+
+---
+
+## Fáze 1: Základ projektu
+
+### 1.1 Scaffolding
+- [x] Vytvořit projekt: `npm create vite@latest canoe-scoreboard-v2 -- --template react-ts`
+- [x] `cd canoe-scoreboard-v2 && npm install`
+- [x] Ověřit že `npm run dev` funguje
+- [x] Smazat demo obsah (App.tsx, App.css, assets/)
+
+### 1.2 Struktura adresářů
+- [x] Vytvořit `src/components/`
+- [x] Vytvořit `src/context/`
+- [x] Vytvořit `src/providers/` (DataProvider implementace)
+- [x] Vytvořit `src/hooks/`
+- [x] Vytvořit `src/styles/`
+- [x] Vytvořit `src/types/`
+- [x] Vytvořit `src/utils/`
+
+### 1.3 Konfigurace
+- [x] ESLint - základní React + TypeScript pravidla
+- [x] Prettier - konfigurace formátování
+- [x] tsconfig.json - strict mode
+- [x] tsconfig.json - path aliases (@/components, @/types, ...)
+- [x] vite.config.ts - CSS modules enabled (default)
+- [x] vite.config.ts - path alias resolver
+- [x] Vitest setup (`npm install -D vitest @testing-library/react`)
+- [x] `vitest.config.ts` - konfigurace testů
+- [x] Playwright setup (`npm install -D @playwright/test`)
+- [x] `playwright.config.ts` - viewporty pro vertical (1080×1920) a ledwall (768×384)
+
+### 1.4 Základní soubory - styly
+- [x] `src/styles/variables.css` - CSS custom properties (prázdná struktura)
+- [x] `src/styles/reset.css` - CSS reset (minimální, box-sizing)
+- [x] `src/styles/fonts.css` - font-face deklarace
+
+### 1.5 Základní soubory - fonty
+- [x] Vytvořit `public/fonts/`
+- [x] Zkopírovat Inter (Regular, SemiBold, Bold)
+- [x] Zkopírovat JetBrains Mono (Regular)
+- [x] Ověřit že fonty jsou správně načteny
+
+### 1.6 Základní soubory - app
+- [x] `src/main.tsx` - importovat globální styly
+- [x] `src/App.tsx` - prázdná kostra s placeholder textem
+- [x] Ověřit že se styly a fonty aplikují
+
+### 1.7 TypeScript typy - základní
+- [x] `src/types/competitor.ts` - OnCourseCompetitor interface (viz 08-plan)
+- [x] `src/types/result.ts` - Result interface (viz 08-plan)
+- [x] `src/types/config.ts` - RaceConfig interface
+
+### 1.8 TypeScript typy - zprávy
+- [x] `src/types/messages.ts` - MessageType enum
+- [x] `src/types/messages.ts` - CLI message payloads (top, comp, oncourse, control...)
+- [x] `src/types/visibility.ts` - VisibilityState interface
+
+### 1.9 TypeScript typy - connection
+- [x] `src/types/connection.ts` - ConnectionStatus type
+- [x] `src/types/index.ts` - re-exporty všech typů
+
+### 🔍 Revize: Fáze 1
+- [x] Projekt se builduje bez errorů (`npm run build`)
+- [x] TypeScript typy odpovídají datům z WebSocket
+- [x] Fonty se správně načítají
+- [x] Path aliases fungují
+- [x] Struktura je čistá a logická
+- [ ] **Commit:** "feat: project scaffolding and types"
+
+---
+
+## Fáze 2: DataProvider abstrakce
+
+> **Reference:** [../analysis/07-sitova-komunikace.md](../analysis/07-sitova-komunikace.md) a [../analysis/08-plan-reimplementace.md](../analysis/08-plan-reimplementace.md#dataprovider-abstrakce-detailně)
+
+### 2.1 DataProvider interface
+- [ ] `src/providers/types.ts` - DataProvider interface
+- [ ] Metoda: `connect(): Promise<void>`
+- [ ] Metoda: `disconnect(): void`
+- [ ] Callback: `onResults(callback): Unsubscribe`
+- [ ] Callback: `onOnCourse(callback): Unsubscribe`
+- [ ] Callback: `onConfig(callback): Unsubscribe`
+- [ ] Callback: `onConnectionChange(callback): Unsubscribe`
+- [ ] Property: `readonly connected: boolean`
+- [ ] Property: `readonly status: ConnectionStatus`
+- [ ] Type: `Unsubscribe = () => void`
+
+### 2.2 Společné utility pro providery
+- [ ] `src/providers/utils/parseGates.ts` - parsování "0,0,2,..." nebo "0 0 2 ..."
+- [ ] `src/providers/utils/normalizeCompetitor.ts` - sjednocení formátu
+- [ ] `src/providers/utils/detectFinish.ts` - detekce dojetí (dtFinish změna)
+
+### 2.3 Testy pro utility
+- [ ] `src/providers/utils/__tests__/parseGates.test.ts`
+- [ ] `src/providers/utils/__tests__/detectFinish.test.ts`
+- [ ] Testy prochází (`npm test`)
+
+### 🔍 Revize: DataProvider interface
+- [ ] Interface pokrývá všechny potřebné operace
+- [ ] Typy jsou správné a konzistentní
+- [ ] Testy pro utility prochází
+- [ ] **Commit:** "feat: DataProvider interface and utils"
+
+---
+
+## Fáze 2.4: ReplayProvider (primární pro vývoj)
+
+> **Poznámka:** ReplayProvider je primární zdroj dat během vývoje.
+> Umožňuje opakovatelné testování bez závislosti na běžícím serveru.
+> Testovací nahrávka: `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`
+
+### 2.4.1 Základní struktura
+- [ ] `src/providers/ReplayProvider.ts` - třída implementující DataProvider
+- [ ] Constructor přijímá: source (JSONL string nebo URL)
+- [ ] Interní stav: messages[], currentIndex, playing, speed
+
+### 2.4.2 Načtení dat
+- [ ] Parsovat JSONL (jeden JSON na řádek)
+- [ ] Přeskočit _meta řádek
+- [ ] Uložit zprávy s jejich timestamps (ts field)
+
+### 2.4.3 Playback engine
+- [ ] `connect()` - zahájí playback
+- [ ] setTimeout/setInterval pro scheduling zpráv
+- [ ] Respektovat relativní timestamps (ts)
+- [ ] Speed multiplier (1.0 = realtime, 2.0 = 2x rychleji)
+
+### 2.4.4 Playback controls
+- [ ] `pause(): void` - pozastavit
+- [ ] `resume(): void` - pokračovat
+- [ ] `seek(positionMs: number): void` - přeskočit
+- [ ] `setSpeed(multiplier: number): void` - změnit rychlost
+
+### 2.4.5 Message dispatch
+- [ ] Filtrovat podle zdroje (tcp nebo ws) - pro vývoj používat jen `ws`
+- [ ] Parsovat data podle typu zprávy
+- [ ] Volat příslušné callbacks (onResults, onOnCourse)
+
+### 2.4.6 Testy pro ReplayProvider
+- [ ] `src/providers/__tests__/ReplayProvider.test.ts`
+- [ ] Test: načtení JSONL, správné pořadí zpráv
+- [ ] Test: speed multiplier funguje
+- [ ] Testy prochází
+
+### 🔍 Revize: ReplayProvider
+- [ ] Načíst testovací nahrávku
+- [ ] Ověřit že zprávy přicházejí ve správném pořadí
+- [ ] Otestovat pause/resume
+- [ ] Otestovat speed změnu
+- [ ] **Commit:** "feat: ReplayProvider for development"
+
+---
+
+## Fáze 2.5 - 2.7: CLIProvider a C123Provider (až po ověření UI)
+
+> **Poznámka:** Tyto providery se implementují až když je UI ověřené na ReplayProvider.
+> Pořadí: nejprve CLIProvider (jednodušší, JSON), pak případně C123Provider (XML).
+
+### CLIProvider (po ověření UI)
+- [ ] `src/providers/CLIProvider.ts` - WebSocket připojení
+- [ ] Constructor přijímá URL (ws://host:8081)
+- [ ] Connect/Disconnect s Promise
+- [ ] Exponential backoff reconnect: 1s → 2s → 4s → 8s → 16s → 30s
+- [ ] Message parsing (top, oncourse, comp, control, title, infotext, daytime)
+- [ ] Testy pro CLIProvider
+- [ ] **Commit:** "feat: CLIProvider with reconnect"
+
+### C123Provider (budoucnost)
+- [ ] `src/providers/C123Provider.ts` - TCP socket, XML parsing
+- [ ] Detekce dojetí z dtFinish změn
+- [ ] **Commit:** "feat: C123Provider direct connection"
+
+---
+
+## Fáze 2.5: ScoreboardContext
+
+### 2.5.1 Základní struktura
+- [ ] `src/context/ScoreboardContext.tsx`
+- [ ] Definovat ScoreboardState interface
+- [ ] createContext s default hodnotami
+- [ ] ScoreboardProvider komponenta
+- [ ] useScoreboard hook
+
+### 2.5.2 Connection state
+- [ ] State: `status: ConnectionStatus`
+- [ ] State: `error: string | null`
+- [ ] State: `initialDataReceived: boolean`
+- [ ] Aktualizace při connection change events
+
+### 2.5.3 Data state - results
+- [ ] State: `results: Result[]`
+- [ ] State: `raceName: string`
+- [ ] State: `raceStatus: string`
+
+### 2.5.4 Data state - competitors
+- [ ] State: `currentCompetitor: OnCourseCompetitor | null`
+- [ ] State: `onCourse: OnCourseCompetitor[]`
+
+### 2.5.5 Data state - visibility
+- [ ] State: `visibility: VisibilityState`
+- [ ] Parsovat control zprávu
+
+### 2.5.6 Data state - event info
+- [ ] State: `title: string`
+- [ ] State: `infoText: string`
+- [ ] State: `dayTime: string`
+
+### 2.5.7 Provider props
+- [ ] Přijímá DataProvider jako prop
+- [ ] Subscribuje na všechny callbacks
+- [ ] Cleanup při unmount
+
+### 🔍 Revize: ScoreboardContext základní
+- [ ] Vytvořit testovací komponentu zobrazující raw state
+- [ ] Použít CLIProvider, připojit k serveru
+- [ ] Ověřit že state se aktualizuje
+- [ ] **Commit:** "feat: ScoreboardContext basic"
+
+---
+
+## Fáze 2.6: Highlight logika
+
+### 2.5.1 Highlight state
+- [ ] State: `highlightBib: string | null`
+- [ ] State: `highlightTimestamp: number | null`
+- [ ] Konstanta: HIGHLIGHT_DURATION = 5000 (5 sekund)
+
+### 2.5.2 Highlight aktivace
+- [ ] Při top.HighlightBib != 0
+- [ ] Zkontrolovat zda bib NENÍ v onCourse (deduplikace)
+- [ ] Pokud není → aktivovat highlight s aktuálním timestamp
+
+### 2.5.3 Highlight expiration
+- [ ] Helper: `isHighlightActive(): boolean`
+- [ ] Počítat: `Date.now() - highlightTimestamp < HIGHLIGHT_DURATION`
+- [ ] Timestamp-based, žádné setTimeout
+
+### 2.5.4 Highlight UI hook
+- [ ] `useHighlight()` hook
+- [ ] Vrací: { highlightBib, isActive, timeRemaining }
+- [ ] Používá requestAnimationFrame nebo interval pro aktualizaci
+
+### 🔍 Revize: Highlight
+- [ ] Aktivace highlight funguje
+- [ ] Expiration po 5s funguje
+- [ ] Deduplikace s onCourse funguje
+- [ ] **Commit:** "feat: highlight logic"
+
+---
+
+## Fáze 2.7: Departing competitor
+
+### 2.6.1 Departing state
+- [ ] State: `departingCompetitor: OnCourseCompetitor | null`
+- [ ] State: `departedAt: number | null`
+- [ ] Konstanta: DEPARTING_TIMEOUT = 3000 (3 sekundy)
+
+### 2.6.2 Departing logika
+- [ ] Při změně comp.Bib (nový nebo prázdný)
+- [ ] Uložit předchozího jako departing s timestamp
+- [ ] Vymazat departing když:
+  - Přijde v top.HighlightBib, NEBO
+  - Uběhlo DEPARTING_TIMEOUT
+
+### 2.6.3 Departing display
+- [ ] CurrentCompetitor zobrazuje departing pokud existuje
+- [ ] Vizuální odlišení (opacity, label)
+
+### 🔍 Revize: Departing
+- [ ] comp zmizí → departing se zobrazí
+- [ ] Highlight přijde → departing zmizí
+- [ ] Timeout 3s → departing zmizí
+- [ ] **Commit:** "feat: departing competitor buffer"
+
+---
+
+## Fáze 2.8: Reconnect handling
+
+### 2.7.1 State reset při reconnect
+- [ ] Při status změně na 'reconnecting':
+  - [ ] Vymazat results
+  - [ ] Vymazat currentCompetitor
+  - [ ] Vymazat onCourse
+  - [ ] Vymazat highlight
+  - [ ] Vymazat departing
+  - [ ] Nastavit initialDataReceived = false
+
+### 2.7.2 Fresh start
+- [ ] Po reconnect (status → 'connected')
+- [ ] Čekat na první top zprávu
+- [ ] initialDataReceived = true
+
+### 🔍 Revize: Reconnect
+- [ ] Odpojit server
+- [ ] Ověřit že UI ukazuje reconnecting stav
+- [ ] Ověřit že data jsou vymazána
+- [ ] Znovu připojit, ověřit fresh data
+- [ ] **Commit:** "feat: reconnect state handling"
+
+### 🔍 Revize: Celý Data Layer
+- [ ] Všechny edge cases pokryty
+- [ ] CLIProvider stabilní
+- [ ] ReplayProvider funguje pro development
+- [ ] ScoreboardContext správně zpracovává všechna data
+- [ ] **Commit:** "feat: complete data layer"
+
+### ❓ Rozhodnutí: State management
+- [ ] Je Context API dostatečný nebo potřebujeme reducer/zustand?
+- [ ] Jsou všechny edge cases pokryté?
+- [ ] Aktualizovat plán pokud potřeba
+
+---
+
+## Fáze 3: Layout systém
+
+### 3.1 useLayout hook - viewport
+- [ ] `src/hooks/useLayout.ts`
+- [ ] Detekce viewport rozměrů (window.innerWidth/Height)
+- [ ] Event listener na resize
+- [ ] Debounce resize events (100ms)
+- [ ] Cleanup při unmount
+
+### 3.2 useLayout hook - layout mode
+- [ ] URL parametr `?type=vertical|ledwall`
+- [ ] Fallback na autodetekci podle aspect ratio
+- [ ] Vertical: height > width * 1.5
+- [ ] Ledwall: aspect ratio blízké 2:1
+- [ ] Return: `layoutMode: 'vertical' | 'ledwall'`
+
+### 3.3 useLayout hook - výpočty vertical
+- [ ] Definovat minimální/maximální row height
+- [ ] Výpočet visibleRows podle výšky (s rezervou pro header/footer)
+- [ ] Výpočet rowHeight
+- [ ] Výpočet fontSize kategorie
+
+### 3.4 useLayout hook - výpočty ledwall
+- [ ] Jiné proporce než vertical
+- [ ] Méně řádků, větší font
+- [ ] Skrytý footer
+
+### 3.5 useLayout hook - return value
+- [ ] Return: `{ visibleRows, rowHeight, fontSize, layoutMode, showFooter }`
+- [ ] Memoizace výpočtů
+
+### 3.6 CSS Variables - barvy
+- [ ] `src/styles/variables.css`
+- [ ] --color-bg-primary, --color-bg-secondary
+- [ ] --color-text-primary, --color-text-secondary
+- [ ] --color-accent, --color-highlight
+- [ ] --color-penalty-touch (2s), --color-penalty-miss (50s)
+
+### 3.7 CSS Variables - spacing
+- [ ] --spacing-xs, --spacing-sm, --spacing-md, --spacing-lg
+- [ ] --border-radius
+
+### 3.8 CSS Variables - typography
+- [ ] --font-family-primary (Inter)
+- [ ] --font-family-mono (JetBrains Mono)
+- [ ] --font-size-sm, --font-size-md, --font-size-lg
+
+### 3.9 CSS Variables - layout
+- [ ] --row-height
+- [ ] --visible-rows
+- [ ] --header-height
+- [ ] --footer-height
+
+### 3.10 useLayout hook - CSS Variables
+- [ ] Hook nastavuje CSS variables na :root
+- [ ] document.documentElement.style.setProperty()
+- [ ] Aktualizace při změně layoutu/resize
+
+### 3.11 Layout komponenta
+- [ ] `src/components/Layout/ScoreboardLayout.tsx`
+- [ ] `src/components/Layout/ScoreboardLayout.module.css`
+- [ ] Struktura: header, main (results area), footer
+- [ ] CSS Grid layout
+- [ ] Responzivní bez transform: scale()
+
+### 🔍 Revize: Layout
+- [ ] Otestovat na různých rozlišeních (DevTools)
+- [ ] Vertical 1080x1920 - správný počet řádků?
+- [ ] Ledwall 768x384 - správný počet řádků?
+- [ ] Resize funguje plynule?
+- [ ] CSS variables se správně aktualizují?
+- [ ] **Commit:** "feat: responsive layout system"
+
+### ❓ Rozhodnutí: Layout
+- [ ] Jsou výpočty řádků správné?
+- [ ] Potřebujeme Container Queries?
+- [ ] Aktualizovat plán pokud potřeba
+
+---
+
+## Fáze 4: Základní komponenty
+
+### 4.1 Utility funkce - formatTime
+- [ ] `src/utils/formatTime.ts`
+- [ ] Formát: "1:23.45" nebo "23.45"
+- [ ] Handle prázdné/null hodnoty
+- [ ] Handle různé vstupní formáty (string, number)
+
+### 4.2 Utility funkce - formatName
+- [ ] `src/utils/formatName.ts`
+- [ ] Zkrácení dlouhých jmen
+- [ ] PŘÍJMENÍ Jméno formát
+- [ ] Handle prázdné hodnoty
+
+### 4.3 Utility funkce - testy
+- [ ] Unit testy pro formatTime
+- [ ] Unit testy pro formatName
+- [ ] Edge cases (prázdné, null, nevalidní)
+
+### 🔍 Revize: Utility
+- [ ] Testy prošly
+- [ ] **Commit:** "feat: utility functions"
+
+---
+
+### 4.4 TimeDisplay komponenta
+- [ ] `src/components/TimeDisplay/TimeDisplay.tsx`
+- [ ] `src/components/TimeDisplay/TimeDisplay.module.css`
+- [ ] Props: `time: string`, `visible: boolean`
+- [ ] JetBrains Mono font
+- [ ] Pozice podle layoutu
+
+### 🔍 Revize: TimeDisplay
+- [ ] Vizuální porovnání s originálem
+- [ ] Visibility funguje
+- [ ] **Commit:** "feat: TimeDisplay component"
+
+---
+
+### 4.5 Footer komponenta
+- [ ] `src/components/Footer/Footer.tsx`
+- [ ] `src/components/Footer/Footer.module.css`
+- [ ] Props: `visible: boolean`
+- [ ] Sponzorský banner
+- [ ] Automaticky skrytý na ledwall
+
+### 🔍 Revize: Footer
+- [ ] Vizuální porovnání
+- [ ] Skrytý na ledwall
+- [ ] **Commit:** "feat: Footer component"
+
+---
+
+### 4.6 EventInfo - TopBar
+- [ ] `src/components/EventInfo/TopBar.tsx`
+- [ ] `src/components/EventInfo/TopBar.module.css`
+- [ ] Logo vlevo
+- [ ] Partners/sponsors vpravo
+- [ ] Props: `visible: boolean`
+
+### 4.7 EventInfo - Title
+- [ ] `src/components/EventInfo/Title.tsx`
+- [ ] `src/components/EventInfo/Title.module.css`
+- [ ] Props: `title: string`, `visible: boolean`
+- [ ] Pozice podle layoutu
+
+### 🔍 Revize: EventInfo
+- [ ] TopBar vizuálně správně
+- [ ] Title správně
+- [ ] Visibility funguje
+- [ ] **Commit:** "feat: EventInfo components"
+
+---
+
+### 4.8 CurrentCompetitor - základní
+- [ ] `src/components/CurrentCompetitor/CurrentCompetitor.tsx`
+- [ ] `src/components/CurrentCompetitor/CurrentCompetitor.module.css`
+- [ ] Props: `competitor: OnCourseCompetitor | null`, `visible: boolean`
+
+### 4.9 CurrentCompetitor - layout
+- [ ] Bib (velké, výrazné)
+- [ ] Name (PŘÍJMENÍ Jméno)
+- [ ] Club
+- [ ] Time (běžící nebo finální)
+
+### 4.10 CurrentCompetitor - TTB info
+- [ ] TTB rozdíl (TTBDiff)
+- [ ] Jméno vedoucího (TTBName)
+- [ ] Barevné kódování (+/-)
+
+### 4.11 CurrentCompetitor - penalties summary
+- [ ] Celkový penalty součet
+- [ ] Barevné kódování
+
+### 4.12 CurrentCompetitor - gate penalties
+- [ ] Zobrazení jednotlivých bran
+- [ ] 0 = zelená/neutrální
+- [ ] 2 = oranžová
+- [ ] 50 = červená
+- [ ] Prázdná = neprojeto (šedá)
+
+### 4.13 CurrentCompetitor - pulzující indikátor
+- [ ] Indikátor ► pro běžícího závodníka
+- [ ] CSS @keyframes pulseGlyph
+- [ ] Zobrazit pouze když time běží (dtFinish == null)
+
+### 4.14 CurrentCompetitor - animace změny
+- [ ] Fade/slide při změně závodníka
+- [ ] CSS transition
+
+### 4.15 CurrentCompetitor - departing
+- [ ] Zobrazit departing competitor pokud existuje
+- [ ] Vizuální odlišení (nižší opacity, label "předchozí")
+- [ ] Pozice (nad nebo vedle aktuálního)
+
+### 🔍 Revize: CurrentCompetitor
+- [ ] Vizuální porovnání s originálem
+- [ ] Penalty barvy správné
+- [ ] Gate display správný
+- [ ] Pulzující indikátor funguje
+- [ ] Animace změny plynulá
+- [ ] Departing buffer funguje
+- [ ] **Commit:** "feat: CurrentCompetitor component"
+
+---
+
+### 4.16 ResultsList - základní struktura
+- [ ] `src/components/ResultsList/ResultsList.tsx`
+- [ ] `src/components/ResultsList/ResultsList.module.css`
+- [ ] Props: `results: Result[]`, `visible: boolean`
+- [ ] Scroll container
+
+### 4.17 ResultsList - ResultRow
+- [ ] `src/components/ResultsList/ResultRow.tsx`
+- [ ] `src/components/ResultsList/ResultRow.module.css`
+- [ ] Props: `result: Result`, `isHighlighted: boolean`
+- [ ] Grid layout
+
+### 4.18 ResultsList - sloupce
+- [ ] Rank (pořadí)
+- [ ] Bib (startovní číslo)
+- [ ] Name (jméno závodníka)
+- [ ] Penalty (penalizace) - volitelný
+- [ ] Time (čas)
+- [ ] Behind (ztráta) - volitelný
+
+### 4.19 ResultsList - responzivní sloupce
+- [ ] Vertical: všechny sloupce
+- [ ] Ledwall: skrýt Penalty a/nebo Behind
+- [ ] Použít layout hook
+
+### 4.20 ResultsList - alternující barvy
+- [ ] Sudé/liché řádky
+- [ ] CSS :nth-child(even/odd)
+
+### 4.21 ResultsList - highlight styling
+- [ ] Props: `highlightBib: string | null`
+- [ ] Highlight row má jiné pozadí
+- [ ] Border nebo glow efekt
+- [ ] CSS @keyframes subtlePulse
+
+### 🔍 Revize: ResultsList základní
+- [ ] Vizuální porovnání s originálem
+- [ ] Všechny sloupce správně
+- [ ] Responzivní sloupce fungují
+- [ ] Alternující barvy
+- [ ] **Commit:** "feat: ResultsList basic"
+
+---
+
+### 4.22 ResultsList - scroll k highlight
+- [ ] Ref na highlighted row
+- [ ] Při aktivaci highlight: scrollIntoView
+- [ ] Smooth scroll animation
+- [ ] scroll-margin pro správnou pozici
+
+### 4.23 ResultsList - scroll po expiraci
+- [ ] Po expiraci highlight (5s)
+- [ ] Scroll to top
+- [ ] Smooth animation
+
+### 🔍 Revize: ResultsList scroll
+- [ ] Scroll k highlight funguje
+- [ ] Scroll po expiraci funguje
+- [ ] Smooth animace
+- [ ] **Commit:** "feat: ResultsList highlight scroll"
+
+---
+
+### 4.24 ResultsList - auto-scroll
+- [ ] ❓ Rozhodnutí: Implementovat auto-scroll teď nebo později?
+
+### Pokud auto-scroll teď:
+- [ ] `src/hooks/useAutoScroll.ts`
+- [ ] Fáze: IDLE → SCROLLING → PAUSED_AT_BOTTOM → RETURNING
+- [ ] Scroll rychlost podle layoutu
+- [ ] Pauza při dosažení konce
+- [ ] Návrat na začátek
+- [ ] Zastavit při aktivním highlight
+
+### 🔍 Revize: Auto-scroll
+- [ ] Auto-scroll funguje (pokud implementován)
+- [ ] Highlight přeruší scroll
+- [ ] Timing správný
+- [ ] **Commit:** "feat: ResultsList auto-scroll"
+
+### ❓ Rozhodnutí: Virtualizace
+- [ ] Je seznam dostatečně výkonný bez virtualizace?
+- [ ] Test s 50+ závodníky
+- [ ] Pokud ne, implementovat react-window
+
+---
+
+## Fáze 5: Integrace a styly
+
+### 5.1 App.tsx - struktura
+- [ ] ScoreboardProvider wrapper
+- [ ] DataProvider (CLIProvider) instance
+- [ ] URL parametry pro server address
+
+### 5.2 App.tsx - layout
+- [ ] ScoreboardLayout
+- [ ] EventInfo (TopBar, Title)
+- [ ] CurrentCompetitor
+- [ ] ResultsList
+- [ ] TimeDisplay
+- [ ] Footer
+
+### 5.3 Propojení s kontextem
+- [ ] Použít useScoreboard hook
+- [ ] Předat data komponentám
+- [ ] Předat visibility flags
+
+### 🔍 Revize: Základní integrace
+- [ ] Připojit k serveru
+- [ ] Data se zobrazují
+- [ ] Komponenty reagují na změny
+- [ ] **Commit:** "feat: basic app integration"
+
+---
+
+### 5.4 Connection UI - stavy
+- [ ] Loading state: "Připojování..."
+- [ ] Waiting state: "Čekání na data..."
+- [ ] Connected: normální zobrazení
+- [ ] Reconnecting: overlay s indikátorem
+
+### 5.5 Connection UI - komponenta
+- [ ] `src/components/ConnectionStatus/ConnectionStatus.tsx`
+- [ ] Zobrazit pouze při non-connected stavech
+- [ ] Overlay přes celou obrazovku
+- [ ] Spinner nebo progress
+
+### 5.6 Error handling
+- [ ] Error state zobrazení
+- [ ] Retry button (manual reconnect)
+
+### 🔍 Revize: Connection UI
+- [ ] Všechny stavy mají správné UI
+- [ ] Overlay funguje
+- [ ] **Commit:** "feat: connection status UI"
+
+---
+
+### 5.7 Visibility logika
+- [ ] Propojit visibility state s komponentami
+- [ ] displayCurrent → CurrentCompetitor
+- [ ] displayTop → ResultsList
+- [ ] displayTitle → Title
+- [ ] displayTopBar → TopBar
+- [ ] displayFooter → Footer
+- [ ] displayDayTime → TimeDisplay
+
+### 5.8 Visibility testování
+- [ ] Testovat toggle jednotlivých komponent
+- [ ] Ověřit že se správně skrývají/zobrazují
+
+### 🔍 Revize: Visibility
+- [ ] Všechny visibility flags fungují
+- [ ] **Commit:** "feat: visibility controls"
+
+---
+
+### 5.9 Barevné schéma - přenos
+- [ ] Zkopírovat barvy z originálu/prototypu
+- [ ] Organizovat v variables.css
+- [ ] Dokumentovat účel každé barvy
+
+### 5.10 Barevné schéma - aplikace
+- [ ] Aplikovat na všechny komponenty
+- [ ] Ověřit konzistenci
+
+### 5.11 Typografie - přenos
+- [ ] Font sizes z prototypu
+- [ ] Line heights
+- [ ] Font weights
+- [ ] Letter spacing (pokud potřeba)
+
+### 5.12 Typografie - aplikace
+- [ ] Aplikovat na všechny komponenty
+- [ ] Responzivní font sizes
+
+### 🔍 Revize: Barvy a typografie
+- [ ] Vizuální porovnání s originálem
+- [ ] Konzistentní styly
+- [ ] **Commit:** "feat: colors and typography"
+
+---
+
+### 5.13 Animace - pulseGlyph
+- [ ] @keyframes pulseGlyph
+- [ ] Aplikovat na indikátor ►
+
+### 5.14 Animace - subtlePulse
+- [ ] @keyframes subtlePulse
+- [ ] Aplikovat na highlighted row
+
+### 5.15 Animace - transitions
+- [ ] Visibility změny (fade in/out)
+- [ ] Competitor změny
+- [ ] Highlight aktivace/deaktivace
+
+### 5.16 Finální styling
+- [ ] Spacing a padding kontrola
+- [ ] Border radius
+- [ ] Shadows (pokud používáme)
+- [ ] Pixel-level porovnání
+
+### 5.17 Playwright vizuální testy
+- [ ] `tests/visual/vertical.spec.ts` - screenshot test pro vertical layout
+- [ ] `tests/visual/ledwall.spec.ts` - screenshot test pro ledwall layout
+- [ ] Referenční screenshoty z prototypu (`../canoe-scoreboard-v2-prototype/`)
+- [ ] Tolerance nastavení (±5px vertical, ±3px ledwall)
+
+### 🔍 Revize: Styly kompletní
+- [ ] Screenshot comparison s originálem
+- [ ] Vertical layout správně
+- [ ] Ledwall layout správně
+- [ ] Animace plynulé
+- [ ] Playwright vizuální testy prochází
+- [ ] **Commit:** "feat: complete styling"
+
+---
+
+## Fáze 6: Rozšíření (volitelné)
+
+### 6.1 OnCourseDisplay
+- [ ] ❓ Rozhodnutí: Implementovat teď?
+
+### Pokud OnCourseDisplay teď:
+- [ ] `src/components/OnCourseDisplay/OnCourseDisplay.tsx`
+- [ ] `src/components/OnCourseDisplay/OnCourseDisplay.module.css`
+- [ ] Seznam závodníků na trati (0-N)
+- [ ] Podobný layout jako CurrentCompetitor (kompaktnější)
+- [ ] Props: `competitors: OnCourseCompetitor[]`, `visible: boolean`
+- [ ] Integrace do App.tsx
+- [ ] Visibility: displayOnCourse
+
+### 🔍 Revize: OnCourseDisplay
+- [ ] Vizuální porovnání
+- [ ] Více závodníků se zobrazuje správně
+- [ ] **Commit:** "feat: OnCourseDisplay component"
+
+---
+
+### 6.2 InfoText (Marquee - aktuálně přeskočit!)
+- [X] ❓ Rozhodnutí: Teď se nebude implementovat
+
+### Pokud InfoText teď:
+- [ ] `src/components/EventInfo/InfoText.tsx`
+- [ ] `src/components/EventInfo/InfoText.module.css`
+- [ ] CSS animation pro běžící text
+- [ ] @keyframes marquee
+- [ ] Props: `text: string`, `visible: boolean`
+- [ ] Integrace do EventInfo/App
+
+### 🔍 Revize: InfoText
+- [ ] Animace plynulá
+- [ ] Text správně běží
+- [ ] **Commit:** "feat: InfoText marquee"
+
+---
+
+## Fáze 7: Testování a dokumentace
+
+### 7.1 Manuální testování - příprava
+- [ ] Použít ReplayProvider s testovací nahrávkou
+- [ ] Nebo připojit k živému serveru
+
+### 7.2 Scénář: Cold start
+- [ ] Spustit aplikaci
+- [ ] Ověřit: Loading → Waiting → Data zobrazena
+- [ ] Timeout handling
+
+### 7.3 Scénář: Závodník dojede
+- [ ] Sledovat comp zprávy
+- [ ] comp zmizí → departing buffer
+- [ ] HighlightBib přijde → highlight v Results
+- [ ] Scroll k závodníkovi
+
+### 7.4 Scénář: Rychlé změny
+- [ ] 2 závodníci dojedou < 1s po sobě
+- [ ] Oba musí dostat highlight (sekvenčně)
+- [ ] UI nezamrzne
+
+### 7.5 Scénář: Disconnect/reconnect
+- [ ] Odpojit server
+- [ ] Ověřit reconnecting overlay
+- [ ] Ověřit state reset
+- [ ] Znovu připojit
+- [ ] Ověřit fresh data
+
+### 7.6 Scénář: Prázdný závod
+- [ ] Žádné results
+- [ ] Graceful handling (prázdný seznam, ne error)
+
+### 7.7 Scénář: Highlight + OnCourse
+- [ ] Závodník v onCourse
+- [ ] Přijde HighlightBib pro něj
+- [ ] NENÍ highlighted v Results (deduplikace)
+
+### 7.8 Scénář: Highlight timeout
+- [ ] Highlight aktivní
+- [ ] Čekat 5s
+- [ ] Highlight zmizí
+- [ ] Scroll to top
+
+### 🔍 Revize: Manuální testy
+- [ ] Všechny scénáře prošly
+- [ ] Zaznamenat nalezené problémy
+- [ ] **Commit:** "test: manual testing complete"
+
+---
+
+### 7.9 Testování layoutů - Vertical
+- [ ] 1080x1920 (full HD portrait)
+- [ ] 720x1280 (HD portrait)
+- [ ] Správný počet řádků
+- [ ] Správné proporce
+
+### 7.10 Testování layoutů - Ledwall
+- [ ] 768x384 (typický ledwall)
+- [ ] 1920x480 (široký ledwall)
+- [ ] Footer skrytý
+- [ ] Správný počet řádků
+
+### 7.11 Testování layoutů - resize
+- [ ] DevTools responsive mode
+- [ ] Resize okna
+- [ ] Layout se přepíná správně
+
+### 7.12 Testování - hardware
+- [ ] Skutečný hardware (pokud dostupný)
+- [ ] Ověřit výkon
+
+### 🔍 Revize: Layout testy
+- [ ] Všechny layouty fungují
+- [ ] **Commit:** "test: layout testing complete"
+
+---
+
+### 7.13 Unit testy
+- [ ] Utility funkce (formatTime, formatName)
+- [ ] parseGates
+- [ ] detectFinish
+- [ ] Highlight expiration logika
+
+### 7.14 Integration testy
+- [ ] CLIProvider connect/disconnect
+- [ ] Message parsing
+- [ ] ReplayProvider playback
+
+### 🔍 Revize: Automatické testy
+- [ ] Testy prošly
+- [ ] **Commit:** "test: unit and integration tests"
+
+---
+
+### 7.15 Dokumentace - README
+- [ ] `README.md` v projektu
+- [ ] Jak nainstalovat
+- [ ] Jak spustit (development)
+- [ ] Jak buildovat (production)
+
+### 7.16 Dokumentace - konfigurace
+- [ ] URL parametry (?type, ?host, ...)
+- [ ] Environment variables (pokud nějaké)
+
+### 7.17 Dokumentace - architektura
+- [ ] Stručný přehled struktury
+- [ ] Diagram komponent
+- [ ] DataProvider pattern
+
+### 🔍 Finální revize
+- [ ] Všechny testy prošly
+- [ ] Dokumentace kompletní
+- [ ] Kód je čistý a čitelný
+- [ ] Žádné console.log v produkčním kódu
+- [ ] **Commit:** "docs: README and final cleanup"
+- [ ] **Tag:** v2.0.0-alpha
+
+---
+
+## Post-implementace
+
+### Retrospektiva
+- [ ] Co fungovalo dobře?
+- [ ] Co bylo složitější než očekáváno?
+- [ ] Co by šlo udělat lépe příště?
+
+### Aktualizace dokumentace
+- [ ] Aktualizovat `08-plan-reimplementace.md` s poučeními
+- [ ] Zaznamenat rozdíly oproti plánu
+
+### Další kroky (budoucnost)
+- [ ] C123Provider - přímé připojení bez CLI
+- [ ] Produkční nasazení
+- [ ] Performance optimalizace (pokud potřeba)
+- [ ] Cache BR1 výsledků pro dvě jízdy
+
+---
+
+## Poznámky a problémy
+
+> Zde zapisovat problémy a poznámky během implementace
+
+### Problémy
+<!--
+- [ ] Problém: ...
+  - Řešení: ...
+-->
+
+### Poznámky
+<!--
+- ...
+-->
+
+### Změny plánu
+<!--
+- Původně: ...
+- Změněno na: ...
+- Důvod: ...
+-->

@@ -1,0 +1,62 @@
+/* CSS Custom Properties - Canoe Scoreboard v2 */
+
+:root {
+  /* Colors - Background */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
+
+  /* Colors - Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b0b0b0;
+  --color-text-muted: #666666;
+
+  /* Colors - Accent */
+  --color-accent: #00aaff;
+  --color-highlight: #ffcc00;
+
+  /* Colors - Penalties */
+  --color-penalty-touch: #ff9900;  /* 2s penalty */
+  --color-penalty-miss: #ff3333;   /* 50s penalty */
+  --color-penalty-clear: #33cc33;  /* 0 penalty */
+
+  /* Colors - Status */
+  --color-success: #33cc33;
+  --color-warning: #ff9900;
+  --color-error: #ff3333;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Border radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  /* Typography */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+  --font-size-3xl: 48px;
+
+  /* Layout - defaults, will be overridden by useLayout hook */
+  --row-height: 48px;
+  --visible-rows: 10;
+  --header-height: 80px;
+  --footer-height: 60px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+}
