@@ -1029,5 +1029,89 @@
 1. **Architektura je výborná** - jasné oddělení concerns, TypeScript strict mode
 2. **Hooks jsou sofistikované** - timestamp-based expiration, RAF pro smooth updates
 3. **CSS variables** jsou dobře organizované, podporují responsive design
-4. **ReplayProvider** je funkční pro vývoj, ale parseResults() je TODO
+4. **ReplayProvider** je funkční pro vývoj, parseResults() implementován
 5. **Playwright config** je připraven, ale žádné testy nejsou napsány
+
+---
+
+## Review 2025-12-28 (v0.2): Detailní analýza a další kroky
+
+> **Git tag:** `review-ready-v0.2`
+> **Stav:** P1 kritické nedostatky opraveny. Data layer kompletní. UI komponenty čekají na implementaci.
+
+### Celkové hodnocení: 6.4/10
+
+| Kategorie | Score | Poznámka |
+|-----------|-------|---------|
+| Kvalita kódu | 7/10 | Dobrá, ale ESLint chyby k opravě |
+| Architektura | 9/10 | Výborně navržená |
+| TypeScript | 9/10 | Silně typované |
+| Testování | 8/10 | 132 testů, ale chybí testy komponent |
+| Styling | 7/10 | CSS variables dobré, inline styly v App/DebugView |
+| Komponenty | 3/10 | Jen skeleton - Footer, TimeDisplay, Layout |
+| Performance | 6/10 | RAF v hooks způsobuje zbytečné re-renders |
+
+### Silné stránky
+
+1. **DataProvider abstrakce** - čistý interface, ReplayProvider plně funkční
+2. **ScoreboardContext** - kompletní state management (highlight, departing, reconnect)
+3. **Custom hooks** - useLayout, useHighlight, useDeparting fungují
+4. **Utility funkce** - formatTime, formatName s dobrým test pokrytím
+5. **TypeScript strict mode** - silné typování skrz celý projekt
+
+### Kritické problémy k opravě
+
+#### ESLint violations (4 chyby)
+
+1. **ScoreboardContext.tsx:324** - `setState v efektu`
+   - Synchronní setState způsobuje kaskádující rendery
+   - Oprava: Použít ref nebo oddělený stav
+
+2. **useHighlight.ts / useDeparting.ts** - `Date.now() v useState`
+   - Impure volání během renderu
+   - Oprava: `useState(() => Date.now())` lazy init
+
+3. **ScoreboardContext.tsx:371** - `export s konstantami`
+   - Problém s Fast Refresh
+   - Oprava: Oddělené soubory pro konstanty
+
+#### DRY porušení
+
+- `useHighlight` a `useDeparting` mají 95% identickou logiku
+- Doporučení: Vytvořit `useTimestamp(timestamp, duration)` shared hook
+
+#### Performance
+
+- requestAnimationFrame v hooks způsobuje 60 re-renders/sec
+- Doporučení: Debounce nebo callback ref pattern
+
+### Další kroky implementace
+
+#### Fáze 1: Opravy (priorita HIGH)
+- [ ] Opravit ESLint chyby v ScoreboardContext, useHighlight, useDeparting
+- [ ] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
+- [ ] Konvertovat inline styly v App.tsx a DebugView.tsx na CSS moduly
+- [ ] Opravit TimeDisplay.css (--color-accent-yellow není definován)
+
+#### Fáze 2: UI komponenty (priorita HIGH)
+- [ ] TopBar komponenta (4.6) - název závodu, logo, partners
+- [ ] Title komponenta (4.7) - event title s visibility
+- [ ] CurrentCompetitor komponenta (4.8-4.15) - komplexní s gates, penalties
+- [ ] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight scroll
+
+#### Fáze 3: Testování (priorita MEDIUM)
+- [ ] Přidat testy pro ScoreboardContext (highlight dedup, departing timeout)
+- [ ] Přidat component testy (React Testing Library)
+- [ ] Přidat E2E testy v Playwright (tests/ je prázdný)
+
+#### Fáze 4: Production ready (priorita MEDIUM)
+- [ ] CLIProvider (WebSocket) pro připojení k živému serveru
+- [ ] Error boundary komponenty
+- [ ] Loading a reconnecting overlays
+
+### Poznámky pro vývojáře
+
+- **ReplayProvider** je primární zdroj dat během vývoje
+- **eslint.config.js** existuje (flat config format, ne .eslintrc)
+- Testovací nahrávka: `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`
+- Layouty: vertical (1080×1920), ledwall (768×384)
