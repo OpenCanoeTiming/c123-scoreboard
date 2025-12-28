@@ -1071,7 +1071,7 @@ TypeScript: ✅ Strict mode
   - Test manual pause/resume/reset
   - Test ledwall speed multiplier (0.7x)
 
-- [ ] `src/hooks/__tests__/useLayout.test.ts`
+- [x] `src/hooks/__tests__/useLayout.test.ts`
   - Test URL parameter detection (?type=vertical|ledwall)
   - Test aspect ratio auto-detection
   - Test row height calculations
