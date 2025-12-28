@@ -1,12 +1,18 @@
 .timeDisplay {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-lg);
-  font-weight: 400;
-  color: var(--color-text-primary);
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--color-accent-yellow, #e6b566);
   letter-spacing: 0.05em;
   text-align: right;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
   /* Ensure consistent digit width with tabular numbers */
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+}
+
+/* Ledwall layout - specific positioning and sizing */
+.ledwall {
+  font-size: 32px;
 }

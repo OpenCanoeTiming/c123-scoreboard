@@ -463,7 +463,7 @@
 - [x] `src/components/TimeDisplay/TimeDisplay.module.css`
 - [x] Props: `time: string`, `visible: boolean`
 - [x] JetBrains Mono font
-- [ ] Pozice podle layoutu
+- [x] Pozice podle layoutu
 
 ### 🔍 Revize: TimeDisplay
 - [ ] Vizuální porovnání s originálem
