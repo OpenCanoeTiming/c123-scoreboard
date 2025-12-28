@@ -36,7 +36,7 @@ export function Title({ title, visible = true }: TitleProps) {
   return (
     <div
       className={`${styles.title} ${layoutClass}`.trim()}
-      data-testid="event-title"
+      data-testid="title"
       data-layout-mode={layoutMode}
     >
       <span className={styles.text}>{title}</span>

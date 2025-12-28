@@ -48,7 +48,7 @@ export function TopBar({
   return (
     <div
       className={`${styles.topBar} ${layoutClass}`.trim()}
-      data-testid="top-bar"
+      data-testid="topbar"
       data-layout-mode={layoutMode}
     >
       <div className={styles.left}>

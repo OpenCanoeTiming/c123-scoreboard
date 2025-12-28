@@ -92,14 +92,14 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   // Empty state
   if (results.length === 0) {
     return (
-      <div className={containerClasses}>
+      <div className={containerClasses} data-testid="results-list">
         <div className={styles.empty}>Zatím žádné výsledky</div>
       </div>
     )
   }
 
   return (
-    <div className={containerClasses} ref={containerRef}>
+    <div className={containerClasses} ref={containerRef} data-testid="results-list">
       {/* Header row */}
       <div className={`${styles.row} ${styles.header}`}>
         <div className={styles.rank}>#</div>

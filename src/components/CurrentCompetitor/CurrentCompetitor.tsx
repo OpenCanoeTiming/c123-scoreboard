@@ -110,7 +110,7 @@ export function CurrentCompetitor({
   const ttbClass = getTTBClass(competitor.ttbDiff)
 
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} data-testid="oncourse">
       {/* Main info row: bib, name, club, time */}
       <div className={styles.mainRow}>
         <div className={styles.bib}>{competitor.bib}</div>

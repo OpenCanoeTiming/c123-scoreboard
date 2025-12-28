@@ -25,7 +25,7 @@ export function Footer({ visible = true }: FooterProps) {
   }
 
   return (
-    <div className={styles.footer}>
+    <div className={styles.footer} data-testid="footer">
       <div className={styles.sponsorBanner}>
         {/* Sponsor logo/text placeholder */}
         <span className={styles.sponsorText}>Sponsor Banner</span>

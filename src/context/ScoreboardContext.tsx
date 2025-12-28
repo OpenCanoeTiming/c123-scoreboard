@@ -228,11 +228,12 @@ export function ScoreboardProvider({
 
   /**
    * Handle event info (from title/infoText/dayTime messages)
+   * Note: Only update non-empty values to allow partial updates
    */
   const handleEventInfo = useCallback((info: EventInfoData) => {
-    setTitle(info.title)
-    setInfoText(info.infoText)
-    setDayTime(info.dayTime)
+    if (info.title) setTitle(info.title)
+    if (info.infoText) setInfoText(info.infoText)
+    if (info.dayTime) setDayTime(info.dayTime)
   }, [])
 
   /**

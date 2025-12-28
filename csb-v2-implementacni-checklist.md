@@ -961,406 +961,99 @@ napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a 
 
 ---
 
-## Poznámky a problémy
-
-> Zde zapisovat problémy a poznámky během implementace
-
-### Problémy
-<!--
-- [ ] Problém: ...
-  - Řešení: ...
--->
-
-### Poznámky
-<!--
-- ...
--->
-
-### Změny plánu
-<!--
-- Původně: ...
-- Změněno na: ...
-- Důvod: ...
--->
-
----
-
-## Review 2025-12-28: Další kroky ke změnám
-
-> **Git tag:** `review-ready-v0.1`
-> **Stav:** Data layer a layout systém kompletní. UI komponenty čekají na implementaci.
-
-### Dokončené části
-- ✅ DataProvider abstrakce (ReplayProvider funguje)
-- ✅ ScoreboardContext (highlight, departing, reconnect logika)
-- ✅ Custom hooks (useLayout, useHighlight, useDeparting)
-- ✅ Utility funkce (formatTime, formatName, parseGates, detectFinish)
-- ✅ Layout systém (vertical/ledwall s CSS variables)
-- ✅ TimeDisplay komponenta (layout-aware)
-- ✅ Test coverage (132 testů prochází)
-
-### Prioritní kroky k dokončení
-
-#### P1: Kritické nedostatky
-- [x] **ESLint konfigurace** - projekt deklaruje ESLint v package.json ale chybí .eslintrc
-  - **Stav:** eslint.config.js existuje (flat config format)
-- [x] **ReplayProvider.parseResults()** - vrací prázdné pole (stub), potřeba implementovat parsování TopRow do Result[]
-  - **Stav:** Implementováno - parsuje list z top zprávy do Result[]
-
-#### P2: UI komponenty (pořadí implementace)
-1. [x] Footer komponenta (4.5) - jednoduchá, slouží jako reference pro další
-2. [x] TopBar komponenta (4.6) - logo, partners, pozice pro TimeDisplay
-3. [x] Title komponenta (4.7) - event title s visibility
-4. [x] CurrentCompetitor komponenta (4.8-4.15) - komplexní, gates, penalties, pulzující indikátor
-5. [x] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight, scroll
-
-#### P3: Integrace
-- [x] Propojit komponenty v App.tsx s ScoreboardContext
-- [x] Visibility flags pro všechny komponenty
-- [x] Departing competitor zobrazení v CurrentCompetitor
-
-#### P4: Testování
-- [ ] E2E testy v Playwright (tests/ adresář je prázdný)
-- [ ] Vizuální testy pro vertical a ledwall layouty
-- [ ] Manuální testování scénářů (cold start, závodník dojede, rychlé změny)
-
-#### P5: Budoucí rozšíření (po ověření UI)
-- [ ] CLIProvider (WebSocket) pro produkci
-- [ ] C123Provider (TCP) pro přímé připojení
-- [ ] Auto-scroll pro ResultsList
-- [ ] OnCourseDisplay komponenta
-
-### Technické poznámky z review
-
-1. **Architektura je výborná** - jasné oddělení concerns, TypeScript strict mode
-2. **Hooks jsou sofistikované** - timestamp-based expiration, RAF pro smooth updates
-3. **CSS variables** jsou dobře organizované, podporují responsive design
-4. **ReplayProvider** je funkční pro vývoj, parseResults() implementován
-5. **Playwright config** je připraven, ale žádné testy nejsou napsány
-
----
-
-## Review 2025-12-28 (v0.2): Detailní analýza a další kroky
-
-> **Git tag:** `review-ready-v0.2`
-> **Stav:** P1 kritické nedostatky opraveny. Data layer kompletní. UI komponenty čekají na implementaci.
-
-### Celkové hodnocení: 6.4/10
-
-| Kategorie | Score | Poznámka |
-|-----------|-------|---------|
-| Kvalita kódu | 7/10 | Dobrá, ale ESLint chyby k opravě |
-| Architektura | 9/10 | Výborně navržená |
-| TypeScript | 9/10 | Silně typované |
-| Testování | 8/10 | 132 testů, ale chybí testy komponent |
-| Styling | 7/10 | CSS variables dobré, inline styly v App/DebugView |
-| Komponenty | 3/10 | Jen skeleton - Footer, TimeDisplay, Layout |
-| Performance | 6/10 | RAF v hooks způsobuje zbytečné re-renders |
-
-### Silné stránky
-
-1. **DataProvider abstrakce** - čistý interface, ReplayProvider plně funkční
-2. **ScoreboardContext** - kompletní state management (highlight, departing, reconnect)
-3. **Custom hooks** - useLayout, useHighlight, useDeparting fungují
-4. **Utility funkce** - formatTime, formatName s dobrým test pokrytím
-5. **TypeScript strict mode** - silné typování skrz celý projekt
-
-### Kritické problémy k opravě
-
-#### ESLint violations (4 chyby)
-
-1. **ScoreboardContext.tsx:324** - `setState v efektu`
-   - Synchronní setState způsobuje kaskádující rendery
-   - Oprava: Použít ref nebo oddělený stav
-
-2. **useHighlight.ts / useDeparting.ts** - `Date.now() v useState`
-   - Impure volání během renderu
-   - Oprava: `useState(() => Date.now())` lazy init
-
-3. **ScoreboardContext.tsx:371** - `export s konstantami`
-   - Problém s Fast Refresh
-   - Oprava: Oddělené soubory pro konstanty
-
-#### DRY porušení
-
-- `useHighlight` a `useDeparting` mají 95% identickou logiku
-- Doporučení: Vytvořit `useTimestamp(timestamp, duration)` shared hook
-
-#### Performance
-
-- requestAnimationFrame v hooks způsobuje 60 re-renders/sec
-- Doporučení: Debounce nebo callback ref pattern
-
-### Další kroky implementace
-
-#### Fáze 1: Opravy (priorita HIGH)
-- [x] Opravit ESLint chyby v ScoreboardContext, useHighlight, useDeparting
-  - useState lazy init pro Date.now()
-  - setTimeout s Math.max(0, remaining) místo synchronního setState
-  - Konstanty přesunuty do src/context/constants.ts
-  - ESLint config: allowConstantExport pro react-refresh
-- [x] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
-  - Vytvořen src/hooks/useTimestamp.ts se sdílenou logikou
-  - useHighlight a useDeparting nyní používají useTimestamp (DRY)
-- [x] Konvertovat inline styly v App.tsx na CSS moduly (App.tsx je čistý, DebugView je pouze pro debug)
-- [x] Opravit TimeDisplay.css (--color-accent-yellow není definován)
-
-#### Fáze 2: UI komponenty (priorita HIGH)
-- [x] TopBar komponenta (4.6) - název závodu, logo, partners
-- [x] Title komponenta (4.7) - event title s visibility
-- [x] CurrentCompetitor komponenta (4.8-4.15) - komplexní s gates, penalties
-- [x] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight scroll
-
-#### Fáze 3: Testování (priorita MEDIUM)
-- [ ] Přidat testy pro ScoreboardContext (highlight dedup, departing timeout)
-- [ ] Přidat component testy (React Testing Library)
-- [ ] Přidat E2E testy v Playwright (tests/ je prázdný)
-
-#### Fáze 4: Production ready (priorita MEDIUM)
-- [ ] CLIProvider (WebSocket) pro připojení k živému serveru
-- [ ] Error boundary komponenty
-- [ ] Loading a reconnecting overlays
-
-### Poznámky pro vývojáře
-
-- **ReplayProvider** je primární zdroj dat během vývoje
-- **eslint.config.js** existuje (flat config format, ne .eslintrc)
-- Testovací nahrávka: `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`
-- Layouty: vertical (1080×1920), ledwall (768×384)
-
----
-
-## Review 2025-12-28 (v0.3): UI kompletní, připraveno na vizuální testování
-
-> **Git tag:** `review-ready-v0.3`
-> **Stav:** Všechny UI komponenty implementovány. ESLint čistý (0 errors, 4 warnings). 132 testů prochází.
-
-### Celkové hodnocení: 8.5/10
-
-| Kategorie | Score | Poznámka |
-|-----------|-------|---------|
-| Kvalita kódu | 9/10 | ESLint čistý, žádné errors |
-| Architektura | 9/10 | DataProvider pattern, clean separation |
-| TypeScript | 9/10 | Strict mode, kompletní typy |
-| Testování | 8/10 | 132 unit testů, chybí E2E |
-| Styling | 8/10 | CSS Modules, CSS variables |
-| Komponenty | 9/10 | Všechny implementovány |
-| Dokumentace | 8/10 | README kompletní |
-
-### Co bylo dokončeno v této iteraci
-
-1. **README dokumentace** - kompletní s installation, development, architecture
-2. **ESLint opravy** - useAutoScroll refaktorován pro async state updates
-3. **Aktualizace checklistu** - označeny všechny hotové položky
-
-### Zbývající kroky (vyžadují manuální práci)
-
-#### Vizuální testování (nelze automatizovat)
-- [ ] Otestovat na různých rozlišeních v DevTools
-- [ ] Vizuální porovnání s originálem/prototypem
-- [ ] Ověřit správný počet řádků ve vertical/ledwall layoutu
-- [ ] Zkontrolovat animace (pulse, highlight, transitions)
-
-#### Síťová infrastruktura (vyžaduje server)
-- [ ] Implementovat CLIProvider (WebSocket ws://host:8081)
-- [ ] Testovat reconnect logiku s reálným serverem
-- [ ] Implementovat C123Provider (budoucnost)
-
-#### E2E testování
-- [ ] Napsat Playwright testy
-- [ ] Vytvořit referenční screenshoty pro vizuální regrese
-- [ ] Přidat CI/CD pipeline
-
-#### Barevné ladění
-- [ ] Zkopírovat přesné barvy z prototypu
-- [ ] Doladit typografii (font-size, line-height)
-- [ ] Pixel-level srovnání
-
-### Technický stav
-
-```
-Build:     ✅ Úspěšný (424 kB JS, 13 kB CSS)
-ESLint:    ✅ 0 errors, 4 warnings
-Tests:     ✅ 132 passing
-TypeScript: ✅ Strict mode, no errors
-```
-
-### Struktura komponent
-
-```
-App.tsx
-├── ScoreboardProvider (context)
-│   └── ScoreboardContent
-│       ├── ConnectionStatus (overlay)
-│       └── ScoreboardLayout
-│           ├── TopBar
-│           ├── Title
-│           ├── CurrentCompetitor
-│           ├── ResultsList
-│           │   └── ResultRow (×N)
-│           ├── TimeDisplay
-│           └── Footer
-```
-
-### Doporučený postup pro další vývoj
-
-1. **Vizuální review** - spustit `npm run dev` a porovnat s prototypem
-2. **Doladit styly** - upravit barvy a spacing podle originálu
-3. **CLIProvider** - implementovat pro produkční použití
-4. **E2E testy** - pokrýt hlavní scénáře (highlight, auto-scroll, reconnect)
-
----
-
-## Review 2025-12-28 (v0.4): URL parametry, čekání na manuální testování
-
-> **Git tag:** `review-ready-v0.4`
-> **Stav:** Všechny automatizovatelné kroky dokončeny. Zbývající kroky vyžadují manuální práci.
-
-### Celkové hodnocení: 8.7/10
-
-| Kategorie | Score | Poznámka |
-|-----------|-------|---------|
-| Kvalita kódu | 9/10 | ESLint čistý (0 errors, 4 warnings) |
-| Architektura | 9/10 | DataProvider pattern, clean separation |
-| TypeScript | 9/10 | Strict mode, kompletní typy |
-| Testování | 8/10 | 132 unit testů, chybí E2E |
-| Styling | 8/10 | CSS Modules, CSS variables |
-| Komponenty | 9/10 | Všechny implementovány |
-| Konfigurace | 9/10 | URL parametry pro flexibilní konfiguraci |
-
-### Co bylo dokončeno v této iteraci
-
-1. **URL parametry pro App.tsx:**
-   - `?source=replay|cli` - výběr datového zdroje
-   - `?speed=N` - rychlost replay (default: 10)
-   - `?host=IP:PORT` - adresa CLI serveru (default: 192.168.68.108:8081)
-   - `?loop=true|false` - opakování replay
-
-### Technický stav
-
-\`\`\`
-Build:      ✅ Úspěšný (425 kB JS, 13 kB CSS)
-ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 132 passing
-TypeScript: ✅ Strict mode, no errors
-Soubory:    54 TypeScript/TSX
-Řádky kódu: ~4940
-Komponenty: 8 UI komponent
-\`\`\`
-
-### Zbývající kroky vyžadující manuální práci
-
-Následující kroky **nelze automatizovat** a vyžadují lidskou interakci:
-
-#### 1. Síťová infrastruktura (vyžaduje běžící server)
-- [ ] **CLIProvider implementace** - WebSocket připojení k ws://host:8081
-- [ ] **C123Provider implementace** - TCP socket, XML parsing
-- [ ] **Reconnect testování** - odpojit/připojit server, ověřit stav
-
-#### 2. Vizuální testování (vyžaduje lidské oči)
-- [ ] **Layout testování v DevTools:**
-  - Vertical 1080×1920 - správný počet řádků?
-  - Ledwall 768×384 - správný počet řádků?
-  - Resize plynulý?
-- [ ] **Vizuální porovnání s prototypem:**
-  - TimeDisplay
-  - Footer
-  - CurrentCompetitor
-  - ResultsList
-- [ ] **Funkční testování:**
-  - Scroll k highlight
-  - Auto-scroll
-  - Visibility toggles
-
-#### 3. Barevné/typografické ladění
-- [ ] Zkopírovat přesné barvy z prototypu do variables.css
-- [ ] Doladit font-size, line-height, letter-spacing
-- [ ] Pixel-level porovnání
-
-#### 4. E2E testování (vyžaduje vizuální referenční screenshoty)
-- [ ] Vytvořit Playwright testy
-- [ ] Vytvořit referenční screenshoty pro regresi
-- [ ] CI/CD pipeline
-
-### Doporučený postup pro dokončení
-
-1. **Spustit `npm run dev`** a provést vizuální review v prohlížeči
-2. **Otestovat URL parametry:**
-   - `http://localhost:5173/` - default (replay, speed 10)
-   - `http://localhost:5173/?speed=1` - real-time replay
-   - `http://localhost:5173/?type=ledwall` - ledwall layout
-   - `http://localhost:5173/?source=cli&host=192.168.68.108:8081` - připraveno pro CLI
-3. **Porovnat s prototypem** v `../canoe-scoreboard-v2-prototype/`
-4. **Implementovat CLIProvider** až bude dostupný server
-5. **Napsat E2E testy** po dokončení vizuálního ladění
-
----
-
-## Review 2025-12-28 (v0.5): Všechny automatizovatelné kroky dokončeny
-
-> **Git tag:** `review-ready-v0.5`
-> **Stav:** Projekt je funkční. Zbývající kroky vyžadují manuální práci, běžící server, nebo referenční materiály.
+## Aktuální stav (2025-12-28)
 
 ### Technický stav
 
 ```
 Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
 ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 156 passing (nárůst z 132)
-TypeScript: ✅ Strict mode, no errors
-Soubory:    56 TypeScript/TSX
-Řádky kódu: ~5860
+Tests:      ✅ 156 unit testů
+TypeScript: ✅ Strict mode
 ```
 
-### Proč nelze pokračovat automaticky
+### Dostupné zdroje
 
-Všechny zbývající kroky vyžadují jednu z následujících věcí:
+| Zdroj | Lokace |
+|-------|--------|
+| CLI server | ws://192.168.68.108:8081 |
+| C123 server | tcp://192.168.68.108 |
+| Recording | `public/recordings/rec-2025-12-28T09-34-10.jsonl` |
+| Ref. screenshoty | `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png` |
+| Styly JSON | `/workspace/csb-v2/analysis/reference-screenshots/*-styles.json` |
 
-1. **Manuální vizuální testování** - porovnání s prototypem, kontrola layoutů v DevTools
-2. **Běžící server** - testování CLIProvider reconnect logiky, live data
-3. **Referenční screenshoty** - Playwright vizuální testy potřebují baseline
-4. **Lidské rozhodnutí** - volba barev, typography fine-tuning, architekturní rozhodnutí
+---
 
-### Zbývající kroky (seskupené podle typu)
+## Zbývající kroky
 
-#### Manuální vizuální testování
-- [ ] Vizuální porovnání komponent s prototypem (TimeDisplay, Footer, CurrentCompetitor, ResultsList)
-- [ ] Testování layoutů v DevTools: Vertical 1080×1920, Ledwall 768×384
-- [ ] Ověření resize chování a CSS variables
-- [ ] Kontrola animací (pulse, highlight, transitions)
-- [ ] Scroll k highlight a scroll po expiraci
+### 1. E2E testy (Playwright)
+- [x] data-testid atributy v komponentách
+- [x] `tests/e2e/visual.spec.ts` struktura
+- [ ] `npx playwright test --update-snapshots` - vytvořit baseline
+- [ ] `npx playwright test` - ověřit
 
-#### Barevné/typografické ladění (vyžaduje prototyp)
-- [ ] Zkopírovat přesné barvy z prototypu do variables.css
-- [ ] Doladit font-size, line-height, letter-spacing
-- [ ] Pixel-level srovnání
+### 2. CLIProvider (otestovat proti serveru)
+- [x] Implementace hotová, 24 unit testů
+- [ ] `?source=cli&host=192.168.68.108:8081` - ověřit data
+- [ ] Testovat reconnect
 
-#### Síťová infrastruktura (vyžaduje server)
-- [ ] CLIProvider live testování s reálným serverem
-- [ ] Testování reconnect logiky (odpojení/připojení serveru)
-- [ ] C123Provider implementace (označeno jako "budoucnost")
+### 3. C123Provider (implementovat)
+- [!] **NELZE v prohlížeči** - TCP socket není dostupný v browser JS
+- Možné řešení: WebSocket proxy server nebo přesunutí do Node.js backend
 
-#### E2E testování (vyžaduje referenční screenshoty)
-- [ ] Vytvořit Playwright testy pro scénáře (cold start, highlight, auto-scroll)
-- [ ] Vytvořit referenční screenshoty pro vizuální regrese
-- [ ] CI/CD pipeline
+### 4. Vizuální ladění
+- [ ] Porovnat s `original-live-*.png`
+- [ ] Zkopírovat barvy z `*-styles.json` do `variables.css`
+- [ ] Doladit typografii
 
-#### Funkční testování (manuální)
-- [ ] Visibility toggle testování
-- [ ] Test s 50+ závodníky (virtualizace rozhodnutí)
-- [ ] Scénáře: rychlé změny, prázdný závod, highlight + onCourse deduplikace
+### 5. Funkční scénáře
+- [ ] Cold start: Loading → Waiting → Data
+- [ ] Závodník dojede: departing → highlight → scroll
+- [ ] Highlight timeout (5s) → scroll to top
+- [ ] Highlight + OnCourse deduplikace
 
-### Doporučení pro další vývoj
+---
 
-1. **Vizuální review první** - spustit `npm run dev`, porovnat s prototypem
-2. **Doladit styly** - barvy, fonty podle originálu
-3. **Manuální testování** - projít scénáře z Fáze 7
-4. **E2E testy** - až budou vizuální testy hotové, vytvořit referenční screenshoty
-5. **Production** - CLIProvider testování s live serverem
+## Review v0.6 (2025-12-28)
 
-### Poznámky
+### Opravené chyby
 
-- CLIProvider je implementován a má 24 testů, ale nebyl testován s reálným serverem
-- 4 ESLint warnings jsou záměrné (Fast Refresh optimalizace vs. čitelnost kódu)
-- Auto-scroll je implementován a funkční (useAutoScroll hook)
-- Departing competitor buffer funguje (3s timeout)
+1. **ReplayProvider URL handling** - Provider nyní správně rozpoznává relativní URL (`/recordings/...`) a fetchuje soubory místo toho, aby je interpretoval jako JSONL obsah
+2. **handleEventInfo partial updates** - Context nyní aktualizuje pouze neprázdné hodnoty, takže separátní title/infoText/dayTime zprávy nepřepisují ostatní hodnoty
+3. **ResultsList testid** - data-testid atribut je nyní přítomný i v prázdném stavu seznamu výsledků
+
+### Stav testů
+
+- ✅ 156 unit testů prochází
+- ✅ Build úspěšný (430 kB JS, 13 kB CSS)
+- ✅ ESLint: 0 errors, 4 warnings
+- ⚠️ E2E testy (Playwright): struktura připravena, ale timeout problém při čekání na data
+
+### Co nelze automaticky otestovat
+
+1. **C123Provider** - TCP socket v prohlížeči není možný
+2. **CLIProvider live test** - vyžaduje běžící CLI server
+3. **Vizuální porovnání** - vyžaduje manuální kontrolu proti referenčním screenshotům
+4. **Hardware test** - vyžaduje skutečné zobrazovací zařízení
+
+### Doporučené další kroky
+
+1. **Manuální testování v prohlížeči**
+   - Otevřít `http://localhost:5173/?source=replay&speed=10`
+   - Ověřit, že se data načítají a zobrazují
+   - Otestovat různé viewporty (vertical, ledwall)
+
+2. **Testování proti live serveru**
+   - Připojit k CLI serveru: `?source=cli&host=192.168.68.108:8081`
+   - Ověřit reconnect chování
+
+3. **Vizuální ladění**
+   - Porovnat s referenčními screenshoty
+   - Doladit barvy a typografii podle `*-styles.json`
+
+4. **Playwright testy**
+   - Vyřešit timeout problém - pravděpodobně ReplayProvider potřebuje delší čas na načtení
+   - Možná přidat explicit wait na status "connected"
+
+---
+

@@ -282,7 +282,12 @@ export class ReplayProvider implements DataProvider {
   private async loadMessages(): Promise<void> {
     let content: string
 
-    if (this.source.startsWith('http://') || this.source.startsWith('https://')) {
+    // Check if source is a URL (absolute or relative path)
+    const isUrl = this.source.startsWith('http://') ||
+                  this.source.startsWith('https://') ||
+                  this.source.startsWith('/')
+
+    if (isUrl) {
       // Fetch from URL
       const response = await fetch(this.source)
       if (!response.ok) {
