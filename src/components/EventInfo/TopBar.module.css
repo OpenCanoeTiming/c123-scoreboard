@@ -1,0 +1,86 @@
+/* TopBar - Logo and partners at top of scoreboard */
+
+.topBar {
+  position: relative;
+  width: 100%;
+  height: var(--header-height, 100px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-lg);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+/* Left section - Event logo */
+.left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Right section - Partner/sponsor logo */
+.right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Main event logo */
+.logo {
+  max-height: 80px;
+  max-width: 120px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Partner/sponsor logo */
+.partnerLogo {
+  max-height: 70px;
+  max-width: 100px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Placeholder for missing logos */
+.logoPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 50px;
+  padding: 0 var(--spacing-sm);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   LEDWALL LAYOUT
+   ============================================ */
+
+.ledwall {
+  padding: 0 var(--spacing-md);
+}
+
+.ledwall .logo {
+  max-height: 55px;
+  max-width: 100px;
+}
+
+.ledwall .partnerLogo {
+  max-height: 45px;
+  max-width: 80px;
+}
+
+.ledwall .logoPlaceholder {
+  min-width: 60px;
+  height: 40px;
+  font-size: var(--font-size-xs);
+}

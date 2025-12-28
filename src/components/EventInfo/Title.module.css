@@ -1,0 +1,36 @@
+/* Title - Event/race title component */
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  box-sizing: border-box;
+}
+
+.text {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: center;
+  line-height: 1.2;
+  /* Handle long titles */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ============================================
+   LEDWALL LAYOUT
+   ============================================ */
+
+.ledwall {
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+.ledwall .text {
+  font-size: var(--font-size-lg);
+}

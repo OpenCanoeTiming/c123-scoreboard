@@ -2,3 +2,4 @@
 export { ScoreboardLayout } from './Layout'
 export { Footer } from './Footer'
 export { TimeDisplay } from './TimeDisplay'
+export { TopBar, Title } from './EventInfo'

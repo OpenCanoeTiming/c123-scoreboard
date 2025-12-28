@@ -487,23 +487,23 @@
 ---
 
 ### 4.6 EventInfo - TopBar
-- [ ] `src/components/EventInfo/TopBar.tsx`
-- [ ] `src/components/EventInfo/TopBar.module.css`
-- [ ] Logo vlevo
-- [ ] Partners/sponsors vpravo
-- [ ] Props: `visible: boolean`
+- [x] `src/components/EventInfo/TopBar.tsx`
+- [x] `src/components/EventInfo/TopBar.module.css`
+- [x] Logo vlevo
+- [x] Partners/sponsors vpravo
+- [x] Props: `visible: boolean`
 
 ### 4.7 EventInfo - Title
-- [ ] `src/components/EventInfo/Title.tsx`
-- [ ] `src/components/EventInfo/Title.module.css`
-- [ ] Props: `title: string`, `visible: boolean`
-- [ ] Pozice podle layoutu
+- [x] `src/components/EventInfo/Title.tsx`
+- [x] `src/components/EventInfo/Title.module.css`
+- [x] Props: `title: string`, `visible: boolean`
+- [x] Pozice podle layoutu
 
 ### 🔍 Revize: EventInfo
-- [ ] TopBar vizuálně správně
-- [ ] Title správně
-- [ ] Visibility funguje
-- [ ] **Commit:** "feat: EventInfo components"
+- [x] TopBar vizuálně správně
+- [x] Title správně
+- [x] Visibility funguje
+- [x] **Commit:** "feat: EventInfo components"
 
 ---
 
