@@ -623,7 +623,7 @@
 ---
 
 ### 4.24 ResultsList - auto-scroll
-- [ ] ❓ Rozhodnutí: Implementovat auto-scroll teď nebo později?
+- [X] ❓ Rozhodnutí: Implementovat auto-scroll teď nebo později? --> ANO Implementovat!
 
 ### Pokud auto-scroll teď:
 - [ ] `src/hooks/useAutoScroll.ts`
@@ -649,28 +649,28 @@
 ## Fáze 5: Integrace a styly
 
 ### 5.1 App.tsx - struktura
-- [ ] ScoreboardProvider wrapper
-- [ ] DataProvider (CLIProvider) instance
+- [x] ScoreboardProvider wrapper
+- [x] DataProvider (ReplayProvider) instance - CLIProvider bude po ověření UI
 - [ ] URL parametry pro server address
 
 ### 5.2 App.tsx - layout
-- [ ] ScoreboardLayout
-- [ ] EventInfo (TopBar, Title)
-- [ ] CurrentCompetitor
-- [ ] ResultsList
-- [ ] TimeDisplay
-- [ ] Footer
+- [x] ScoreboardLayout
+- [x] EventInfo (TopBar, Title)
+- [x] CurrentCompetitor
+- [x] ResultsList
+- [x] TimeDisplay
+- [x] Footer
 
 ### 5.3 Propojení s kontextem
-- [ ] Použít useScoreboard hook
-- [ ] Předat data komponentám
-- [ ] Předat visibility flags
+- [x] Použít useScoreboard hook
+- [x] Předat data komponentám
+- [x] Předat visibility flags
 
 ### 🔍 Revize: Základní integrace
-- [ ] Připojit k serveru
-- [ ] Data se zobrazují
-- [ ] Komponenty reagují na změny
-- [ ] **Commit:** "feat: basic app integration"
+- [x] Připojit k serveru (ReplayProvider)
+- [ ] Data se zobrazují - vizuální ověření
+- [ ] Komponenty reagují na změny - vizuální ověření
+- [x] **Commit:** "feat: basic app integration"
 
 ---
 
@@ -1003,15 +1003,15 @@
 
 #### P2: UI komponenty (pořadí implementace)
 1. [x] Footer komponenta (4.5) - jednoduchá, slouží jako reference pro další
-2. [ ] TopBar komponenta (4.6) - logo, partners, pozice pro TimeDisplay
-3. [ ] Title komponenta (4.7) - event title s visibility
-4. [ ] CurrentCompetitor komponenta (4.8-4.15) - komplexní, gates, penalties, pulzující indikátor
-5. [ ] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight, scroll
+2. [x] TopBar komponenta (4.6) - logo, partners, pozice pro TimeDisplay
+3. [x] Title komponenta (4.7) - event title s visibility
+4. [x] CurrentCompetitor komponenta (4.8-4.15) - komplexní, gates, penalties, pulzující indikátor
+5. [x] ResultsList komponenta (4.16-4.23) - tabulka výsledků, highlight, scroll
 
 #### P3: Integrace
-- [ ] Propojit komponenty v App.tsx s ScoreboardContext
-- [ ] Visibility flags pro všechny komponenty
-- [ ] Departing competitor zobrazení v CurrentCompetitor
+- [x] Propojit komponenty v App.tsx s ScoreboardContext
+- [x] Visibility flags pro všechny komponenty
+- [x] Departing competitor zobrazení v CurrentCompetitor
 
 #### P4: Testování
 - [ ] E2E testy v Playwright (tests/ adresář je prázdný)
