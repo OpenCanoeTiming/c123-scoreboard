@@ -105,7 +105,7 @@
 - [x] Fonty se správně načítají
 - [x] Path aliases fungují
 - [x] Struktura je čistá a logická
-- [ ] **Commit:** "feat: project scaffolding and types"
+- [x] **Commit:** "feat: project scaffolding and types"
 
 ---
 
@@ -114,32 +114,32 @@
 > **Reference:** [../analysis/07-sitova-komunikace.md](../analysis/07-sitova-komunikace.md) a [../analysis/08-plan-reimplementace.md](../analysis/08-plan-reimplementace.md#dataprovider-abstrakce-detailně)
 
 ### 2.1 DataProvider interface
-- [ ] `src/providers/types.ts` - DataProvider interface
-- [ ] Metoda: `connect(): Promise<void>`
-- [ ] Metoda: `disconnect(): void`
-- [ ] Callback: `onResults(callback): Unsubscribe`
-- [ ] Callback: `onOnCourse(callback): Unsubscribe`
-- [ ] Callback: `onConfig(callback): Unsubscribe`
-- [ ] Callback: `onConnectionChange(callback): Unsubscribe`
-- [ ] Property: `readonly connected: boolean`
-- [ ] Property: `readonly status: ConnectionStatus`
-- [ ] Type: `Unsubscribe = () => void`
+- [x] `src/providers/types.ts` - DataProvider interface
+- [x] Metoda: `connect(): Promise<void>`
+- [x] Metoda: `disconnect(): void`
+- [x] Callback: `onResults(callback): Unsubscribe`
+- [x] Callback: `onOnCourse(callback): Unsubscribe`
+- [x] Callback: `onConfig(callback): Unsubscribe`
+- [x] Callback: `onConnectionChange(callback): Unsubscribe`
+- [x] Property: `readonly connected: boolean`
+- [x] Property: `readonly status: ConnectionStatus`
+- [x] Type: `Unsubscribe = () => void`
 
 ### 2.2 Společné utility pro providery
-- [ ] `src/providers/utils/parseGates.ts` - parsování "0,0,2,..." nebo "0 0 2 ..."
-- [ ] `src/providers/utils/normalizeCompetitor.ts` - sjednocení formátu
-- [ ] `src/providers/utils/detectFinish.ts` - detekce dojetí (dtFinish změna)
+- [x] `src/providers/utils/parseGates.ts` - parsování "0,0,2,..." nebo "0 0 2 ..."
+- [x] `src/providers/utils/normalizeCompetitor.ts` - sjednocení formátu
+- [x] `src/providers/utils/detectFinish.ts` - detekce dojetí (dtFinish změna)
 
 ### 2.3 Testy pro utility
-- [ ] `src/providers/utils/__tests__/parseGates.test.ts`
-- [ ] `src/providers/utils/__tests__/detectFinish.test.ts`
-- [ ] Testy prochází (`npm test`)
+- [x] `src/providers/utils/__tests__/parseGates.test.ts`
+- [x] `src/providers/utils/__tests__/detectFinish.test.ts`
+- [x] Testy prochází (`npm test`)
 
 ### 🔍 Revize: DataProvider interface
-- [ ] Interface pokrývá všechny potřebné operace
-- [ ] Typy jsou správné a konzistentní
-- [ ] Testy pro utility prochází
-- [ ] **Commit:** "feat: DataProvider interface and utils"
+- [x] Interface pokrývá všechny potřebné operace
+- [x] Typy jsou správné a konzistentní
+- [x] Testy pro utility prochází
+- [x] **Commit:** "feat: DataProvider interface and utils"
 
 ---
 

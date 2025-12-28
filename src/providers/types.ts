@@ -1,0 +1,94 @@
+import type { ConnectionStatus, OnCourseCompetitor, Result, RaceConfig, VisibilityState } from '@/types'
+
+/**
+ * Unsubscribe function returned by callbacks
+ */
+export type Unsubscribe = () => void
+
+/**
+ * Results data from top message
+ */
+export interface ResultsData {
+  results: Result[]
+  raceName: string
+  raceStatus: string
+  highlightBib: string | null
+}
+
+/**
+ * On-course data
+ */
+export interface OnCourseData {
+  current: OnCourseCompetitor | null
+  onCourse: OnCourseCompetitor[]
+}
+
+/**
+ * Event info data
+ */
+export interface EventInfoData {
+  title: string
+  infoText: string
+  dayTime: string
+}
+
+/**
+ * DataProvider interface - abstraction over different data sources
+ *
+ * Implementations:
+ * - CLIProvider: WebSocket connection to CLI tool (port 8081)
+ * - C123Provider: Direct TCP connection to timing system (future)
+ * - ReplayProvider: Replay recorded sessions for development
+ */
+export interface DataProvider {
+  /**
+   * Connect to the data source
+   * @returns Promise that resolves when connected
+   */
+  connect(): Promise<void>
+
+  /**
+   * Disconnect from the data source
+   */
+  disconnect(): void
+
+  /**
+   * Current connection status
+   */
+  readonly status: ConnectionStatus
+
+  /**
+   * Whether currently connected
+   */
+  readonly connected: boolean
+
+  /**
+   * Subscribe to results updates (top messages)
+   */
+  onResults(callback: (data: ResultsData) => void): Unsubscribe
+
+  /**
+   * Subscribe to on-course updates (comp/oncourse messages)
+   */
+  onOnCourse(callback: (data: OnCourseData) => void): Unsubscribe
+
+  /**
+   * Subscribe to config updates
+   */
+  onConfig(callback: (config: RaceConfig) => void): Unsubscribe
+
+  /**
+   * Subscribe to visibility updates (control messages)
+   */
+  onVisibility(callback: (visibility: VisibilityState) => void): Unsubscribe
+
+  /**
+   * Subscribe to event info updates (title, infoText, dayTime)
+   */
+  onEventInfo(callback: (info: EventInfoData) => void): Unsubscribe
+
+  /**
+   * Subscribe to connection status changes
+   */
+  onConnectionChange(callback: (status: ConnectionStatus) => void): Unsubscribe
+}
