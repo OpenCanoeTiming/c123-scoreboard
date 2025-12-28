@@ -1060,7 +1060,7 @@ TypeScript: ✅ Strict mode
 
 #### A. Rozšíření testů (HIGH PRIORITY)
 
-- [ ] `src/context/__tests__/ScoreboardContext.test.tsx`
+- [x] `src/context/__tests__/ScoreboardContext.test.tsx`
   - Test state initialization
   - Test highlight deduplication (competitor on-course)
   - Test departing competitor clearing on timeout
