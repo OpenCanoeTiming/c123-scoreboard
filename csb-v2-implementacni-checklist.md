@@ -1020,7 +1020,7 @@ TypeScript: ✅ Strict mode
 
 ```
 Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
-Unit testy: ✅ 197 testů prochází (10 test suites)
+Unit testy: ✅ 309 testů prochází (13 test suites)
 ESLint:     ✅ 0 errors, 4 warnings
 TypeScript: ✅ Strict mode
 ```
@@ -1083,7 +1083,7 @@ TypeScript: ✅ Strict mode
   - Test empty state
   - Test responsive column hiding
 
-- [ ] `src/components/__tests__/CurrentCompetitor.test.tsx`
+- [x] `src/components/__tests__/CurrentCompetitor.test.tsx`
   - Test gate penalty visualization
   - Test TTB display (ahead/behind)
   - Test departing label
