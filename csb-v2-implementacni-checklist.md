@@ -1014,6 +1014,106 @@ TypeScript: ✅ Strict mode
 
 ---
 
+## Review v0.7 (2025-12-28) - Tag: `review-ready-v0.7`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
+Unit testy: ✅ 156 testů prochází (8 test suites)
+ESLint:     ✅ 0 errors, 4 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Co nelze provést z tohoto prostředí
+
+1. **Playwright E2E testy** - Nelze nainstalovat systémové závislosti (fonts-wqy-zenhei, fonts-tlwg-loma-otf)
+2. **CLIProvider live test** - CLI server 192.168.68.108:8081 není přístupný
+3. **C123Provider** - TCP socket není možný v prohlížeči (označeno `[!]`)
+
+### Review findings - Co je dobře
+
+1. **Architektura** - Čistý DataProvider pattern s pub/sub systémem
+2. **TypeScript** - Kompletní typové definice, strict mode
+3. **Test coverage pro utilities** - formatTime, formatName, parseGates, detectFinish plně otestovány
+4. **Providers** - CLIProvider (24 testů), ReplayProvider (27 testů) plně otestovány
+5. **Dokumentace** - Dobrý JSDoc v celém projektu
+6. **Reconnect logika** - Exponential backoff v CLIProvider
+
+### Review findings - Co chybí/je třeba zlepšit
+
+**Kritické:**
+1. **Žádné testy React komponent** - 10 komponent bez testů (ResultsList, CurrentCompetitor, ConnectionStatus, ...)
+2. **ScoreboardContext bez testů** - Highlight deduplikace, departing clearing, reconnect reset netestovány
+3. **useAutoScroll bez testů** - Komplexní state machine (4 fáze) není otestována
+4. **useLayout bez testů** - Responsive systém netestován
+
+**Střední priorita:**
+5. **Chybí Error Boundaries** - Komponenty mohou crashnout celou aplikaci
+6. **Accessibility** - Žádné ARIA labely, gate penalty spoléhá jen na barvu
+
+**Nízká priorita:**
+7. **CSS variable fallbacks** - Chybí fallback hodnoty
+8. **CLIProvider validation** - Některé message payloads nejsou hluboce validovány
+
+### Další kroky k implementaci
+
+#### A. Rozšíření testů (HIGH PRIORITY)
+
+- [ ] `src/context/__tests__/ScoreboardContext.test.tsx`
+  - Test state initialization
+  - Test highlight deduplication (competitor on-course)
+  - Test departing competitor clearing on timeout
+  - Test state reset on reconnect
+
+- [ ] `src/hooks/__tests__/useAutoScroll.test.ts`
+  - Test IDLE → SCROLLING → PAUSED_AT_BOTTOM → RETURNING transitions
+  - Test manual pause/resume/reset
+  - Test ledwall speed multiplier (0.7x)
+
+- [ ] `src/hooks/__tests__/useLayout.test.ts`
+  - Test URL parameter detection (?type=vertical|ledwall)
+  - Test aspect ratio auto-detection
+  - Test row height calculations
+  - Test CSS variable updates
+
+- [ ] `src/components/__tests__/ResultsList.test.tsx`
+  - Test rendering with various result data
+  - Test highlight styling
+  - Test empty state
+  - Test responsive column hiding
+
+- [ ] `src/components/__tests__/CurrentCompetitor.test.tsx`
+  - Test gate penalty visualization
+  - Test TTB display (ahead/behind)
+  - Test departing label
+  - Test running indicator
+
+#### B. Error Handling
+
+- [ ] Přidat React Error Boundary wrapper kolem hlavních komponent
+- [ ] Přidat fallback UI pro component failures
+
+#### C. Accessibility
+
+- [ ] ARIA labels pro gate penalties (role="img", aria-label)
+- [ ] Alternativní indikace pro TTB (ikony kromě barvy)
+
+#### D. Manuální testování (vyžaduje prohlížeč)
+
+- [ ] `http://localhost:5173/?source=replay&speed=10` - ověřit data loading
+- [ ] Testovat vertical (1080×1920) a ledwall (768×384) viewporty
+- [ ] Vizuální porovnání s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+- [ ] Doladit barvy podle `*-styles.json`
+
+#### E. Live server testování (vyžaduje síťový přístup)
+
+- [ ] `?source=cli&host=192.168.68.108:8081` - připojení k CLI serveru
+- [ ] Test reconnect chování (odpojit/připojit server)
+- [ ] Test real-time dat (závodník dojede → highlight → scroll)
+
+---
+
 ## Review v0.6 (2025-12-28)
 
 ### Opravené chyby
