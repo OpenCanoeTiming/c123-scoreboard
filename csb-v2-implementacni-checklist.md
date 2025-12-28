@@ -1123,3 +1123,84 @@ Dulezite aktualni info: C123 i CLI bezi na IP 192.168.68.108 a poskytuji jednodu
 - **eslint.config.js** existuje (flat config format, ne .eslintrc)
 - Testovací nahrávka: `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`
 - Layouty: vertical (1080×1920), ledwall (768×384)
+
+---
+
+## Review 2025-12-28 (v0.3): UI kompletní, připraveno na vizuální testování
+
+> **Git tag:** `review-ready-v0.3`
+> **Stav:** Všechny UI komponenty implementovány. ESLint čistý (0 errors, 4 warnings). 132 testů prochází.
+
+### Celkové hodnocení: 8.5/10
+
+| Kategorie | Score | Poznámka |
+|-----------|-------|---------|
+| Kvalita kódu | 9/10 | ESLint čistý, žádné errors |
+| Architektura | 9/10 | DataProvider pattern, clean separation |
+| TypeScript | 9/10 | Strict mode, kompletní typy |
+| Testování | 8/10 | 132 unit testů, chybí E2E |
+| Styling | 8/10 | CSS Modules, CSS variables |
+| Komponenty | 9/10 | Všechny implementovány |
+| Dokumentace | 8/10 | README kompletní |
+
+### Co bylo dokončeno v této iteraci
+
+1. **README dokumentace** - kompletní s installation, development, architecture
+2. **ESLint opravy** - useAutoScroll refaktorován pro async state updates
+3. **Aktualizace checklistu** - označeny všechny hotové položky
+
+### Zbývající kroky (vyžadují manuální práci)
+
+#### Vizuální testování (nelze automatizovat)
+- [ ] Otestovat na různých rozlišeních v DevTools
+- [ ] Vizuální porovnání s originálem/prototypem
+- [ ] Ověřit správný počet řádků ve vertical/ledwall layoutu
+- [ ] Zkontrolovat animace (pulse, highlight, transitions)
+
+#### Síťová infrastruktura (vyžaduje server)
+- [ ] Implementovat CLIProvider (WebSocket ws://host:8081)
+- [ ] Testovat reconnect logiku s reálným serverem
+- [ ] Implementovat C123Provider (budoucnost)
+
+#### E2E testování
+- [ ] Napsat Playwright testy
+- [ ] Vytvořit referenční screenshoty pro vizuální regrese
+- [ ] Přidat CI/CD pipeline
+
+#### Barevné ladění
+- [ ] Zkopírovat přesné barvy z prototypu
+- [ ] Doladit typografii (font-size, line-height)
+- [ ] Pixel-level srovnání
+
+### Technický stav
+
+```
+Build:     ✅ Úspěšný (424 kB JS, 13 kB CSS)
+ESLint:    ✅ 0 errors, 4 warnings
+Tests:     ✅ 132 passing
+TypeScript: ✅ Strict mode, no errors
+```
+
+### Struktura komponent
+
+```
+App.tsx
+├── ScoreboardProvider (context)
+│   └── ScoreboardContent
+│       ├── ConnectionStatus (overlay)
+│       └── ScoreboardLayout
+│           ├── TopBar
+│           ├── Title
+│           ├── CurrentCompetitor
+│           ├── ResultsList
+│           │   └── ResultRow (×N)
+│           ├── TimeDisplay
+│           └── Footer
+```
+
+### Doporučený postup pro další vývoj
+
+1. **Vizuální review** - spustit `npm run dev` a porovnat s prototypem
+2. **Doladit styly** - upravit barvy a spacing podle originálu
+3. **CLIProvider** - implementovat pro produkční použití
+4. **E2E testy** - pokrýt hlavní scénáře (highlight, auto-scroll, reconnect)
