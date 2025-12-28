@@ -625,6 +625,212 @@ describe('ScoreboardContext', () => {
     })
   })
 
+  describe('rapid highlight changes (edge cases)', () => {
+    it('handles multiple highlights arriving < 100ms apart', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // First highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('42')
+      const firstTimestamp = result.current.highlightTimestamp
+
+      // Advance just 50ms
+      act(() => {
+        vi.advanceTimersByTime(50)
+      })
+
+      // Second highlight for DIFFERENT competitor
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '99',
+        })
+      })
+
+      // Should switch to new highlight
+      expect(result.current.highlightBib).toBe('99')
+      // Timestamp should be updated (different bib)
+      expect(result.current.highlightTimestamp).toBeGreaterThan(firstTimestamp!)
+    })
+
+    it('handles three competitors finishing within 200ms', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Competitor 1 finishes
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '1' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '1',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('1')
+
+      // 80ms later, competitor 2 finishes
+      act(() => {
+        vi.advanceTimersByTime(80)
+      })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '1' }), createResult({ bib: '2', rank: 2 })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '2',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('2')
+
+      // 80ms later, competitor 3 finishes
+      act(() => {
+        vi.advanceTimersByTime(80)
+      })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [
+            createResult({ bib: '1' }),
+            createResult({ bib: '2', rank: 2 }),
+            createResult({ bib: '3', rank: 3 }),
+          ],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '3',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('3')
+    })
+
+    it('does not flash null highlight between rapid changes', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Track all highlight values
+      const highlightHistory: (string | null)[] = []
+
+      // Subscribe to changes (simplified)
+      const captureHighlight = () => {
+        highlightHistory.push(result.current.highlightBib)
+      }
+
+      // First highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+      captureHighlight()
+
+      // Immediately second highlight (same render cycle simulation)
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '99',
+        })
+      })
+      captureHighlight()
+
+      // Should never have null between valid highlights
+      expect(highlightHistory).toEqual(['42', '99'])
+    })
+
+    it('does not immediately clear highlight when server sends null (uses timestamp expiration)', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Set initial highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('42')
+
+      // Server sends null - highlight should NOT be cleared immediately
+      // (uses timestamp-based expiration via useHighlight hook instead)
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: null,
+        })
+      })
+
+      // Highlight still active - will expire via timestamp
+      expect(result.current.highlightBib).toBe('42')
+      expect(result.current.highlightTimestamp).not.toBeNull()
+    })
+
+    it('replaces old highlight with new highlight when new one arrives', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Set initial highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('42')
+
+      // 10ms later, new highlight arrives - should replace old one
+      act(() => {
+        vi.advanceTimersByTime(10)
+      })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '99',
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('99')
+    })
+  })
+
   describe('useScoreboard hook', () => {
     it('throws error when used outside provider', () => {
       // Suppress console.error for this test

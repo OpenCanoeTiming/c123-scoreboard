@@ -1129,7 +1129,7 @@ TypeScript: ✅ Strict mode
 
 ```
 Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
-Unit testy: ✅ 334 testů prochází (14 test suites)
+Unit testy: ✅ 387 testů prochází (15 test suites)
 ESLint:     ✅ 0 errors, 4 warnings
 TypeScript: ✅ Strict mode
 ```
@@ -1209,7 +1209,7 @@ TypeScript: ✅ Strict mode
 
 #### Automatické testování (rozšířit stávající testy)
 
-- [ ] **Edge cases pro highlight** - více závodníků dojede < 100ms po sobě
+- [x] **Edge cases pro highlight** - více závodníků dojede < 100ms po sobě (5 nových testů v ScoreboardContext.test.tsx)
 - [ ] **Stress test pro auto-scroll** - 100+ výsledků, rychlé scrollování
 - [ ] **Fuzz testing pro message parsing** - náhodná malformed data
 - [ ] **Memory leak test** - spustit ReplayProvider 1000x v loop
