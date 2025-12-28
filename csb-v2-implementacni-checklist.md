@@ -996,11 +996,13 @@
 ### Prioritní kroky k dokončení
 
 #### P1: Kritické nedostatky
-- [ ] **ESLint konfigurace** - projekt deklaruje ESLint v package.json ale chybí .eslintrc
-- [ ] **ReplayProvider.parseResults()** - vrací prázdné pole (stub), potřeba implementovat parsování TopRow do Result[]
+- [x] **ESLint konfigurace** - projekt deklaruje ESLint v package.json ale chybí .eslintrc
+  - **Stav:** eslint.config.js existuje (flat config format)
+- [x] **ReplayProvider.parseResults()** - vrací prázdné pole (stub), potřeba implementovat parsování TopRow do Result[]
+  - **Stav:** Implementováno - parsuje list z top zprávy do Result[]
 
 #### P2: UI komponenty (pořadí implementace)
-1. [ ] Footer komponenta (4.5) - jednoduchá, slouží jako reference pro další
+1. [x] Footer komponenta (4.5) - jednoduchá, slouží jako reference pro další
 2. [ ] TopBar komponenta (4.6) - logo, partners, pozice pro TimeDisplay
 3. [ ] Title komponenta (4.7) - event title s visibility
 4. [ ] CurrentCompetitor komponenta (4.8-4.15) - komplexní, gates, penalties, pulzující indikátor

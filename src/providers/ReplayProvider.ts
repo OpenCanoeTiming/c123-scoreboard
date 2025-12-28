@@ -408,10 +408,24 @@ export class ReplayProvider implements DataProvider {
     this.resultsCallbacks.forEach((cb) => cb(results))
   }
 
-  private parseResults(_payload: Record<string, unknown>): ResultsData['results'] {
-    // TODO: Parse top message rows into Result[]
-    // For now return empty - will implement when we have actual top message data
-    return []
+  private parseResults(payload: Record<string, unknown>): ResultsData['results'] {
+    const list = payload.list as Array<Record<string, unknown>> | undefined
+    if (!list || !Array.isArray(list)) {
+      return []
+    }
+
+    return list.map((row) => ({
+      rank: Number(row.Rank) || 0,
+      bib: String(row.Bib || '').trim(),
+      name: String(row.Name || ''),
+      familyName: String(row.FamilyName || ''),
+      givenName: String(row.GivenName || ''),
+      club: String(row.Club || ''),
+      nat: String(row.Nat || ''),
+      total: String(row.Total || ''),
+      pen: Number(row.Pen) || 0,
+      behind: String(row.Behind || '').replace('&nbsp;', ''),
+    }))
   }
 
   private handleCompMessage(data: unknown): void {
