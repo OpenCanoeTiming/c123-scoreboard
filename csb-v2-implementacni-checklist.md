@@ -968,7 +968,7 @@ napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a 
 ```
 Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
 ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 329 unit testů (14 test suites)
+Tests:      ✅ 334 unit testů (14 test suites)
 TypeScript: ✅ Strict mode
 ```
 
@@ -1020,7 +1020,7 @@ TypeScript: ✅ Strict mode
 
 ```
 Build:      ✅ Úspěšný (433 kB JS, 14 kB CSS)
-Unit testy: ✅ 329 testů prochází (14 test suites)
+Unit testy: ✅ 334 testů prochází (14 test suites)
 ESLint:     ✅ 0 errors, 4 warnings
 TypeScript: ✅ Strict mode
 ```
@@ -1105,8 +1105,8 @@ TypeScript: ✅ Strict mode
 
 #### C. Accessibility
 
-- [ ] ARIA labels pro gate penalties (role="img", aria-label)
-- [ ] Alternativní indikace pro TTB (ikony kromě barvy)
+- [x] ARIA labels pro gate penalties (role="list", role="listitem", aria-label)
+- [x] Alternativní indikace pro TTB (▼/▲ šipky kromě barvy)
 
 #### D. Manuální testování (vyžaduje prohlížeč)
 

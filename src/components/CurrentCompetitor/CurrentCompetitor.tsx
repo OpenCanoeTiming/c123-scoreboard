@@ -45,6 +45,27 @@ function getGateDisplay(penalty: GatePenalty): string {
 }
 
 /**
+ * Get aria label for gate penalty (accessibility)
+ */
+function getGateAriaLabel(penalty: GatePenalty, gateNumber: number): string {
+  if (penalty === null) return `Brána ${gateNumber}: neprojeta`
+  if (penalty === 0) return `Brána ${gateNumber}: čistě`
+  if (penalty === 2) return `Brána ${gateNumber}: dotyk, 2 sekundy`
+  return `Brána ${gateNumber}: neprojetí, 50 sekund`
+}
+
+/**
+ * Get aria label for TTB diff (accessibility)
+ */
+function getTTBAriaLabel(ttbDiff: string): string {
+  if (!ttbDiff) return ''
+  if (ttbDiff.startsWith('-')) {
+    return `Vpředu o ${ttbDiff.substring(1)}`
+  }
+  return `Pozadu o ${ttbDiff.startsWith('+') ? ttbDiff.substring(1) : ttbDiff}`
+}
+
+/**
  * Get TTB diff class (ahead/behind)
  */
 function getTTBClass(ttbDiff: string): string {
@@ -135,7 +156,10 @@ export function CurrentCompetitor({
         <div className={styles.ttbRow}>
           <span className={styles.ttbLabel}>TTB</span>
           {formattedTTBDiff && (
-            <span className={`${styles.ttbDiff} ${ttbClass}`}>
+            <span
+              className={`${styles.ttbDiff} ${ttbClass}`}
+              aria-label={getTTBAriaLabel(competitor.ttbDiff)}
+            >
               {formattedTTBDiff}
             </span>
           )}
@@ -160,11 +184,13 @@ export function CurrentCompetitor({
         </div>
 
         {/* Gate penalties visualization */}
-        <div className={styles.gatesContainer}>
+        <div className={styles.gatesContainer} role="list" aria-label="Penalizace na branách">
           {gates.map((penalty, index) => (
             <div
               key={index}
               className={`${styles.gate} ${getGateClass(penalty)}`}
+              role="listitem"
+              aria-label={getGateAriaLabel(penalty, index + 1)}
               title={`Brána ${index + 1}`}
             >
               {getGateDisplay(penalty)}

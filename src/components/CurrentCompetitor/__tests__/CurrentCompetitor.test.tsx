@@ -401,6 +401,64 @@ describe('CurrentCompetitor', () => {
     })
   })
 
+  describe('accessibility', () => {
+    it('renders gates container with role="list" and aria-label', () => {
+      const competitor = createCompetitor({ gates: '0,2,50' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const gatesContainer = container.querySelector('[class*="gatesContainer"]')
+      expect(gatesContainer).toHaveAttribute('role', 'list')
+      expect(gatesContainer).toHaveAttribute('aria-label', 'Penalizace na branách')
+    })
+
+    it('renders each gate with role="listitem" and aria-label', () => {
+      const competitor = createCompetitor({ gates: '0,2,50' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const gatesContainer = container.querySelector('[class*="gatesContainer"]')
+      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+
+      expect(gates?.[0]).toHaveAttribute('role', 'listitem')
+      expect(gates?.[0]).toHaveAttribute('aria-label', 'Brána 1: čistě')
+      expect(gates?.[1]).toHaveAttribute('aria-label', 'Brána 2: dotyk, 2 sekundy')
+      expect(gates?.[2]).toHaveAttribute('aria-label', 'Brána 3: neprojetí, 50 sekund')
+    })
+
+    it('renders TTB diff with aria-label for ahead (negative diff)', () => {
+      const competitor = createCompetitor({ ttbDiff: '-2.50' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
+      expect(ttbDiff).toHaveAttribute('aria-label', 'Vpředu o 2.50')
+    })
+
+    it('renders TTB diff with aria-label for behind (positive diff with +)', () => {
+      const competitor = createCompetitor({ ttbDiff: '+3.00' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
+      expect(ttbDiff).toHaveAttribute('aria-label', 'Pozadu o 3.00')
+    })
+
+    it('renders TTB diff with aria-label for behind (positive diff without +)', () => {
+      const competitor = createCompetitor({ ttbDiff: '1.50' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
+      expect(ttbDiff).toHaveAttribute('aria-label', 'Pozadu o 1.50')
+    })
+  })
+
   describe('edge cases', () => {
     it('handles competitor with empty name', () => {
       const competitor = createCompetitor({ name: '' })
