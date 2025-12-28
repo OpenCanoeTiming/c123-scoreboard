@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import {
-  useScoreboard,
-  DEPARTING_TIMEOUT,
-} from '@/context/ScoreboardContext'
+import { useScoreboard } from '@/context/ScoreboardContext'
+import { DEPARTING_TIMEOUT } from '@/context/constants'
 import type { OnCourseCompetitor } from '@/types'
 
 /**
@@ -48,7 +46,8 @@ export function useDeparting(): UseDepartingReturn {
 
   // Current time for calculating remaining time
   // Note: setNow triggers re-renders to update time-based calculations
-  const [, setNow] = useState(Date.now())
+  // Using lazy initializer to avoid impure function call during render
+  const [, setNow] = useState(() => Date.now())
 
   /**
    * Calculate whether departing is active based on timestamp

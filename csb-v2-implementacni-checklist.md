@@ -1088,7 +1088,11 @@
 ### Další kroky implementace
 
 #### Fáze 1: Opravy (priorita HIGH)
-- [ ] Opravit ESLint chyby v ScoreboardContext, useHighlight, useDeparting
+- [x] Opravit ESLint chyby v ScoreboardContext, useHighlight, useDeparting
+  - useState lazy init pro Date.now()
+  - setTimeout s Math.max(0, remaining) místo synchronního setState
+  - Konstanty přesunuty do src/context/constants.ts
+  - ESLint config: allowConstantExport pro react-refresh
 - [ ] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
 - [ ] Konvertovat inline styly v App.tsx a DebugView.tsx na CSS moduly
 - [ ] Opravit TimeDisplay.css (--color-accent-yellow není definován)

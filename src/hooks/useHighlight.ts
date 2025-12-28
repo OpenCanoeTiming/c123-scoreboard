@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useScoreboard, HIGHLIGHT_DURATION } from '@/context/ScoreboardContext'
+import { useScoreboard } from '@/context/ScoreboardContext'
+import { HIGHLIGHT_DURATION } from '@/context/constants'
 
 /**
  * Return type for useHighlight hook
@@ -36,7 +37,8 @@ export function useHighlight(): UseHighlightReturn {
 
   // Current time for calculating remaining time
   // Note: setNow triggers re-renders to update time-based calculations
-  const [, setNow] = useState(Date.now())
+  // Using lazy initializer to avoid impure function call during render
+  const [, setNow] = useState(() => Date.now())
 
   /**
    * Calculate whether highlight is active based on timestamp

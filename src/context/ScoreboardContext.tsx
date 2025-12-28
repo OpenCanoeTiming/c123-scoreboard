@@ -19,17 +19,7 @@ import type {
   OnCourseData,
   EventInfoData,
 } from '@/providers/types'
-
-/**
- * Highlight duration in milliseconds (5 seconds)
- */
-export const HIGHLIGHT_DURATION = 5000
-
-/**
- * Departing competitor timeout in milliseconds (3 seconds)
- * After this time, the departing competitor is cleared if no highlight arrives
- */
-export const DEPARTING_TIMEOUT = 3000
+import { DEPARTING_TIMEOUT } from './constants'
 
 /**
  * Scoreboard state interface
@@ -69,15 +59,18 @@ export interface ScoreboardState {
 /**
  * Context value type - state plus any actions
  */
-interface ScoreboardContextValue extends ScoreboardState {
+export interface ScoreboardContextValue extends ScoreboardState {
   // Manual reconnect trigger (for error recovery)
   reconnect: () => void
 }
 
 /**
  * Create the context
+ * Exported for use by useScoreboard hook
  */
-const ScoreboardContext = createContext<ScoreboardContextValue | null>(null)
+export const ScoreboardContext = createContext<ScoreboardContextValue | null>(
+  null
+)
 
 /**
  * Provider props
@@ -319,18 +312,12 @@ export function ScoreboardProvider({
     const elapsed = Date.now() - departedAt
     const remaining = DEPARTING_TIMEOUT - elapsed
 
-    // Already expired
-    if (remaining <= 0) {
-      setDepartingCompetitor(null)
-      setDepartedAt(null)
-      return
-    }
-
-    // Set timeout for expiration
+    // Set timeout for expiration (use Math.max(0, remaining) to handle already expired case)
+    // This avoids synchronous setState within effect body
     const timeoutId = setTimeout(() => {
       setDepartingCompetitor(null)
       setDepartedAt(null)
-    }, remaining)
+    }, Math.max(0, remaining))
 
     return () => clearTimeout(timeoutId)
   }, [departingCompetitor, departedAt])

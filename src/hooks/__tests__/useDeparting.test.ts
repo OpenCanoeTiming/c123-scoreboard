@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
-import {
-  ScoreboardProvider,
-  DEPARTING_TIMEOUT,
-} from '@/context/ScoreboardContext'
+import { ScoreboardProvider } from '@/context/ScoreboardContext'
+import { DEPARTING_TIMEOUT } from '@/context/constants'
 import { useDeparting } from '../useDeparting'
 import type { DataProvider, Unsubscribe } from '@/providers/types'
 import type { ConnectionStatus } from '@/types'
