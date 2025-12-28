@@ -1235,6 +1235,87 @@ TypeScript: ✅ Strict mode
 
 ---
 
+## Review v1.2 (2025-12-29) - Tag: `review-ready-v1.2`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 396 testů prochází (15 test suites)
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Stress testy pro useAutoScroll hook**
+   - 10 nových testů v `src/hooks/__tests__/useAutoScroll.test.ts`
+   - Pokrývá: 100+ items, 500+ items, rapid phase transitions, concurrent highlight changes, extreme scroll speeds, mount/unmount cycles
+
+### Shrnutí zbývajících kroků
+
+Všechny zbývající nesplněné kroky v checklistu spadají do těchto kategorií:
+
+| Kategorie | Důvod nelze provést | Počet kroků |
+|-----------|---------------------|-------------|
+| **Manuální vizuální testování** | Vyžaduje prohlížeč, DevTools, oči člověka | ~25 |
+| **Live server test** | CLI server 192.168.68.108 není přístupný | ~5 |
+| **Playwright E2E** | Chybí systémové závislosti (fonty) | ~4 |
+| **C123Provider** | TCP socket nelze v prohlížeči | 3 |
+| **Hardware test** | Fyzické zařízení (RPi, TV, LED) | ~4 |
+| **Architekturální refaktoring** | Vyžaduje rozhodnutí uživatele | ~5 |
+
+### Doporučení pro další testování a ladění
+
+#### A. Automatizovaná rozšíření (lze přidat)
+
+1. **Fuzz testing pro message parsing**
+   - Vytvořit generátor náhodných malformed zpráv
+   - Testovat robustnost CLIProvider/ReplayProvider
+   - Ověřit že žádné neplatné vstupy nehavarují aplikaci
+
+2. **Memory leak test**
+   - Vytvořit benchmark script který spustí ReplayProvider 1000x
+   - Měřit memory usage po každých 100 iteracích
+   - Detekovat event listener/timer leaky
+
+3. **Performance benchmark**
+   - Měřit render time pro ResultsList s různým počtem položek
+   - Změřit latenci update → render pro highlight změny
+
+#### B. Manuální testování (vyžaduje prohlížeč)
+
+```bash
+npm run dev
+# Otevřít http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+1. Cold start: Loading → Waiting → Data zobrazena
+2. Závodník dojede: comp zmizí → departing 3s → highlight v Results
+3. Highlight timeout: po 5s zmizí, scroll to top
+4. Resize: přepínat mezi vertical a ledwall viewporty
+5. Prázdný závod: graceful empty state
+
+#### C. Live server test (vyžaduje síťový přístup)
+
+```
+?source=cli&host=192.168.68.108:8081
+```
+
+**Testovat:**
+1. Připojení k reálnému CLI serveru
+2. Odpojit/připojit server → reconnect overlay
+3. Real-time data flow
+
+#### D. Vizuální porovnání
+
+Referenční materiály:
+- `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+- `/workspace/csb-v2/analysis/reference-screenshots/*-styles.json`
+
+---
+
 ## Review v1.1 (2025-12-29) - Tag: `review-ready-v1.1`
 
 ### Stav projektu
