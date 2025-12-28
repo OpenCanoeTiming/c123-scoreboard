@@ -968,7 +968,7 @@ napis a udrzuj/rozvijej si testovaci skript, ktery otestuje maximum autonomne a 
 ```
 Build:      ✅ Úspěšný (430 kB JS, 13 kB CSS)
 ESLint:     ✅ 0 errors, 4 warnings
-Tests:      ✅ 197 unit testů (10 test suites)
+Tests:      ✅ 267 unit testů (12 test suites)
 TypeScript: ✅ Strict mode
 ```
 
@@ -1077,7 +1077,7 @@ TypeScript: ✅ Strict mode
   - Test row height calculations
   - Test CSS variable updates
 
-- [ ] `src/components/__tests__/ResultsList.test.tsx`
+- [x] `src/components/__tests__/ResultsList.test.tsx`
   - Test rendering with various result data
   - Test highlight styling
   - Test empty state
