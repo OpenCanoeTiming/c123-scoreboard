@@ -1,7 +1,54 @@
 import { useMemo } from 'react'
-import { ScoreboardProvider } from '@/context'
+import { ScoreboardProvider, useScoreboard } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
-import { DebugView } from '@/components/DebugView'
+import {
+  ScoreboardLayout,
+  TopBar,
+  Title,
+  CurrentCompetitor,
+  ResultsList,
+  TimeDisplay,
+  Footer,
+} from '@/components'
+
+/**
+ * Main scoreboard content - uses context for data
+ */
+function ScoreboardContent() {
+  const {
+    title,
+    dayTime,
+    currentCompetitor,
+    departingCompetitor,
+    results,
+    visibility,
+  } = useScoreboard()
+
+  return (
+    <ScoreboardLayout
+      header={
+        <>
+          <TopBar visible={visibility.displayTopBar} />
+          <Title title={title} visible={visibility.displayTitle} />
+        </>
+      }
+      footer={<Footer visible={visibility.displayFooter} />}
+    >
+      {/* Current competitor - shows departing if no current */}
+      <CurrentCompetitor
+        competitor={currentCompetitor ?? departingCompetitor}
+        visible={visibility.displayCurrent}
+        isDeparting={!currentCompetitor && !!departingCompetitor}
+      />
+
+      {/* Results list */}
+      <ResultsList results={results} visible={visibility.displayTop} />
+
+      {/* Day time display */}
+      <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
+    </ScoreboardLayout>
+  )
+}
 
 function App() {
   // Create ReplayProvider instance - in development, use recording
@@ -16,23 +63,7 @@ function App() {
 
   return (
     <ScoreboardProvider provider={provider}>
-      <div
-        style={{
-          backgroundColor: 'var(--color-bg-primary)',
-          color: 'var(--color-text-primary)',
-          fontFamily: 'var(--font-family-primary)',
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: 'var(--spacing-lg)',
-        }}
-      >
-        <h1 style={{ fontWeight: 700, marginBottom: 'var(--spacing-md)' }}>
-          Canoe Scoreboard v2
-        </h1>
-        <DebugView />
-      </div>
+      <ScoreboardContent />
     </ScoreboardProvider>
   )
 }
