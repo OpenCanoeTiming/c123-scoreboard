@@ -1093,7 +1093,9 @@
   - setTimeout s Math.max(0, remaining) místo synchronního setState
   - Konstanty přesunuty do src/context/constants.ts
   - ESLint config: allowConstantExport pro react-refresh
-- [ ] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
+- [x] Refaktorovat useHighlight/useDeparting do shared useTimestamp hook
+  - Vytvořen src/hooks/useTimestamp.ts se sdílenou logikou
+  - useHighlight a useDeparting nyní používají useTimestamp (DRY)
 - [ ] Konvertovat inline styly v App.tsx a DebugView.tsx na CSS moduly
 - [x] Opravit TimeDisplay.css (--color-accent-yellow není definován)
 

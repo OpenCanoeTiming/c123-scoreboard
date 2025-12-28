@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
 import { useScoreboard } from '@/context/ScoreboardContext'
 import { DEPARTING_TIMEOUT } from '@/context/constants'
+import { useTimestamp } from './useTimestamp'
 import type { OnCourseCompetitor } from '@/types'
 
 /**
@@ -44,78 +44,10 @@ export interface UseDepartingReturn {
 export function useDeparting(): UseDepartingReturn {
   const { departingCompetitor, departedAt } = useScoreboard()
 
-  // Current time for calculating remaining time
-  // Note: setNow triggers re-renders to update time-based calculations
-  // Using lazy initializer to avoid impure function call during render
-  const [, setNow] = useState(() => Date.now())
-
-  /**
-   * Calculate whether departing is active based on timestamp
-   */
-  const calculateIsActive = useCallback(() => {
-    if (!departingCompetitor || !departedAt) {
-      return false
-    }
-    return Date.now() - departedAt < DEPARTING_TIMEOUT
-  }, [departingCompetitor, departedAt])
-
-  /**
-   * Calculate time remaining until departing expires
-   */
-  const calculateTimeRemaining = useCallback(() => {
-    if (!departingCompetitor || !departedAt) {
-      return 0
-    }
-    const elapsed = Date.now() - departedAt
-    const remaining = DEPARTING_TIMEOUT - elapsed
-    return Math.max(0, remaining)
-  }, [departingCompetitor, departedAt])
-
-  /**
-   * Calculate progress (0 to 1, where 1 is fully elapsed)
-   */
-  const calculateProgress = useCallback(() => {
-    if (!departingCompetitor || !departedAt) {
-      return 0
-    }
-    const elapsed = Date.now() - departedAt
-    return Math.min(1, elapsed / DEPARTING_TIMEOUT)
-  }, [departingCompetitor, departedAt])
-
-  /**
-   * Use requestAnimationFrame to update time during active departing
-   * This ensures smooth animations without excessive re-renders
-   */
-  useEffect(() => {
-    if (!departingCompetitor || !departedAt) {
-      return
-    }
-
-    let animationFrameId: number
-
-    const updateTime = () => {
-      setNow(Date.now())
-
-      // Continue animation if departing is still active
-      if (Date.now() - departedAt < DEPARTING_TIMEOUT) {
-        animationFrameId = requestAnimationFrame(updateTime)
-      }
-    }
-
-    // Start the animation loop
-    animationFrameId = requestAnimationFrame(updateTime)
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-    }
-  }, [departingCompetitor, departedAt])
-
-  // Force recalculation when `now` changes
-  const isActive = calculateIsActive()
-  const timeRemaining = calculateTimeRemaining()
-  const progress = calculateProgress()
+  const { isActive, timeRemaining, progress } = useTimestamp(
+    departingCompetitor && departedAt ? departedAt : null,
+    DEPARTING_TIMEOUT
+  )
 
   return {
     departingCompetitor: isActive ? departingCompetitor : null,

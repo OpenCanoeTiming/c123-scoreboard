@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
 import { useScoreboard } from '@/context/ScoreboardContext'
 import { HIGHLIGHT_DURATION } from '@/context/constants'
+import { useTimestamp } from './useTimestamp'
 
 /**
  * Return type for useHighlight hook
@@ -35,78 +35,10 @@ export interface UseHighlightReturn {
 export function useHighlight(): UseHighlightReturn {
   const { highlightBib, highlightTimestamp } = useScoreboard()
 
-  // Current time for calculating remaining time
-  // Note: setNow triggers re-renders to update time-based calculations
-  // Using lazy initializer to avoid impure function call during render
-  const [, setNow] = useState(() => Date.now())
-
-  /**
-   * Calculate whether highlight is active based on timestamp
-   */
-  const calculateIsActive = useCallback(() => {
-    if (!highlightBib || !highlightTimestamp) {
-      return false
-    }
-    return Date.now() - highlightTimestamp < HIGHLIGHT_DURATION
-  }, [highlightBib, highlightTimestamp])
-
-  /**
-   * Calculate time remaining until highlight expires
-   */
-  const calculateTimeRemaining = useCallback(() => {
-    if (!highlightBib || !highlightTimestamp) {
-      return 0
-    }
-    const elapsed = Date.now() - highlightTimestamp
-    const remaining = HIGHLIGHT_DURATION - elapsed
-    return Math.max(0, remaining)
-  }, [highlightBib, highlightTimestamp])
-
-  /**
-   * Calculate progress (0 to 1, where 1 is fully elapsed)
-   */
-  const calculateProgress = useCallback(() => {
-    if (!highlightBib || !highlightTimestamp) {
-      return 0
-    }
-    const elapsed = Date.now() - highlightTimestamp
-    return Math.min(1, elapsed / HIGHLIGHT_DURATION)
-  }, [highlightBib, highlightTimestamp])
-
-  /**
-   * Use requestAnimationFrame to update time during active highlight
-   * This ensures smooth animations without excessive re-renders
-   */
-  useEffect(() => {
-    if (!highlightBib || !highlightTimestamp) {
-      return
-    }
-
-    let animationFrameId: number
-
-    const updateTime = () => {
-      setNow(Date.now())
-
-      // Continue animation if highlight is still active
-      if (Date.now() - highlightTimestamp < HIGHLIGHT_DURATION) {
-        animationFrameId = requestAnimationFrame(updateTime)
-      }
-    }
-
-    // Start the animation loop
-    animationFrameId = requestAnimationFrame(updateTime)
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-    }
-  }, [highlightBib, highlightTimestamp])
-
-  // Force recalculation when `now` changes
-  const isActive = calculateIsActive()
-  const timeRemaining = calculateTimeRemaining()
-  const progress = calculateProgress()
+  const { isActive, timeRemaining, progress } = useTimestamp(
+    highlightBib && highlightTimestamp ? highlightTimestamp : null,
+    HIGHLIGHT_DURATION
+  )
 
   return {
     highlightBib: isActive ? highlightBib : null,
