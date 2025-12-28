@@ -33,6 +33,20 @@ export interface EventInfoData {
 }
 
 /**
+ * Provider error data
+ */
+export interface ProviderError {
+  /** Error code for programmatic handling */
+  code: 'PARSE_ERROR' | 'VALIDATION_ERROR' | 'CONNECTION_ERROR' | 'UNKNOWN_ERROR'
+  /** Human-readable error message */
+  message: string
+  /** Original error or data that caused the error */
+  cause?: unknown
+  /** Timestamp when the error occurred */
+  timestamp: number
+}
+
+/**
  * DataProvider interface - abstraction over different data sources
  *
  * Implementations:
@@ -91,4 +105,10 @@ export interface DataProvider {
    * Subscribe to connection status changes
    */
   onConnectionChange(callback: (status: ConnectionStatus) => void): Unsubscribe
+
+  /**
+   * Subscribe to provider errors (parse errors, validation errors, etc.)
+   * These errors don't necessarily break the connection but should be logged/displayed
+   */
+  onError(callback: (error: ProviderError) => void): Unsubscribe
 }

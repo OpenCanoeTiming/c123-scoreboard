@@ -5,6 +5,7 @@ import type {
   ResultsData,
   OnCourseData,
   EventInfoData,
+  ProviderError,
 } from './types'
 
 /**
@@ -47,6 +48,7 @@ export class CLIProvider implements DataProvider {
   private visibilityCallbacks = new Set<(visibility: VisibilityState) => void>()
   private eventInfoCallbacks = new Set<(info: EventInfoData) => void>()
   private connectionCallbacks = new Set<(status: ConnectionStatus) => void>()
+  private errorCallbacks = new Set<(error: ProviderError) => void>()
 
   constructor(url: string, options: CLIProviderOptions = {}) {
     // Ensure proper WebSocket URL format
@@ -157,11 +159,30 @@ export class CLIProvider implements DataProvider {
     return () => this.connectionCallbacks.delete(callback)
   }
 
+  onError(callback: (error: ProviderError) => void): Unsubscribe {
+    this.errorCallbacks.add(callback)
+    return () => this.errorCallbacks.delete(callback)
+  }
+
   // --- Private methods ---
 
   private setStatus(status: ConnectionStatus): void {
     this._status = status
     this.connectionCallbacks.forEach((cb) => cb(status))
+  }
+
+  private emitError(
+    code: ProviderError['code'],
+    message: string,
+    cause?: unknown
+  ): void {
+    const error: ProviderError = {
+      code,
+      message,
+      cause,
+      timestamp: Date.now(),
+    }
+    this.errorCallbacks.forEach((cb) => cb(error))
   }
 
   private handleDisconnect(): void {
@@ -239,6 +260,7 @@ export class CLIProvider implements DataProvider {
       }
     } catch (err) {
       console.warn('Failed to parse WebSocket message:', err)
+      this.emitError('PARSE_ERROR', 'Failed to parse WebSocket message', err)
     }
   }
 

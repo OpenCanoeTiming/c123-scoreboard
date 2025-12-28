@@ -5,6 +5,7 @@ import type {
   ResultsData,
   OnCourseData,
   EventInfoData,
+  ProviderError,
 } from './types'
 
 /**
@@ -63,6 +64,7 @@ export class ReplayProvider implements DataProvider {
   private visibilityCallbacks = new Set<(visibility: VisibilityState) => void>()
   private eventInfoCallbacks = new Set<(info: EventInfoData) => void>()
   private connectionCallbacks = new Set<(status: ConnectionStatus) => void>()
+  private errorCallbacks = new Set<(error: ProviderError) => void>()
 
   // Data source
   private source: string
@@ -138,6 +140,11 @@ export class ReplayProvider implements DataProvider {
   onConnectionChange(callback: (status: ConnectionStatus) => void): Unsubscribe {
     this.connectionCallbacks.add(callback)
     return () => this.connectionCallbacks.delete(callback)
+  }
+
+  onError(callback: (error: ProviderError) => void): Unsubscribe {
+    this.errorCallbacks.add(callback)
+    return () => this.errorCallbacks.delete(callback)
   }
 
   // --- Playback controls ---
@@ -279,6 +286,20 @@ export class ReplayProvider implements DataProvider {
     this.connectionCallbacks.forEach((cb) => cb(status))
   }
 
+  private emitError(
+    code: ProviderError['code'],
+    message: string,
+    cause?: unknown
+  ): void {
+    const error: ProviderError = {
+      code,
+      message,
+      cause,
+      timestamp: Date.now(),
+    }
+    this.errorCallbacks.forEach((cb) => cb(error))
+  }
+
   private async loadMessages(): Promise<void> {
     let content: string
 
@@ -323,9 +344,13 @@ export class ReplayProvider implements DataProvider {
         }
 
         this.messages.push(msg)
-      } catch {
-        // Skip invalid JSON lines
+      } catch (err) {
+        // Skip invalid JSON lines but emit error
         console.warn('Skipping invalid JSONL line:', line.substring(0, 50))
+        this.emitError('PARSE_ERROR', 'Invalid JSONL line in recording', {
+          line: line.substring(0, 100),
+          error: err,
+        })
       }
     }
 

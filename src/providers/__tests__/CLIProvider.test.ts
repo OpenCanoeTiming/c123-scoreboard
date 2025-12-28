@@ -500,6 +500,42 @@ describe('CLIProvider', () => {
 
       expect(callback).not.toHaveBeenCalled()
     })
+
+    it('should emit error callback for malformed message', async () => {
+      const provider = await connectedProvider()
+      const errorCallback = vi.fn()
+      provider.onError(errorCallback)
+
+      // Send invalid JSON
+      const ws = MockWebSocket.instances[0]
+      if (ws.onmessage) {
+        ws.onmessage({ data: 'not valid json' })
+      }
+
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+      expect(errorCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'PARSE_ERROR',
+          message: 'Failed to parse WebSocket message',
+          timestamp: expect.any(Number),
+        })
+      )
+    })
+
+    it('should allow unsubscribing from error callback', async () => {
+      const provider = await connectedProvider()
+      const errorCallback = vi.fn()
+      const unsubscribe = provider.onError(errorCallback)
+      unsubscribe()
+
+      // Send invalid JSON
+      const ws = MockWebSocket.instances[0]
+      if (ws.onmessage) {
+        ws.onmessage({ data: 'not valid json' })
+      }
+
+      expect(errorCallback).not.toHaveBeenCalled()
+    })
   })
 
   describe('callback subscription', () => {

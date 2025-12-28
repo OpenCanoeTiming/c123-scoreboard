@@ -395,4 +395,44 @@ describe('ReplayProvider', () => {
       expect(provider.duration).toBe(0)
     })
   })
+
+  describe('error callback', () => {
+    it('should emit error for invalid JSONL line', async () => {
+      const invalidJSONL = `{"_meta":{"version":2}}
+{"ts":10,"src":"ws","type":"title","data":{"msg":"title","data":{"text":"Valid"}}}
+not valid json
+{"ts":20,"src":"ws","type":"title","data":{"msg":"title","data":{"text":"Valid2"}}}
+`
+      const provider = new ReplayProvider(invalidJSONL, { autoPlay: false })
+      const errorCallback = vi.fn()
+      provider.onError(errorCallback)
+
+      await provider.connect()
+
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+      expect(errorCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'PARSE_ERROR',
+          message: 'Invalid JSONL line in recording',
+          timestamp: expect.any(Number),
+        })
+      )
+      // Valid messages should still be loaded
+      expect(provider.messageCount).toBe(2)
+    })
+
+    it('should allow unsubscribing from error callback', async () => {
+      const invalidJSONL = `{"_meta":{"version":2}}
+not valid json
+`
+      const provider = new ReplayProvider(invalidJSONL, { autoPlay: false })
+      const errorCallback = vi.fn()
+      const unsubscribe = provider.onError(errorCallback)
+      unsubscribe()
+
+      await provider.connect()
+
+      expect(errorCallback).not.toHaveBeenCalled()
+    })
+  })
 })

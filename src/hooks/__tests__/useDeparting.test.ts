@@ -22,6 +22,7 @@ function createMockProvider(
     onVisibility: vi.fn().mockReturnValue(() => {}),
     onEventInfo: vi.fn().mockReturnValue(() => {}),
     onConnectionChange: vi.fn().mockReturnValue(() => {}),
+    onError: vi.fn().mockReturnValue(() => {}),
     ...overrides,
   }
 }

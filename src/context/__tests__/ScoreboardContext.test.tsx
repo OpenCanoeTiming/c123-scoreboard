@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
 import { ScoreboardProvider, useScoreboard } from '../ScoreboardContext'
 import { DEPARTING_TIMEOUT } from '../constants'
-import type { DataProvider, Unsubscribe, ResultsData, OnCourseData, EventInfoData } from '@/providers/types'
+import type { DataProvider, Unsubscribe, ResultsData, OnCourseData, EventInfoData, ProviderError } from '@/providers/types'
 import type { ConnectionStatus, VisibilityState, OnCourseCompetitor, Result } from '@/types'
 
 /**
@@ -87,6 +87,9 @@ function createMockProvider(overrides: Partial<DataProvider> = {}): DataProvider
     onConnectionChange: vi.fn((callback: (status: ConnectionStatus) => void): Unsubscribe => {
       connectionCallback = callback
       return () => { connectionCallback = null }
+    }),
+    onError: vi.fn((_callback: (error: ProviderError) => void): Unsubscribe => {
+      return () => {}
     }),
     // Helper methods to trigger callbacks
     triggerResults: (data: ResultsData) => {
