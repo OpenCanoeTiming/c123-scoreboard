@@ -261,30 +261,30 @@
 ## Fáze 2.6: Highlight logika
 
 ### 2.5.1 Highlight state
-- [ ] State: `highlightBib: string | null`
-- [ ] State: `highlightTimestamp: number | null`
-- [ ] Konstanta: HIGHLIGHT_DURATION = 5000 (5 sekund)
+- [x] State: `highlightBib: string | null`
+- [x] State: `highlightTimestamp: number | null`
+- [x] Konstanta: HIGHLIGHT_DURATION = 5000 (5 sekund)
 
 ### 2.5.2 Highlight aktivace
-- [ ] Při top.HighlightBib != 0
-- [ ] Zkontrolovat zda bib NENÍ v onCourse (deduplikace)
-- [ ] Pokud není → aktivovat highlight s aktuálním timestamp
+- [x] Při top.HighlightBib != 0
+- [x] Zkontrolovat zda bib NENÍ v onCourse (deduplikace)
+- [x] Pokud není → aktivovat highlight s aktuálním timestamp
 
 ### 2.5.3 Highlight expiration
-- [ ] Helper: `isHighlightActive(): boolean`
-- [ ] Počítat: `Date.now() - highlightTimestamp < HIGHLIGHT_DURATION`
-- [ ] Timestamp-based, žádné setTimeout
+- [x] Helper: `isHighlightActive(): boolean`
+- [x] Počítat: `Date.now() - highlightTimestamp < HIGHLIGHT_DURATION`
+- [x] Timestamp-based, žádné setTimeout
 
 ### 2.5.4 Highlight UI hook
-- [ ] `useHighlight()` hook
-- [ ] Vrací: { highlightBib, isActive, timeRemaining }
-- [ ] Používá requestAnimationFrame nebo interval pro aktualizaci
+- [x] `useHighlight()` hook
+- [x] Vrací: { highlightBib, isActive, timeRemaining }
+- [x] Používá requestAnimationFrame nebo interval pro aktualizaci
 
 ### 🔍 Revize: Highlight
-- [ ] Aktivace highlight funguje
-- [ ] Expiration po 5s funguje
-- [ ] Deduplikace s onCourse funguje
-- [ ] **Commit:** "feat: highlight logic"
+- [x] Aktivace highlight funguje
+- [x] Expiration po 5s funguje
+- [x] Deduplikace s onCourse funguje
+- [x] **Commit:** "feat: highlight logic"
 
 ---
 

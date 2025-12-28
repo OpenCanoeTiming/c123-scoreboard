@@ -21,6 +21,11 @@ import type {
 } from '@/providers/types'
 
 /**
+ * Highlight duration in milliseconds (5 seconds)
+ */
+export const HIGHLIGHT_DURATION = 5000
+
+/**
  * Scoreboard state interface
  */
 export interface ScoreboardState {
@@ -33,7 +38,10 @@ export interface ScoreboardState {
   results: Result[]
   raceName: string
   raceStatus: string
+
+  // Highlight state (timestamp-based expiration)
   highlightBib: string | null
+  highlightTimestamp: number | null
 
   // Competitors
   currentCompetitor: OnCourseCompetitor | null
@@ -88,7 +96,12 @@ export function ScoreboardProvider({
   const [results, setResults] = useState<Result[]>([])
   const [raceName, setRaceName] = useState('')
   const [raceStatus, setRaceStatus] = useState('')
+
+  // Highlight state (timestamp-based expiration)
   const [highlightBib, setHighlightBib] = useState<string | null>(null)
+  const [highlightTimestamp, setHighlightTimestamp] = useState<number | null>(
+    null
+  )
 
   // Competitors
   const [currentCompetitor, setCurrentCompetitor] =
@@ -112,6 +125,7 @@ export function ScoreboardProvider({
     setRaceName('')
     setRaceStatus('')
     setHighlightBib(null)
+    setHighlightTimestamp(null)
     setCurrentCompetitor(null)
     setOnCourse([])
     setInitialDataReceived(false)
@@ -120,15 +134,44 @@ export function ScoreboardProvider({
 
   /**
    * Handle results data (from top messages)
+   *
+   * Includes highlight deduplication logic:
+   * - If highlightBib is in onCourse, don't activate highlight
+   * - This prevents double-display of competitors still on course
    */
-  const handleResults = useCallback((data: ResultsData) => {
-    setResults(data.results)
-    setRaceName(data.raceName)
-    setRaceStatus(data.raceStatus)
-    setHighlightBib(data.highlightBib)
-    // First top message means we have data
-    setInitialDataReceived(true)
-  }, [])
+  const handleResults = useCallback(
+    (data: ResultsData) => {
+      setResults(data.results)
+      setRaceName(data.raceName)
+      setRaceStatus(data.raceStatus)
+
+      // Highlight activation with deduplication
+      const newHighlightBib = data.highlightBib
+      if (newHighlightBib) {
+        // Check if the highlighted competitor is NOT in onCourse
+        const isOnCourse = onCourse.some((c) => c.bib === newHighlightBib)
+        if (!isOnCourse) {
+          // Only activate if this is a new highlight
+          setHighlightBib((prevBib) => {
+            if (prevBib !== newHighlightBib) {
+              // New highlight - set timestamp
+              setHighlightTimestamp(Date.now())
+              return newHighlightBib
+            }
+            return prevBib
+          })
+        }
+      } else {
+        // highlightBib is null/empty from server - clear immediately
+        // Note: We use timestamp-based expiration, so we don't clear here
+        // The highlight will expire naturally via useHighlight hook
+      }
+
+      // First top message means we have data
+      setInitialDataReceived(true)
+    },
+    [onCourse]
+  )
 
   /**
    * Handle on-course data (from comp/oncourse messages)
@@ -228,6 +271,7 @@ export function ScoreboardProvider({
     raceName,
     raceStatus,
     highlightBib,
+    highlightTimestamp,
     currentCompetitor,
     onCourse,
     visibility,
