@@ -41,7 +41,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const highlightedRowRef = useRef<HTMLDivElement>(null)
 
   const { highlightBib, isActive } = useHighlight()
-  const { layoutMode, disableScroll } = useLayout()
+  const { disableScroll } = useLayout()
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
@@ -52,8 +52,9 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   })
 
   // Whether to show optional columns based on layout
-  const showPenalty = layoutMode !== 'ledwall'
-  const showBehind = layoutMode !== 'ledwall'
+  // Original v1 shows penalty and behind columns on BOTH vertical and ledwall
+  const showPenalty = true
+  const showBehind = true
 
   // Container classes
   const containerClasses = [styles.container, !visible && styles.hidden]

@@ -9,6 +9,15 @@
   border-radius: var(--border-radius-md);
   transition: opacity var(--transition-normal);
   scroll-behavior: smooth;
+
+  /* Hide scrollbar - matches original v1 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Hide scrollbar - WebKit (Chrome, Safari) */
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 .container.hidden {

@@ -157,14 +157,14 @@ Příklad: `[2][3][4] 54` (gate badges + total)
 - [x] Styl: červený obdélník (#cc3333), border-radius 0
 - [x] Font size: 18px v CurrentCompetitor (badge formát)
 
-### 9.13 Ledwall-specific adjustments
+### 9.13 Ledwall-specific adjustments ✅
 
 Testovat na **768×384** (`?type=ledwall&ledwallExactSize=true`)
 
-- [ ] Ověřit že všechny komponenty se vejdou do 384px výšky
-- [ ] Footer skrytý (již implementováno)
-- [ ] Behind column skrytý (již implementováno)
-- [ ] Scrollbar skrytý
+- [x] Ověřit že všechny komponenty se vejdou do 384px výšky
+- [x] Footer skrytý (již implementováno)
+- [x] Penalty a behind columns VIDITELNÉ (opraveno - originál je zobrazuje)
+- [x] Scrollbar skrytý (přidáno CSS pro skrytí scrollbaru)
 - [ ] Minimální spacing mezi komponenty
 
 ### 🔍 Revize: Fáze 9

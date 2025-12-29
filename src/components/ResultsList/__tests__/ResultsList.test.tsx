@@ -147,8 +147,8 @@ describe('ResultsList', () => {
     })
   })
 
-  describe('responsive columns (ledwall)', () => {
-    it('hides penalty and behind columns on ledwall layout', () => {
+  describe('responsive columns', () => {
+    it('shows penalty and behind columns on ledwall layout (matches original v1)', () => {
       vi.mocked(useLayout).mockReturnValue({
         layoutMode: 'ledwall',
         viewportWidth: 768,
@@ -159,15 +159,16 @@ describe('ResultsList', () => {
         headerHeight: 60,
         footerHeight: 0,
         fontSizeCategory: 'large',
+        disableScroll: false,
       })
 
       const results = [createResult({ pen: 2, behind: '1.23' })]
       const { container } = render(<ResultsList results={results} />)
 
-      // Penalty and behind values should not be shown
+      // Original v1 shows penalty and behind on BOTH layouts
       const penaltyCells = container.querySelectorAll('[class*="penalty"]')
-      expect(penaltyCells.length).toBe(0)
-      expect(screen.queryByText('+1.23')).not.toBeInTheDocument()
+      expect(penaltyCells.length).toBe(1)
+      expect(screen.getByText('+1.23')).toBeInTheDocument()
     })
 
     it('shows all columns on vertical layout', () => {
@@ -181,6 +182,7 @@ describe('ResultsList', () => {
         headerHeight: 142, // Updated to match original v1 computed styles
         footerHeight: 60,
         fontSizeCategory: 'medium',
+        disableScroll: false,
       })
 
       const results = [createResult({ pen: 2, behind: '1.23' })]
