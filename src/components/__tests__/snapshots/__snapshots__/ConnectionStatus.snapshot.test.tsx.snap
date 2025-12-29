@@ -1,0 +1,184 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - connected waiting for data 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_spinner_1c5a2c"
+      />
+      <div
+        class="_message_1c5a2c"
+      >
+        Čekání na data...
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - connected with data (hidden) 1`] = `<div />`;
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - connecting 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_spinner_1c5a2c"
+      />
+      <div
+        class="_message_1c5a2c"
+      >
+        Připojování...
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - disconnected 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        Odpojeno
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - disconnected with retry button 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        Odpojeno
+      </div>
+      <button
+        class="_retryButton_1c5a2c"
+      >
+        Zkusit znovu
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - reconnecting 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_spinner_1c5a2c"
+      />
+      <div
+        class="_message_1c5a2c"
+      >
+        Obnovování spojení...
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > error states > should match snapshot - error with message 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        WebSocket connection failed: timeout
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > error states > should match snapshot - error with retry button 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        Server unavailable
+      </div>
+      <button
+        class="_retryButton_1c5a2c"
+      >
+        Zkusit znovu
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > error states > should match snapshot - error without message 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        Chyba připojení
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectionStatus snapshots > error states > should match snapshot - long error message 1`] = `
+<div>
+  <div
+    class="_overlay_1c5a2c"
+  >
+    <div
+      class="_content_1c5a2c"
+    >
+      <div
+        class="_message_1c5a2c"
+      >
+        Connection failed after 5 retries. The WebSocket server at ws://192.168.68.108:8081 is not responding. Please check the server status and network connectivity.
+      </div>
+    </div>
+  </div>
+</div>
+`;

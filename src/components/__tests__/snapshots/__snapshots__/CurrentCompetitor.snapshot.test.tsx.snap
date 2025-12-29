@@ -1,0 +1,2094 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - ahead of leader 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_ttbRow_610b2e"
+    >
+      <span
+        class="_ttbLabel_610b2e"
+      >
+        TTB
+      </span>
+      <span
+        aria-label="Vpředu o 1.23"
+        class="_ttbDiff_610b2e _ahead_610b2e"
+      >
+        -1.23
+      </span>
+      <span
+        class="_ttbName_610b2e"
+      >
+        SVOBODA Petr
+      </span>
+      <span
+        class="_rank_610b2e"
+      >
+        #
+        1
+      </span>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - behind leader 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_ttbRow_610b2e"
+    >
+      <span
+        class="_ttbLabel_610b2e"
+      >
+        TTB
+      </span>
+      <span
+        aria-label="Pozadu o 2.45"
+        class="_ttbDiff_610b2e _behind_610b2e"
+      >
+        +2.45
+      </span>
+      <span
+        class="_ttbName_610b2e"
+      >
+        SVOBODA Petr
+      </span>
+      <span
+        class="_rank_610b2e"
+      >
+        #
+        2
+      </span>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - exactly on pace 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_ttbRow_610b2e"
+    >
+      <span
+        class="_ttbLabel_610b2e"
+      >
+        TTB
+      </span>
+      <span
+        aria-label="Pozadu o 0.00"
+        class="_ttbDiff_610b2e _behind_610b2e"
+      >
+        +0.00
+      </span>
+      <span
+        class="_ttbName_610b2e"
+      >
+        SVOBODA Petr
+      </span>
+      <span
+        class="_rank_610b2e"
+      >
+        #
+        1
+      </span>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - no TTB info 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - departing competitor 1`] = `
+<div>
+  <div
+    class="_container_610b2e _departing_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+      <span
+        class="_departingLabel_610b2e"
+      >
+        Odchod
+      </span>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - finished competitor 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hidden 1`] = `
+<div>
+  <div
+    class="_container_610b2e _hidden_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - null competitor 1`] = `
+<div>
+  <div
+    class="_container_610b2e _hidden_610b2e"
+  />
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - running competitor 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - all gates clear 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 6: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 6"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 7: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 7"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 8: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 8"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 9: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 9"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 10: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 10"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - multiple penalties mixed 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _miss_610b2e"
+        >
+          54
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: dotyk, 2 sekundy"
+          class="_gate_610b2e _touch_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          2
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: neprojetí, 50 sekund"
+          class="_gate_610b2e _miss_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          50
+        </div>
+        <div
+          aria-label="Brána 5: dotyk, 2 sekundy"
+          class="_gate_610b2e _touch_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          2
+        </div>
+        <div
+          aria-label="Brána 6: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 6"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 7: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 7"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 8: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 8"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 9: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 9"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 10: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 10"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - no gates (empty string) 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - partially completed gates 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _touch_610b2e"
+        >
+          2
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: dotyk, 2 sekundy"
+          class="_gate_610b2e _touch_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          2
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - single miss (50s) 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _miss_610b2e"
+        >
+          50
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: neprojetí, 50 sekund"
+          class="_gate_610b2e _miss_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          50
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 6: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 6"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 7: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 7"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 8: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 8"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 9: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 9"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 10: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 10"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - single touch (2s) 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          NOVAK Jan
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          SKP Praha
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _touch_610b2e"
+        >
+          2
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: dotyk, 2 sekundy"
+          class="_gate_610b2e _touch_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          2
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 6: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 6"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 7: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 7"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 8: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 8"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 9: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 9"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 10: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 10"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - country code as club 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          FOX Jessica
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          AUS
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - long name 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          ALEXANDROPOULOS-SMITHSON
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          Kajak Klub Bratislava -
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - short name 1`] = `
+<div>
+  <div
+    class="_container_610b2e"
+    data-testid="oncourse"
+  >
+    <div
+      class="_mainRow_610b2e"
+    >
+      <div
+        class="_bib_610b2e"
+      >
+        42
+      </div>
+      <div
+        class="_competitorInfo_610b2e"
+      >
+        <div
+          class="_name_610b2e"
+        >
+          LI Wei
+        </div>
+        <div
+          class="_club_610b2e"
+        >
+          CHN
+        </div>
+      </div>
+      <div
+        class="_timeContainer_610b2e"
+      >
+        <span
+          class="_runningIndicator_610b2e"
+        >
+          ►
+        </span>
+        <div
+          class="_time_610b2e"
+        >
+          1:35.32
+        </div>
+      </div>
+    </div>
+    <div
+      class="_penaltiesRow_610b2e"
+    >
+      <div
+        class="_penaltyTotal_610b2e"
+      >
+        <span
+          class="_penaltyLabel_610b2e"
+        >
+          Pen
+        </span>
+        <span
+          class="_penaltyValue_610b2e _clear_610b2e"
+        >
+          0
+          s
+        </span>
+      </div>
+      <div
+        aria-label="Penalizace na branách"
+        class="_gatesContainer_610b2e"
+        role="list"
+      >
+        <div
+          aria-label="Brána 1: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 1"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 2: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 2"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 3: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 3"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 4: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 4"
+        >
+          0
+        </div>
+        <div
+          aria-label="Brána 5: čistě"
+          class="_gate_610b2e _clear_610b2e"
+          role="listitem"
+          title="Brána 5"
+        >
+          0
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

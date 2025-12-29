@@ -2700,3 +2700,80 @@ Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální pr�
 | **Architekturální rozhodnutí** (~5 kroků) | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
 
 ---
+
+## Review v2.4 (2025-12-29) - Tag: `review-ready-v2.4`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 551 testů prochází (24 test suites)
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Rozšířené snapshot regression testy**
+   - Nový soubor: `src/components/__tests__/snapshots/CurrentCompetitor.snapshot.test.tsx`
+     - 18 snapshot testů pokrývajících:
+       - Základní stavy (running, finished, hidden, departing, null)
+       - TTB stavy (ahead, behind, on pace, no info)
+       - Gate penalty stavy (all clear, touch, miss, mixed, partial, empty)
+       - Name formatting (long, short, country code)
+
+   - Nový soubor: `src/components/__tests__/snapshots/ConnectionStatus.snapshot.test.tsx`
+     - 10 snapshot testů pokrývajících:
+       - Connection stavy (connecting, waiting, hidden, reconnecting, disconnected)
+       - Error stavy (no message, with message, with retry, long message)
+
+### Celková statistika testů
+
+| Kategorie | Počet |
+|-----------|-------|
+| Utility (formatTime, formatName) | 59 |
+| Providers (CLI, Replay) | 55 |
+| Provider utils (parseGates, detectFinish, validation) | 78 |
+| Hooks (useAutoScroll, useLayout, useHighlight) | 61 |
+| Components (ResultsList, CurrentCompetitor) | 65 |
+| Context (ScoreboardContext) | 45 |
+| Contract tests | 35 |
+| Fuzz tests | 22 |
+| Memory leak tests | 10 |
+| ErrorBoundary tests | 20 |
+| Snapshot tests | 57 |
+| Chaos engineering tests | 31 |
+| **Celkem** | **551** |
+
+### Závěr - všechny automatizovatelné kroky dokončeny
+
+Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální práci člověka**:
+
+| Kategorie | Proč nelze automatizovat |
+|-----------|--------------------------|
+| **Vizuální testování** (~45 kroků) | Vyžaduje prohlížeč + lidské oči pro porovnání s reference screenshoty |
+| **Live server test** (~10 kroků) | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** (~5 kroků) | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** (3 kroky) | TCP socket nelze v browser JS - technicky nemožné bez WebSocket proxy |
+| **Hardware test** (~5 kroků) | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** (~5 kroků) | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+### Doporučení pro manuální testování
+
+```bash
+# Spustit dev server
+npm run dev
+
+# Otevřít v prohlížeči
+http://localhost:5173/?source=replay&speed=10
+```
+
+**Klíčové scénáře k otestování:**
+
+1. **Cold start** - Loading → Waiting → Data zobrazena
+2. **Závodník dojede** - comp zmizí → departing 3s → highlight v Results → scroll
+3. **Highlight timeout** - po 5s highlight zmizí, scroll to top
+4. **Layout přepínání** - Vertical (1080×1920) vs Ledwall (768×384)
+5. **Vizuální porovnání** - s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+
+---
