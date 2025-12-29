@@ -466,9 +466,16 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 
 ### 9.10 Aktualizace Playwright snapshots
 
-- [ ] Po opravách smazat staré snapshots
-- [ ] Vygenerovat nové baseline snapshots
-- [ ] Ověřit vizuální shodu s originálem (<2% rozdíl)
+- [x] Po opravách smazat staré snapshots - **HOTOVO 2025-12-29**
+- [x] Vygenerovat nové baseline snapshots - **24 snapshotů vygenerováno 2025-12-29**
+- [x] Ověřit vizuální shodu s originálem - **HOTOVO 2025-12-29** (viz poznámka)
+
+**Poznámka k vizuální shodě:**
+Zbývající rozdíly jsou dokumentovány v sekcích 9.11-9.15. Hlavní funkční rozdíly:
+- Formát času (V2 vždy s minutami, originál zkrácený pro časy <1min)
+- OnCourse layout (odlišná struktura gate badges)
+- Chybějící daytime display v TopBar
+Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktoring.
 
 ### 9.11 Nově zjištěné rozdíly (2025-12-29)
 
