@@ -1503,3 +1503,112 @@ Referenční materiály:
 
 ---
 
+## Review v1.4 (2025-12-29) - Tag: `review-ready-v1.4`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 428 testů prochází (17 test suites)
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Memory leak testy pro ReplayProvider**
+   - Nový test soubor: `src/providers/__tests__/memoryLeak.test.ts`
+   - 10 testů pokrývajících:
+     - Timer cleanup při disconnect
+     - Subscription cleanup
+     - Multiple connect/disconnect cycles (100x)
+     - Rapid connect/disconnect race conditions
+     - Callback accumulation prevention
+     - Pause/resume state cleanup
+     - Seek operation cleanup
+     - Speed change timer cleanup
+     - Large message count handling (1000 zpráv)
+     - Large result arrays handling (500 položek)
+
+### Shrnutí zbývajících kroků
+
+Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální práci člověka**:
+
+| Kategorie | Proč nelze automatizovat | Příklady |
+|-----------|--------------------------|----------|
+| **Vizuální testování** | Vyžaduje prohlížeč + lidské oči | Porovnání s reference screenshoty, kontrola barev a layoutu |
+| **Live server test** | CLI server 192.168.68.108 není přístupný | Připojení k WebSocket, testování reconnect |
+| **Playwright E2E** | Chybí systémové závislosti (chromium) | Screenshot testy, interakční testy |
+| **C123Provider** | TCP socket nelze v prohlížeči | Implementace vyžaduje WebSocket proxy |
+| **Hardware test** | Fyzická zařízení | Raspberry Pi, TV/LED panel |
+| **Architekturální rozhodnutí** | Vyžaduje rozhodnutí uživatele | Rozdělení Context, schema validace |
+
+### Další kroky pro testování a ladění (doporučeno pro uživatele)
+
+#### A. Manuální testování v prohlížeči
+
+```bash
+npm run dev
+# Otevřít http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+1. **Cold start** - Loading → Waiting → Data zobrazena
+2. **Závodník dojede** - comp zmizí → departing 3s → highlight v Results → scroll
+3. **Highlight timeout** - po 5s highlight zmizí, scroll to top
+4. **Resize** - přepínat mezi vertical (1080×1920) a ledwall (768×384)
+5. **Prázdný závod** - graceful empty state
+6. **Rapid changes** - 2+ závodníci dojedou < 1s po sobě
+
+#### B. Vizuální ladění
+
+1. Porovnat s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+2. Zkopírovat barvy z `*-styles.json` do `src/styles/variables.css`
+3. Doladit typografii (font-size, line-height, letter-spacing)
+4. Zkontrolovat animace (pulseGlyph, subtlePulse)
+
+#### C. Live server test (pokud dostupný)
+
+```
+?source=cli&host=192.168.68.108:8081
+```
+
+**Testovat:**
+1. Připojení k reálnému CLI serveru
+2. Odpojit/připojit server → reconnect overlay
+3. Real-time data flow
+4. Závodník dojede → highlight → scroll
+
+#### D. Playwright E2E setup
+
+```bash
+npx playwright install
+npx playwright install-deps
+npx playwright test --update-snapshots
+```
+
+### Stav implementace
+
+| Komponenta | Stav | Testy |
+|------------|------|-------|
+| ReplayProvider | ✅ Hotovo | 37 testů (vč. memory leak) |
+| CLIProvider | ✅ Hotovo | 24 testů |
+| ScoreboardContext | ✅ Hotovo | 45 testů |
+| useAutoScroll | ✅ Hotovo | 25 testů |
+| useLayout | ✅ Hotovo | 15 testů |
+| useHighlight | ✅ Hotovo | 15 testů |
+| ResultsList | ✅ Hotovo | 20 testů |
+| CurrentCompetitor | ✅ Hotovo | 25 testů |
+| ErrorBoundary | ✅ Hotovo | 20 testů |
+| Validace dat | ✅ Hotovo | 44 testů |
+| Fuzz testing | ✅ Hotovo | 22 testů |
+
+### Co zbývá před produkčním nasazením
+
+1. **Vizuální QA** - manuální kontrola proti prototypu
+2. **Live test** - připojení k reálnému serveru
+3. **Hardware test** - výkon na Raspberry Pi
+4. **Barvy a typografie** - finální ladění podle reference
+
+---
+
