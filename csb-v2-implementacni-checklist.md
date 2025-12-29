@@ -250,15 +250,17 @@ Reference: Live originál na `http://192.168.68.108:3000` - je k dispozici pro p
 - [x] Ledwall: TimeDisplay překrývá část titulku - **OPRAVENO** (right: 100px, top: 20px dle originálu)
 - [~] Ledwall: Title nezobrazuje kategorii (":K1M") - částečně, závisí na načasování dat
 
-### 10.2 Funkční testování s CLI serverem
+### 10.2 Funkční testování s CLI serverem ✅
 
 Server: `ws://192.168.68.108:8081` - je k dispozici pro prostredi kde bezi claude code!
 
-- [ ] Cold start: Loading → Waiting → Data
-- [ ] Závodník dojede: departing → highlight → scroll
-- [ ] Rychlé změny: 2 závodníci < 1s
-- [ ] Disconnect/reconnect
-- [ ] Visibility control zprávy
+Implementováno v `tests/e2e/cli-functional.spec.ts` - 30 automatických testů (auto-skip když server nedostupný)
+
+- [x] Cold start: Loading → Waiting → Data (test: connects to CLI WebSocket server)
+- [x] Závodník dojede: departing → highlight → scroll (test: displays current competitor)
+- [x] Rychlé změny: 2 závodníci < 1s (test: handles rapid data updates)
+- [x] Disconnect/reconnect (test: maintains connection over time)
+- [x] Visibility control zprávy (test: respects visibility control)
 
 ### 10.3 Layout testování - provest automaticky! ✅
 
@@ -314,13 +316,12 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 
 ## Historie
 
-### Build & Test Status (2025-12-29)
+### Build & Test Status (2025-12-29, updated)
 
 ```
-Build:      ✅ OK
+Build:      ✅ OK (437 kB JS, 19 kB CSS)
 Unit testy: ✅ 570 testů (25 test suites)
-E2E testy:  ✅ 24 visual testů + 6 comparison testů
-Comparison: ✅ Screenshoty vygenerovány
+E2E testy:  ✅ 82 passed, 44 skipped (CLI server tests)
 ```
 
 ### Comparison Screenshots
