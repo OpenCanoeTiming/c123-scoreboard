@@ -155,11 +155,11 @@ test.describe('Visual Comparison with Original v1', () => {
       newScreenshot
     )
 
-    // 3. Compare - using 15% tolerance for layout/styling differences
-    // The main goal is to catch major layout/rendering issues
+    // 3. Compare - using 2% tolerance for layout/styling differences
+    // Strict threshold to catch any visual issues
     await expect(page).toHaveScreenshot('comparison-vertical.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.15, // 15% tolerance for live data variations
+      maxDiffPixelRatio: 0.02, // 2% tolerance for live data timing variations
     })
   })
 
@@ -193,10 +193,10 @@ test.describe('Visual Comparison with Original v1', () => {
       newScreenshot
     )
 
-    // 3. Compare
+    // 3. Compare - strict threshold
     await expect(page).toHaveScreenshot('comparison-ledwall.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.15,
+      maxDiffPixelRatio: 0.02, // 2% tolerance
     })
   })
 
@@ -228,7 +228,7 @@ test.describe('Visual Comparison with Original v1', () => {
     const newOncourse = page.getByTestId('oncourse')
     if (await newOncourse.isVisible()) {
       await expect(newOncourse).toHaveScreenshot('comparison-oncourse.png', {
-        maxDiffPixelRatio: 0.15,
+        maxDiffPixelRatio: 0.02, // 2% tolerance
       })
     }
   })
@@ -260,7 +260,7 @@ test.describe('Visual Comparison with Original v1', () => {
     await waitForDataLoad(page)
     const newResults = page.getByTestId('results-list')
     await expect(newResults).toHaveScreenshot('comparison-results.png', {
-      maxDiffPixelRatio: 0.15,
+      maxDiffPixelRatio: 0.02, // 2% tolerance
     })
   })
 })

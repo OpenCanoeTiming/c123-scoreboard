@@ -58,6 +58,7 @@ function ScoreboardContent() {
     error,
     initialDataReceived,
     title,
+    raceName,
     dayTime,
     currentCompetitor,
     departingCompetitor,
@@ -81,7 +82,7 @@ function ScoreboardContent() {
         header={
           <>
             <TopBar visible={visibility.displayTopBar} />
-            <Title title={title} visible={visibility.displayTitle} />
+            <Title title={title} raceName={raceName} visible={visibility.displayTitle} />
           </>
         }
         footer={<Footer visible={visibility.displayFooter} />}

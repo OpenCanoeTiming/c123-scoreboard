@@ -19,6 +19,8 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-body, #000000);
+  color: var(--color-text-primary, #e9e9e9);
 }
 
 img,

@@ -11,8 +11,9 @@ export default defineConfig({
 
   expect: {
     toHaveScreenshot: {
-      // Default threshold for visual comparison
-      maxDiffPixelRatio: 0.01,
+      // Strict threshold for visual comparison - catch any visual differences
+      maxDiffPixelRatio: 0.001, // 0.1% tolerance
+      maxDiffPixels: 0, // No pixel differences allowed by default
     },
   },
 
@@ -33,11 +34,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         viewport: { width: 1080, height: 1920 },
       },
-      expect: {
-        toHaveScreenshot: {
-          maxDiffPixels: 100, // Tolerance for vertical
-        },
-      },
+      // Uses global strict threshold (0 pixels, 0.1% ratio)
     },
     {
       name: 'ledwall',
@@ -45,11 +42,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         viewport: { width: 768, height: 384 },
       },
-      expect: {
-        toHaveScreenshot: {
-          maxDiffPixels: 50, // Tolerance for ledwall
-        },
-      },
+      // Uses global strict threshold (0 pixels, 0.1% ratio)
     },
   ],
 
