@@ -217,7 +217,7 @@ Porovnání V2 s referenčními screenshoty z `../analysis/reference-screenshots
 - [x] **Commit:** "fix: improve ledwall layout styling" (1a255a2)
 
 **Známé rozdíly (nízká priorita):**
-- [ ] TimeDisplay pozicování v ledwall - čas částečně překrývá titulek
+- [x] TimeDisplay pozicování v ledwall - opraveno (font-size 32px, yellow, right 80px)
 - [ ] CurrentCompetitor/OnCourse vizuální sladění s originálem (závisí na datech)
 
 ---
