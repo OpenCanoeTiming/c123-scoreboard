@@ -7,81 +7,36 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_ttbRow_610b2e"
-    >
-      <span
-        class="_ttbLabel_610b2e"
-      >
-        TTB
-      </span>
-      <span
-        aria-label="Vpředu o 1.23"
-        class="_ttbDiff_610b2e _ahead_610b2e"
-      >
-        -1.23
-      </span>
-      <span
-        class="_ttbName_610b2e"
-      >
-        SVOBODA Petr
-      </span>
-      <span
-        class="_rank_610b2e"
-      >
-        #
-        1
-      </span>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -95,81 +50,36 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_ttbRow_610b2e"
-    >
-      <span
-        class="_ttbLabel_610b2e"
-      >
-        TTB
-      </span>
-      <span
-        aria-label="Pozadu o 2.45"
-        class="_ttbDiff_610b2e _behind_610b2e"
-      >
-        +2.45
-      </span>
-      <span
-        class="_ttbName_610b2e"
-      >
-        SVOBODA Petr
-      </span>
-      <span
-        class="_rank_610b2e"
-      >
-        #
-        2
-      </span>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -183,81 +93,36 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_ttbRow_610b2e"
-    >
-      <span
-        class="_ttbLabel_610b2e"
-      >
-        TTB
-      </span>
-      <span
-        aria-label="Pozadu o 0.00"
-        class="_ttbDiff_610b2e _behind_610b2e"
-      >
-        +0.00
-      </span>
-      <span
-        class="_ttbName_610b2e"
-      >
-        SVOBODA Petr
-      </span>
-      <span
-        class="_rank_610b2e"
-      >
-        #
-        1
-      </span>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -271,55 +136,36 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -333,60 +179,36 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - de
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-      <span
-        class="_departingLabel_610b2e"
-      >
-        Odchod
-      </span>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -400,50 +222,36 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - fi
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -457,55 +265,36 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hi
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -527,55 +316,36 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - ru
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -589,55 +359,36 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -651,79 +402,51 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
+        class="_gatesContainer_610b2e"
       >
         <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
-        class="_gatesContainer_610b2e"
-        role="list"
-      >
-        <div
-          aria-label="Brána 2: dotyk, 2 sekundy"
-          class="_gate_610b2e _touch_610b2e"
-          role="listitem"
-          title="Brána 2"
+          class="_gatePenalty_610b2e _penalty2_610b2e"
         >
           2
-        </div>
-        <div
-          aria-label="Brána 4: neprojetí, 50 sekund"
-          class="_gate_610b2e _miss_610b2e"
-          role="listitem"
-          title="Brána 4"
+        </span>
+        <span
+          class="_gatePenalty_610b2e _penalty50_610b2e"
         >
           4
-        </div>
-        <div
-          aria-label="Brána 5: dotyk, 2 sekundy"
-          class="_gate_610b2e _touch_610b2e"
-          role="listitem"
-          title="Brána 5"
+        </span>
+        <span
+          class="_gatePenalty_610b2e _penalty2_610b2e"
         >
           5
-        </div>
+        </span>
         <div
-          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+          class="_pen_610b2e _hasPenalty_610b2e"
         >
           54
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -737,55 +460,36 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -799,63 +503,41 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
+        class="_gatesContainer_610b2e"
       >
         <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
-        class="_gatesContainer_610b2e"
-        role="list"
-      >
-        <div
-          aria-label="Brána 3: dotyk, 2 sekundy"
-          class="_gate_610b2e _touch_610b2e"
-          role="listitem"
-          title="Brána 3"
+          class="_gatePenalty_610b2e _penalty2_610b2e"
         >
           3
-        </div>
+        </span>
         <div
-          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+          class="_pen_610b2e _hasPenalty_610b2e"
         >
           2
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -869,63 +551,41 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
+        class="_gatesContainer_610b2e"
       >
         <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
-        class="_gatesContainer_610b2e"
-        role="list"
-      >
-        <div
-          aria-label="Brána 3: neprojetí, 50 sekund"
-          class="_gate_610b2e _miss_610b2e"
-          role="listitem"
-          title="Brána 3"
+          class="_gatePenalty_610b2e _penalty50_610b2e"
         >
           3
-        </div>
+        </span>
         <div
-          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+          class="_pen_610b2e _hasPenalty_610b2e"
         >
           50
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -939,63 +599,41 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          NOVAK Jan
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          SKP Praha
-        </div>
+        NOVAK Jan
       </div>
       <div
-        class="_timeContainer_610b2e"
+        class="_gatesContainer_610b2e"
       >
         <span
-          class="_runningIndicator_610b2e"
+          class="_gatePenalty_610b2e _penalty2_610b2e"
         >
-          ►
+          2
         </span>
         <div
-          class="_time_610b2e"
+          class="_pen_610b2e _hasPenalty_610b2e"
         >
-          95.32
+          2
         </div>
       </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
       <div
-        aria-label="Penalizace na branách"
-        class="_gatesContainer_610b2e"
-        role="list"
+        class="_total_610b2e"
       >
-        <div
-          aria-label="Brána 2: dotyk, 2 sekundy"
-          class="_gate_610b2e _touch_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          2
-        </div>
-        <div
-          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
-        >
-          2
-        </div>
+        95.32
       </div>
     </div>
   </div>
@@ -1009,55 +647,36 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          FOX Jessica
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          AUS
-        </div>
+        FOX Jessica
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -1071,55 +690,36 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          ALEXANDROPOULOS-SMITHSON
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          Kajak Klub Bratislava -
-        </div>
+        ALEXANDROPOULOS-SMITHSON
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>
@@ -1133,55 +733,36 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
     data-testid="oncourse"
   >
     <div
-      class="_mainRow_610b2e"
+      class="_row_610b2e _vertical_610b2e"
     >
+      <span
+        class="_runningIndicator_610b2e"
+      >
+        ►
+      </span>
       <div
         class="_bib_610b2e"
       >
         42
       </div>
       <div
-        class="_competitorInfo_610b2e"
+        class="_name_610b2e"
       >
-        <div
-          class="_name_610b2e"
-        >
-          LI Wei
-        </div>
-        <div
-          class="_club_610b2e"
-        >
-          CHN
-        </div>
+        LI Wei
       </div>
       <div
-        class="_timeContainer_610b2e"
-      >
-        <span
-          class="_runningIndicator_610b2e"
-        >
-          ►
-        </span>
-        <div
-          class="_time_610b2e"
-        >
-          95.32
-        </div>
-      </div>
-    </div>
-    <div
-      class="_penaltiesRow_610b2e"
-    >
-      <div
-        aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
-        role="list"
       >
         <div
-          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+          class="_pen_610b2e _noPenalty_610b2e"
         >
           0
         </div>
+      </div>
+      <div
+        class="_total_610b2e"
+      >
+        95.32
       </div>
     </div>
   </div>

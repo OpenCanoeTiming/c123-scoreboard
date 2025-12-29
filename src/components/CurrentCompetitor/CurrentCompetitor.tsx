@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import styles from './CurrentCompetitor.module.css'
 import type { OnCourseCompetitor } from '@/types'
-import { formatName, formatClub } from '@/utils/formatName'
-import { formatTTBDiff } from '@/utils/formatTime'
+import { formatName } from '@/utils/formatName'
 import { parseGates, type GatePenalty } from '@/providers/utils/parseGates'
+import { useLayout } from '@/hooks'
 
 /**
  * Props for CurrentCompetitor component
@@ -21,66 +21,22 @@ interface CurrentCompetitorProps {
  * Get CSS class for gate penalty
  */
 function getGateClass(penalty: GatePenalty): string {
-  if (penalty === null) return styles.pending
-  if (penalty === 0) return styles.clear
-  if (penalty === 2) return styles.touch
-  return styles.miss // 50
-}
-
-/**
- * Get gate display value - shows gate NUMBER, not penalty value
- */
-function getGateDisplay(gateNumber: number): string {
-  return gateNumber.toString()
-}
-
-/**
- * Get aria label for gate penalty (accessibility)
- */
-function getGateAriaLabel(penalty: GatePenalty, gateNumber: number): string {
-  if (penalty === null) return `Brána ${gateNumber}: neprojeta`
-  if (penalty === 0) return `Brána ${gateNumber}: čistě`
-  if (penalty === 2) return `Brána ${gateNumber}: dotyk, 2 sekundy`
-  return `Brána ${gateNumber}: neprojetí, 50 sekund`
-}
-
-/**
- * Get aria label for TTB diff (accessibility)
- */
-function getTTBAriaLabel(ttbDiff: string): string {
-  if (!ttbDiff) return ''
-  if (ttbDiff.startsWith('-')) {
-    return `Vpředu o ${ttbDiff.substring(1)}`
-  }
-  return `Pozadu o ${ttbDiff.startsWith('+') ? ttbDiff.substring(1) : ttbDiff}`
-}
-
-/**
- * Get TTB diff class (ahead/behind)
- */
-function getTTBClass(ttbDiff: string): string {
-  if (!ttbDiff) return ''
-  if (ttbDiff.startsWith('-')) return styles.ahead
-  return styles.behind
-}
-
-/**
- * Check if competitor is still running (not finished)
- */
-function isRunning(competitor: OnCourseCompetitor): boolean {
-  return !competitor.dtFinish
+  if (penalty === null) return ''
+  if (penalty === 0) return ''
+  if (penalty === 2) return styles.penalty2
+  return styles.penalty50 // 50
 }
 
 /**
  * CurrentCompetitor component
  *
- * Displays the competitor currently on course with:
- * - Bib number (large, prominent)
- * - Name and club
- * - Running or final time
- * - TTB (Time To Beat) difference
- * - Gate penalties visualization
- * - Pulsing indicator for running competitor
+ * Displays the competitor currently on course with single-row layout matching original v1:
+ * - Running indicator (►) - pulsing yellow
+ * - Bib number
+ * - Name
+ * - Gate penalties (only gates with 2s/50s penalties shown)
+ * - Total penalty badge
+ * - Current time (yellow)
  *
  * @example
  * ```tsx
@@ -95,6 +51,8 @@ export function CurrentCompetitor({
   visible = true,
   isDeparting = false,
 }: CurrentCompetitorProps) {
+  const { layoutMode } = useLayout()
+
   // Parse gates into penalty array and filter only gates with penalties
   const penaltyGates = useMemo(() => {
     if (!competitor) return []
@@ -106,6 +64,11 @@ export function CurrentCompetitor({
       ) as { gateNumber: number; penalty: 2 | 50 }[]
   }, [competitor])
 
+  // If no competitor, render hidden container (for animation purposes)
+  if (!competitor) {
+    return <div className={`${styles.container} ${styles.hidden}`} />
+  }
+
   // Container classes
   const containerClasses = [
     styles.container,
@@ -115,83 +78,44 @@ export function CurrentCompetitor({
     .filter(Boolean)
     .join(' ')
 
-  // If no competitor, render hidden container (for animation purposes)
-  if (!competitor) {
-    return <div className={`${styles.container} ${styles.hidden}`} />
-  }
-
-  const running = isRunning(competitor)
   // Display raw total time (not formatted) to match original v1 style
-  // Original displays "682" as raw value, we display the total/time as-is
   const displayTime = (competitor.total || competitor.time || '').trim()
-  const formattedTTBDiff = formatTTBDiff(competitor.ttbDiff)
-  const ttbClass = getTTBClass(competitor.ttbDiff)
+  const hasPenalty = competitor.pen > 0
 
   return (
     <div className={containerClasses} data-testid="oncourse">
-      {/* Main info row: bib, name, club, time */}
-      <div className={styles.mainRow}>
+      {/* Single row layout matching original v1 */}
+      <div className={`${styles.row} ${styles[layoutMode]}`}>
+        {/* Running indicator - pulsing yellow triangle */}
+        <span className={styles.runningIndicator}>&#9658;</span>
+
+        {/* Bib */}
         <div className={styles.bib}>{competitor.bib}</div>
 
-        <div className={styles.competitorInfo}>
-          <div className={styles.name}>{formatName(competitor.name)}</div>
-          <div className={styles.club}>{formatClub(competitor.club)}</div>
-        </div>
+        {/* Name */}
+        <div className={styles.name}>{formatName(competitor.name)}</div>
 
-        <div className={styles.timeContainer}>
-          {running && <span className={styles.runningIndicator}>&#9658;</span>}
-          <div className={styles.time}>{displayTime}</div>
-        </div>
-
-        {isDeparting && (
-          <span className={styles.departingLabel}>Odchod</span>
-        )}
-      </div>
-
-      {/* TTB info row */}
-      {(formattedTTBDiff || competitor.ttbName) && (
-        <div className={styles.ttbRow}>
-          <span className={styles.ttbLabel}>TTB</span>
-          {formattedTTBDiff && (
-            <span
-              className={`${styles.ttbDiff} ${ttbClass}`}
-              aria-label={getTTBAriaLabel(competitor.ttbDiff)}
-            >
-              {formattedTTBDiff}
-            </span>
-          )}
-          {competitor.ttbName && (
-            <span className={styles.ttbName}>{competitor.ttbName}</span>
-          )}
-          {competitor.rank > 0 && (
-            <span className={styles.rank}>#{competitor.rank}</span>
-          )}
-        </div>
-      )}
-
-      {/* Penalties row - gate badges followed by total penalty badge */}
-      <div className={styles.penaltiesRow}>
-        {/* Gate penalties visualization - shows only gates WITH penalties */}
-        <div className={styles.gatesContainer} role="list" aria-label="Penalizace na branách">
+        {/* Gate penalties + total penalty */}
+        <div className={styles.gatesContainer}>
           {penaltyGates.map(({ gateNumber, penalty }) => (
-            <div
+            <span
               key={`gate-${gateNumber}`}
-              className={`${styles.gate} ${getGateClass(penalty)}`}
-              role="listitem"
-              aria-label={getGateAriaLabel(penalty, gateNumber)}
-              title={`Brána ${gateNumber}`}
+              className={`${styles.gatePenalty} ${getGateClass(penalty)}`}
             >
-              {getGateDisplay(gateNumber)}
-            </div>
+              {gateNumber}
+            </span>
           ))}
 
-          {/* Total penalty badge - positioned after gate badges */}
+          {/* Total penalty badge */}
           <div
-            className={`${styles.totalPenaltyBadge} ${competitor.pen > 0 ? styles.hasPenalty : styles.noPenalty}`}
+            className={`${styles.pen} ${hasPenalty ? styles.hasPenalty : styles.noPenalty}`}
           >
             {competitor.pen}
           </div>
         </div>
+
+        {/* Time - yellow color */}
+        <div className={styles.total}>{displayTime}</div>
       </div>
     </div>
   )

@@ -66,13 +66,6 @@ describe('CurrentCompetitor', () => {
       expect(screen.getByText('NOVAK Jiri')).toBeInTheDocument()
     })
 
-    it('renders club name', () => {
-      const competitor = createCompetitor({ club: 'USK Praha' })
-      render(<CurrentCompetitor competitor={competitor} />)
-
-      expect(screen.getByText('USK Praha')).toBeInTheDocument()
-    })
-
     it('renders time as raw value (not formatted)', () => {
       // Component displays raw total value to match original v1 style
       const competitor = createCompetitor({ total: '95.50', time: '93.50' })
@@ -80,6 +73,15 @@ describe('CurrentCompetitor', () => {
 
       // Uses total (not time), displayed as-is without MM:SS formatting
       expect(screen.getByText('95.50')).toBeInTheDocument()
+    })
+
+    it('renders single row layout matching original v1', () => {
+      const competitor = createCompetitor()
+      const { container } = render(<CurrentCompetitor competitor={competitor} />)
+
+      // Should have row element with layout class
+      const row = container.querySelector('[class*="row"]')
+      expect(row).toBeInTheDocument()
     })
   })
 
@@ -110,7 +112,7 @@ describe('CurrentCompetitor', () => {
   })
 
   describe('running indicator', () => {
-    it('shows running indicator when competitor has not finished', () => {
+    it('shows running indicator for competitor on course', () => {
       const competitor = createCompetitor({ dtFinish: null })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -122,7 +124,8 @@ describe('CurrentCompetitor', () => {
       expect(indicator?.textContent).toBe('►')
     })
 
-    it('does not show running indicator when competitor has finished', () => {
+    it('always shows running indicator (matches original v1)', () => {
+      // Original v1 always shows the indicator for CurrentCompetitor
       const competitor = createCompetitor({
         dtFinish: '2025-12-28T10:01:35.50',
       })
@@ -130,86 +133,32 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
+      // Running indicator is always shown in simplified single-row layout
       const indicator = container.querySelector('[class*="runningIndicator"]')
-      expect(indicator).not.toBeInTheDocument()
-    })
-  })
-
-  describe('TTB display', () => {
-    it('renders TTB row when ttbDiff is present', () => {
-      const competitor = createCompetitor({
-        ttbDiff: '-2.50',
-        ttbName: 'PRSKAVEC Jiri',
-      })
-      render(<CurrentCompetitor competitor={competitor} />)
-
-      expect(screen.getByText('TTB')).toBeInTheDocument()
-      // formatTTBDiff converts '-2.50' to '-2.50' (keeps original format for short times)
-      expect(screen.getByText('-2.50')).toBeInTheDocument()
-      expect(screen.getByText('PRSKAVEC Jiri')).toBeInTheDocument()
-    })
-
-    it('applies ahead class for negative TTB diff', () => {
-      const competitor = createCompetitor({ ttbDiff: '-2.50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).not.toBeNull()
-      expect(hasClassContaining(ttbDiff!, 'ahead')).toBe(true)
-    })
-
-    it('applies behind class for positive TTB diff', () => {
-      const competitor = createCompetitor({ ttbDiff: '+3.00' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).not.toBeNull()
-      expect(hasClassContaining(ttbDiff!, 'behind')).toBe(true)
-    })
-
-    it('applies behind class for TTB diff without sign (positive)', () => {
-      const competitor = createCompetitor({ ttbDiff: '1.50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).not.toBeNull()
-      expect(hasClassContaining(ttbDiff!, 'behind')).toBe(true)
-    })
-
-    it('renders rank when present and greater than 0', () => {
-      const competitor = createCompetitor({ rank: 3 })
-      render(<CurrentCompetitor competitor={competitor} />)
-
-      expect(screen.getByText('#3')).toBeInTheDocument()
-    })
-
-    it('does not render rank when rank is 0', () => {
-      const competitor = createCompetitor({ rank: 0 })
-      render(<CurrentCompetitor competitor={competitor} />)
-
-      expect(screen.queryByText('#0')).not.toBeInTheDocument()
-    })
-
-    it('does not render TTB row when ttbDiff and ttbName are empty', () => {
-      const competitor = createCompetitor({ ttbDiff: '', ttbName: '' })
-      render(<CurrentCompetitor competitor={competitor} />)
-
-      expect(screen.queryByText('TTB')).not.toBeInTheDocument()
+      expect(indicator).toBeInTheDocument()
     })
   })
 
   describe('penalty display', () => {
+    // Helper to find the total penalty badge (not gate penalties)
+    const findPenaltyBadge = (container: HTMLElement) => {
+      // The total penalty badge has both 'pen' class and either 'hasPenalty' or 'noPenalty'
+      // but NOT 'gatePenalty'
+      const penElements = container.querySelectorAll('[class*="pen_"]')
+      // Filter to find the one that's NOT a gatePenalty
+      for (const el of penElements) {
+        if (!el.className.includes('gatePenalty')) {
+          return el
+        }
+      }
+      return null
+    }
+
     it('renders total penalty badge', () => {
       const competitor = createCompetitor({ pen: 4 })
       const { container } = render(<CurrentCompetitor competitor={competitor} />)
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(penaltyBadge?.textContent).toBe('4')
     })
@@ -220,7 +169,7 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(hasClassContaining(penaltyBadge!, 'noPenalty')).toBe(true)
     })
@@ -231,7 +180,7 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
@@ -242,7 +191,7 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
@@ -253,7 +202,7 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
@@ -264,7 +213,7 @@ describe('CurrentCompetitor', () => {
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      const penaltyBadge = findPenaltyBadge(container)
       expect(penaltyBadge).not.toBeNull()
       expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
@@ -280,7 +229,7 @@ describe('CurrentCompetitor', () => {
 
       // Should only render 2 badges (gates 2 and 3 with penalties)
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]') ?? []
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]') ?? []
       expect(gates.length).toBe(2)
     })
 
@@ -291,11 +240,11 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]') ?? []
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]') ?? []
       expect(gates.length).toBe(0)
     })
 
-    it('displays gate NUMBER (not penalty value) with touch class for 2s penalty', () => {
+    it('displays gate NUMBER (not penalty value) with penalty2 class for 2s penalty', () => {
       // Gate 1 has 2s penalty
       const competitor = createCompetitor({ gates: '2' })
       const { container } = render(
@@ -303,14 +252,14 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gate = gatesContainer?.querySelector('[class*="gate"]')
+      const gate = gatesContainer?.querySelector('[class*="gatePenalty"]')
       expect(gate).not.toBeNull()
-      expect(hasClassContaining(gate!, 'touch')).toBe(true)
+      expect(hasClassContaining(gate!, 'penalty2')).toBe(true)
       // Should show gate NUMBER (1), not penalty value (2)
       expect(gate?.textContent).toBe('1')
     })
 
-    it('displays gate NUMBER (not penalty value) with miss class for 50s penalty', () => {
+    it('displays gate NUMBER (not penalty value) with penalty50 class for 50s penalty', () => {
       // Gate 1 has 50s penalty
       const competitor = createCompetitor({ gates: '50' })
       const { container } = render(
@@ -318,9 +267,9 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gate = gatesContainer?.querySelector('[class*="gate"]')
+      const gate = gatesContainer?.querySelector('[class*="gatePenalty"]')
       expect(gate).not.toBeNull()
-      expect(hasClassContaining(gate!, 'miss')).toBe(true)
+      expect(hasClassContaining(gate!, 'penalty50')).toBe(true)
       // Should show gate NUMBER (1), not penalty value (50)
       expect(gate?.textContent).toBe('1')
     })
@@ -334,11 +283,11 @@ describe('CurrentCompetitor', () => {
       // Empty gates string should result in no gate elements inside gatesContainer
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       expect(gatesContainer).toBeInTheDocument()
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       expect(gates?.length).toBe(0)
     })
 
-    it('renders gate badges with correct gate numbers and titles', () => {
+    it('renders gate badges with correct gate numbers', () => {
       // Gates 2 and 3 have penalties
       const competitor = createCompetitor({ gates: '0,2,50' })
       const { container } = render(
@@ -346,15 +295,13 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       expect(gates).not.toBeNull()
       expect(gates?.length).toBe(2)
       // Gate 2 (touch)
       expect(gates?.[0]?.textContent).toBe('2')
-      expect(gates?.[0]).toHaveAttribute('title', 'Brána 2')
       // Gate 3 (miss)
       expect(gates?.[1]?.textContent).toBe('3')
-      expect(gates?.[1]).toHaveAttribute('title', 'Brána 3')
     })
 
     it('handles space-separated gates format', () => {
@@ -365,7 +312,7 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       // Only gates with penalties: gate 2 (touch) and gate 3 (miss)
       expect(gates?.length).toBe(2)
     })
@@ -378,7 +325,7 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       expect(gates?.length).toBe(3)
       expect(gates?.[0]?.textContent).toBe('2') // Gate 2
       expect(gates?.[1]?.textContent).toBe('4') // Gate 4
@@ -403,86 +350,12 @@ describe('CurrentCompetitor', () => {
       expect(hasClassContaining(container, 'departing')).toBe(false)
     })
 
-    it('renders departing label when isDeparting is true', () => {
-      const competitor = createCompetitor()
-      render(<CurrentCompetitor competitor={competitor} isDeparting={true} />)
-
-      expect(screen.getByText('Odchod')).toBeInTheDocument()
-    })
-
-    it('does not render departing label when isDeparting is false', () => {
-      const competitor = createCompetitor()
-      render(<CurrentCompetitor competitor={competitor} isDeparting={false} />)
-
-      expect(screen.queryByText('Odchod')).not.toBeInTheDocument()
-    })
-
     it('defaults isDeparting to false', () => {
       const competitor = createCompetitor()
       render(<CurrentCompetitor competitor={competitor} />)
 
       const container = screen.getByTestId('oncourse')
       expect(hasClassContaining(container, 'departing')).toBe(false)
-      expect(screen.queryByText('Odchod')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('accessibility', () => {
-    it('renders gates container with role="list" and aria-label', () => {
-      const competitor = createCompetitor({ gates: '0,2,50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      expect(gatesContainer).toHaveAttribute('role', 'list')
-      expect(gatesContainer).toHaveAttribute('aria-label', 'Penalizace na branách')
-    })
-
-    it('renders each gate badge with role="listitem" and aria-label', () => {
-      // Only gates with penalties are rendered: gate 2 (touch) and gate 3 (miss)
-      const competitor = createCompetitor({ gates: '0,2,50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
-
-      expect(gates?.length).toBe(2)
-      expect(gates?.[0]).toHaveAttribute('role', 'listitem')
-      expect(gates?.[0]).toHaveAttribute('aria-label', 'Brána 2: dotyk, 2 sekundy')
-      expect(gates?.[1]).toHaveAttribute('aria-label', 'Brána 3: neprojetí, 50 sekund')
-    })
-
-    it('renders TTB diff with aria-label for ahead (negative diff)', () => {
-      const competitor = createCompetitor({ ttbDiff: '-2.50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).toHaveAttribute('aria-label', 'Vpředu o 2.50')
-    })
-
-    it('renders TTB diff with aria-label for behind (positive diff with +)', () => {
-      const competitor = createCompetitor({ ttbDiff: '+3.00' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).toHaveAttribute('aria-label', 'Pozadu o 3.00')
-    })
-
-    it('renders TTB diff with aria-label for behind (positive diff without +)', () => {
-      const competitor = createCompetitor({ ttbDiff: '1.50' })
-      const { container } = render(
-        <CurrentCompetitor competitor={competitor} />
-      )
-
-      const ttbDiff = container.querySelector('[class*="ttbDiff"]')
-      expect(ttbDiff).toHaveAttribute('aria-label', 'Pozadu o 1.50')
     })
   })
 
@@ -525,7 +398,7 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       expect(gates?.length).toBe(0)
     })
 
@@ -542,7 +415,7 @@ describe('CurrentCompetitor', () => {
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      const gates = gatesContainer?.querySelectorAll('[class*="gatePenalty"]')
       // Only 4 gates have penalties
       expect(gates?.length).toBe(4)
       expect(gates?.[0]?.textContent).toBe('5')
