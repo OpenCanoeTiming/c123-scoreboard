@@ -103,6 +103,8 @@ Testy se píší průběžně pro každou dokončenou část, ne až na konci.
 6. Označit v checklistu `[x]`
 7. Pokračovat dalším krokem
 
+Rozhodnuti z manualniho testovani mohou prebit puvodni projektove zamery a implementacni rozhodnuti, protoze se jedna o zjisteni na zaklade testovani skutecneho produktu behem vyvoje.
+
 ---
 
 ## Testovací data
