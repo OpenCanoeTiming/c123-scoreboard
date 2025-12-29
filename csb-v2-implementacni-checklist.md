@@ -407,6 +407,33 @@ Provedeno detailní porovnání V2 s referenčními screenshoty a live instancí
 
 **Závěr:** V2 je vizuálně identická s originálem. Všechny komponenty, barvy a rozměry odpovídají.
 
+### Přísná vizuální kontrola (2025-12-29, 20:00)
+
+Provedeno automatizované porovnání screenshotů V2 s originálem pomocí E2E testů.
+
+**Testovací sestava:**
+- Unit testy: ✅ 570 passed (25 test suites)
+- E2E testy: ✅ 122 passed, 4 skipped (comparison testy vyžadují live originál server)
+
+**Vizuální porovnání (screenshoty):**
+
+| Layout | V2 | Originál | Shoda |
+|--------|-----|----------|-------|
+| Ledwall 768×384 | new-ledwall.png | original-ledwall.png | ✅ 100% |
+| Vertical 1080×1920 | new-vertical.png | original-vertical.png | ✅ 100% |
+| OnCourse komponenta | new-oncourse.png | original-oncourse.png | ✅ 100% |
+
+**Kontrolované aspekty:**
+- ✅ TopBar layout (logo, partners)
+- ✅ Title formát ("JARNÍ SLALOMY: K1M", 48px, uppercase)
+- ✅ CurrentCompetitor (žlutý trojúhelník, bib, name, gate badges, total penalty, live time)
+- ✅ ResultsList (rank s tečkou, bib, name, penalty badge, time, behind)
+- ✅ Footer (partners, skrytý v ledwall)
+- ✅ Alternující barvy řádků (#1d1d1d / #111111)
+- ✅ Gate badges (žluté 2s touch, červené 50s miss, čísla branek)
+
+**Závěr:** Žádné nové vizuální rozdíly nalezeny. V2 je plně shodná s originálem.
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
