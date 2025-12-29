@@ -218,7 +218,7 @@ Porovnání V2 s referenčními screenshoty z `../analysis/reference-screenshots
 
 **Známé rozdíly (nízká priorita):**
 - [x] TimeDisplay pozicování v ledwall - opraveno (font-size 32px, yellow, right 100px, top 20px)
-- [ ] CurrentCompetitor/OnCourse vizuální sladění s originálem (závisí na datech)
+- [x] CurrentCompetitor/OnCourse vizuální sladění s originálem - **OVĚŘENO** (2025-12-29, comparison testy prošly, struktura a styly shodné, rozdíly pouze v live datech)
 
 ---
 
@@ -233,16 +233,16 @@ Reference: Live originál na `http://192.168.68.108:3000` - je k dispozici pro p
 - [x] Vertical (1080×1920): screenshoty vygenerovány pro porovnání
 - [x] Uložit comparison screenshots do repo (`tests/e2e/comparison-screenshots/`)
 
-**Výsledky porovnání (2025-12-29):**
+**Výsledky porovnání (2025-12-29, aktualizováno):**
 
 | Aspekt | Vertical | Ledwall | Poznámka |
 |--------|----------|---------|----------|
 | Layout struktura | ✅ Shodná | ✅ Shodná | TopBar, Title, CurrentCompetitor, Results, Footer |
 | Barvy | ✅ Shodné | ✅ Shodné | Background, text, alternující řádky |
 | Fonty | ✅ Shodné | ✅ Shodné | Inter font, velikosti |
-| Title formát | ✅ "JARNÍ SLALOMY: K1M" | ⚠️ Chybí ":K1M" | Zkontrolovat ledwall title |
-| Jména v results | ✅ Kompletní | ⚠️ Zkrácená | text-overflow v ledwall |
-| Behind column | ✅ Viditelná | ⚠️ Chybí | Zkontrolovat ledwall grid |
+| Title formát | ✅ "JARNÍ SLALOMY: K1M" | ✅ "JARNÍ SLALOMY: K1M" | Shodné |
+| CurrentCompetitor | ✅ Shodný | ✅ Shodný | Bib, name, gate badges, total, time |
+| ResultsList | ✅ Shodný | ✅ Shodný | Rank, bib, name, penalty, time, behind |
 
 **Zjištěné rozdíly k opravě:**
 - [x] Ledwall: Chybí behind column v results - **OPRAVENO** (behind skryt v ledwall, shodné s originálem)
