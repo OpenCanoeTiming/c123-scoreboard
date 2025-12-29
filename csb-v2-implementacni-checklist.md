@@ -263,6 +263,113 @@
 
 ---
 
+## Fáze 8: Automatizované E2E testování a porovnání
+
+### 8.1 Oprava Playwright E2E testů
+
+**Problém:** Některé testy selhávají na "Failed to take two consecutive stable screenshots" kvůli animacím a měnícím se datům.
+
+- [ ] Zastavit ReplayProvider playback před screenshotem (`provider.pause()`)
+- [ ] Přidat delší `waitForTimeout` před screenshoty (500ms → 2000ms)
+- [ ] Zakázat animace v Playwright config (`animations: 'disabled'`)
+- [ ] Přidat `data-testid` pro všechny testované komponenty
+- [ ] Aktualizovat všechny baseline snapshoty po stabilizaci
+- [ ] Rozdělit testy na "static" (layout, komponenty) a "dynamic" (animace, scroll)
+
+### 8.2 Oprava CLI připojení v Playwright
+
+**Problém:** WebSocket připojení na `ws://192.168.68.108:8081` selhává v Chromium headless.
+
+**Ověření problému:**
+- [ ] Zkontrolovat přesný error message v browser console
+- [ ] Ověřit, že URL formát je správný (`ws://` vs `wss://`)
+- [ ] Otestovat s `--disable-web-security` flag v Playwright
+- [ ] Porovnat s prototypem - jak tam WebSocket funguje?
+
+**Možné příčiny a řešení:**
+- [ ] **Mixed content** - pokud app běží na localhost, WS na externí IP může být blokován
+  - Řešení: Spustit dev server s `--host` flag
+- [ ] **CORS/CSP headers** - zkontrolovat response headers z CLI serveru
+- [ ] **WebSocket URL parsing** - ověřit, že CLIProvider správně parsuje host parametr
+- [ ] **Timeout** - zvýšit connection timeout v CLIProvider
+
+**Debug kroky:**
+- [ ] Přidat detailed logging do CLIProvider (`console.log` pro každý WS event)
+- [ ] Otestovat WebSocket připojení přímo v browser DevTools
+- [ ] Porovnat network tab mezi v2 a původní verzí
+
+### 8.3 Automatické porovnání s původní verzí
+
+**Reference URLs (živá data):**
+```
+Ledwall: http://192.168.68.108:3000/?type=ledwall&server=ws%3A%2F%2F192.168.68.108%3A8081%2F&disableScroll=true&ledwallExactSize=true
+Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68.108%3A8081%2F&disableScroll=true
+```
+
+**Automatické screenshot porovnání:**
+- [ ] Vytvořit Playwright test `tests/e2e/comparison.spec.ts`
+- [ ] Screenshot původní verze (http://192.168.68.108:3000)
+- [ ] Screenshot nové verze (http://localhost:5173)
+- [ ] Použít `pixelmatch` nebo Playwright built-in comparison
+- [ ] Generovat diff report s highlighted rozdíly
+
+**Struktura testu:**
+```typescript
+test.describe('Visual Comparison with Original', () => {
+  test('ledwall layout matches original', async ({ page }) => {
+    // 1. Screenshot original
+    await page.goto('http://192.168.68.108:3000/?type=ledwall&server=...')
+    await page.waitForTimeout(5000) // čekat na data
+    const originalScreenshot = await page.screenshot()
+
+    // 2. Screenshot new version
+    await page.goto('http://localhost:5173/?source=cli&host=192.168.68.108:8081&type=ledwall')
+    await page.waitForTimeout(5000)
+    const newScreenshot = await page.screenshot()
+
+    // 3. Compare
+    expect(newScreenshot).toMatchSnapshot('ledwall-comparison.png', {
+      maxDiffPixelRatio: 0.1 // 10% tolerance
+    })
+  })
+})
+```
+
+**Metriky pro porovnání:**
+- [ ] Pixel diff ratio (cíl: < 5%)
+- [ ] Layout structure (DOM hierarchy)
+- [ ] Barvy (HSL distance)
+- [ ] Typography (font-size, line-height)
+- [ ] Spacing (margin, padding)
+
+### 8.4 Automatické funkční testy s CLI
+
+**Předpoklad:** CLI připojení funguje (viz 8.2)
+
+- [ ] Test: Připojení k CLI serveru
+- [ ] Test: Příjem `top` zprávy → results se zobrazí
+- [ ] Test: Příjem `comp` zprávy → CurrentCompetitor se aktualizuje
+- [ ] Test: Příjem `control` zprávy → visibility se změní
+- [ ] Test: Reconnect po výpadku (simulovat odpojení CLI serveru)
+
+### 8.5 Performance porovnání
+
+- [ ] Měřit FPS v obou verzích (Performance API)
+- [ ] Měřit memory usage (po 1 minutě běhu)
+- [ ] Měřit CPU usage (Chrome DevTools)
+- [ ] Lighthouse audit pro obě verze
+- [ ] Porovnat bundle size
+
+### 🔍 Revize: Fáze 8
+
+- [ ] Všechny Playwright testy prochází
+- [ ] CLI připojení funguje v Playwright
+- [ ] Vizuální rozdíl od originálu < 5%
+- [ ] Performance srovnatelná nebo lepší
+- [ ] **Commit:** "test: add E2E comparison with original"
+
+---
+
 ## Post-implementace
 
 ### Další kroky (budoucnost)
@@ -311,18 +418,26 @@ TypeScript: ✅ Strict mode
 | Recording | `public/recordings/rec-2025-12-28T09-34-10.jsonl` |
 | Ref. screenshoty | `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png` |
 | Styly JSON | `/workspace/csb-v2/analysis/reference-screenshots/*-styles.json` |
+| **Original v1 ledwall** | http://192.168.68.108:3000/?type=ledwall&server=ws%3A%2F%2F192.168.68.108%3A8081%2F&disableScroll=true&ledwallExactSize=true |
+| **Original v1 vertical** | http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68.108%3A8081%2F&disableScroll=true |
 
 ---
 
-## Zbývající kroky - vyžadují manuální práci
+## Zbývající kroky
 
-Všechny zbývající nesplněné kroky vyžadují **manuální práci člověka**:
+### Automatizovatelné (Fáze 8)
+
+| Kategorie | Stav | Poznámka |
+|-----------|------|----------|
+| **Playwright E2E** | 🔧 Částečně | 6/12 testů prochází, zbytek potřebuje stabilizaci animací |
+| **CLI v Playwright** | 🔧 Debug | WebSocket chyba - nutné ověřit příčinu |
+| **Porovnání s originálem** | ⏳ TODO | Automatické screenshot diff |
+| **Performance testy** | ⏳ TODO | FPS, memory, Lighthouse |
+
+### Vyžaduje manuální práci
 
 | Kategorie | Důvod |
 |-----------|-------|
-| **Vizuální testování** (~45) | Prohlížeč + lidské oči pro porovnání s reference screenshoty |
-| **Live server test** (~10) | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
-| **Playwright E2E** (~5) | Chybí systémové závislosti (chromium, fonty) |
 | **C123Provider** (3) | TCP socket nelze v browser JS - technicky nemožné |
 | **Hardware test** (~5) | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
 | **Architekturální rozhodnutí** (~5) | Rozdělení Context, schema validace |
@@ -413,6 +528,7 @@ Projekt prošel iterativním vývojem s 12+ review cykly (v0.6 - v2.5). Klíčov
 2. **parseGates s non-string vstupy** - přidána validace
 3. **ReplayProvider null/undefined data** - přidána kontrola
 4. **Callback error handling** - přidáno safeCallCallbacks s try-catch
+5. **useEffect re-run loop v ScoreboardContext** (2025-12-29) - `handleResults` měl dependency `[onCourse]`, což způsobovalo neustálé disconnect/connect cykly. Opraveno použitím `useRef` pro onCourse.
 
 ### Silné stránky kódu
 
