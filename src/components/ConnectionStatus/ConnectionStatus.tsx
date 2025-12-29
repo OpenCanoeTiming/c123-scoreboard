@@ -11,77 +11,40 @@ interface ConnectionStatusProps {
   error: string | null
   /** Whether initial data has been received */
   initialDataReceived: boolean
-  /** Callback for manual retry */
+  /** Callback for manual retry (unused in dot indicator) */
   onRetry?: () => void
 }
 
 /**
  * ConnectionStatus component
  *
- * Displays overlay for non-connected states:
- * - connecting: "Připojování..."
- * - waiting: "Čekání na data..." (connected but no data yet)
- * - reconnecting: "Obnovování spojení..."
- * - disconnected: "Odpojeno" with retry button
- * - error: Error message with retry button
+ * Small dot indicator in top-right corner:
+ * - green: connected and receiving data
+ * - yellow (pulsing): connecting or reconnecting
+ * - red: disconnected or error
  *
- * Hidden when connected and data received.
+ * Always visible as a small, unobtrusive indicator.
  */
 export function ConnectionStatus({
   status,
-  error,
   initialDataReceived,
-  onRetry,
 }: ConnectionStatusProps) {
-  // Hide when connected and data received
+  // Determine the style class based on status
+  let statusClass: string
+
   if (status === 'connected' && initialDataReceived) {
-    return null
+    statusClass = styles.connected
+  } else if (status === 'connected' || status === 'connecting') {
+    statusClass = styles.connecting
+  } else if (status === 'reconnecting') {
+    statusClass = styles.reconnecting
+  } else if (status === 'error') {
+    statusClass = styles.error
+  } else {
+    statusClass = styles.disconnected
   }
 
-  // Determine message and show retry button
-  let message: string
-  let showRetry = false
-  let showSpinner = true
-
-  switch (status) {
-    case 'connecting':
-      message = 'Připojování...'
-      break
-    case 'connected':
-      // Connected but no data yet
-      message = 'Čekání na data...'
-      break
-    case 'reconnecting':
-      message = 'Obnovování spojení...'
-      break
-    case 'disconnected':
-      message = 'Odpojeno'
-      showRetry = true
-      showSpinner = false
-      break
-    case 'error':
-      message = error || 'Chyba připojení'
-      showRetry = true
-      showSpinner = false
-      break
-    default:
-      message = 'Neznámý stav'
-      showSpinner = false
-  }
-
-  return (
-    <div className={styles.overlay}>
-      <div className={styles.content}>
-        {showSpinner && <div className={styles.spinner} />}
-        <div className={styles.message}>{message}</div>
-        {showRetry && onRetry && (
-          <button className={styles.retryButton} onClick={onRetry}>
-            Zkusit znovu
-          </button>
-        )}
-      </div>
-    </div>
-  )
+  return <div className={`${styles.indicator} ${statusClass}`} />
 }
 
 export default ConnectionStatus
