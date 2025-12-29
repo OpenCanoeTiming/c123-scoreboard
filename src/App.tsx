@@ -86,6 +86,7 @@ function ScoreboardContent() {
               logoUrl="/assets/logo.png"
               partnerLogoUrl="/assets/partners.png"
             />
+            <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
             <Title title={title} raceName={raceName} visible={visibility.displayTitle} />
           </>
         }
@@ -113,9 +114,6 @@ function ScoreboardContent() {
         <ErrorBoundary componentName="ResultsList">
           <ResultsList results={results} visible={visibility.displayTop} />
         </ErrorBoundary>
-
-        {/* Day time display */}
-        <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
       </ScoreboardLayout>
     </>
   )
@@ -137,7 +135,7 @@ function App() {
 
     return new ReplayProvider('/recordings/rec-2025-12-28T09-34-10.jsonl', {
       speed: urlParams.speed,
-      sources: ['ws'],
+      sources: ['ws', 'tcp'],
       autoPlay: true,
       loop: urlParams.loop,
       pauseAfter: urlParams.pauseAfter,

@@ -421,6 +421,38 @@ export class ReplayProvider implements DataProvider {
     if (msg.src === 'ws') {
       this.dispatchWSMessage(type, data)
     }
+
+    // Handle TCP messages (XML strings)
+    if (msg.src === 'tcp') {
+      this.dispatchTCPMessage(type, data)
+    }
+  }
+
+  private dispatchTCPMessage(type: string, data: unknown): void {
+    switch (type) {
+      case 'TimeOfDay':
+        this.handleTimeOfDayMessage(data)
+        break
+    }
+  }
+
+  private handleTimeOfDayMessage(data: unknown): void {
+    // TCP message format: XML string like "<Canoe123 System=\"Main\"><TimeOfDay>10:34:08</TimeOfDay></Canoe123>"
+    if (typeof data !== 'string') return
+
+    // Parse time from XML - simple regex extraction
+    const match = data.match(/<TimeOfDay>([^<]+)<\/TimeOfDay>/)
+    if (!match) return
+
+    const time = match[1] // e.g., "10:34:08"
+
+    const info: EventInfoData = {
+      title: '',
+      infoText: '',
+      dayTime: time,
+    }
+
+    this.safeCallCallbacks(this.eventInfoCallbacks, info)
   }
 
   private dispatchWSMessage(type: string, data: unknown): void {

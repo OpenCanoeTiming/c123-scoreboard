@@ -115,14 +115,14 @@ Příklad originálu: `[2][3][4]` = brány 2, 3, 4 měly penalizaci
 - [x] OnCourseDisplay již správně zobrazuje raw total hodnotu
 - [x] Aktualizovat testy a snapshoty
 
-### 9.9 Přidat daytime do TopBaru
+### 9.9 Přidat daytime do TopBaru ✅
 
 **Originál zobrazuje aktuální čas dne** (např. "11:41:48")
 
-- [ ] Přidat state `daytime` do ScoreboardContext
-- [ ] Parsovat `daytime` zprávu v CLIProvider/ReplayProvider
-- [ ] Zobrazit čas v pravé části TopBaru
-- [ ] Formát: HH:MM:SS
+- [x] Přidat state `daytime` do ScoreboardContext (již bylo)
+- [x] Parsovat `daytime` zprávu v CLIProvider/ReplayProvider
+- [x] Zobrazit čas v pravé části TopBaru
+- [x] Formát: HH:MM:SS
 
 ### 9.10 Zkopírovat default assets z originálu ✅
 

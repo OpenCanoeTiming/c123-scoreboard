@@ -1,10 +1,9 @@
-import { formatTime } from '@/utils/formatTime'
 import { useLayout } from '@/hooks'
 import styles from './TimeDisplay.module.css'
 
 interface TimeDisplayProps {
-  /** Time value to display (seconds or formatted string) */
-  time: string | number | null | undefined
+  /** Time value to display (e.g., "10:34:08" for day time) */
+  time: string | null | undefined
   /** Whether the component is visible */
   visible?: boolean
   /** Optional CSS class name */
@@ -12,7 +11,7 @@ interface TimeDisplayProps {
 }
 
 /**
- * TimeDisplay component for showing time in the scoreboard.
+ * TimeDisplay component for showing the day time in the scoreboard header.
  * Uses JetBrains Mono font for consistent digit width.
  * Styling adapts based on layout mode (vertical/ledwall).
  */
@@ -23,11 +22,9 @@ export function TimeDisplay({
 }: TimeDisplayProps) {
   const { layoutMode } = useLayout()
 
-  if (!visible) {
+  if (!visible || !time) {
     return null
   }
-
-  const formattedTime = formatTime(time)
 
   const layoutClass = layoutMode === 'ledwall' ? styles.ledwall : ''
 
@@ -37,7 +34,7 @@ export function TimeDisplay({
       data-testid="time-display"
       data-layout-mode={layoutMode}
     >
-      {formattedTime}
+      {time}
     </div>
   )
 }
