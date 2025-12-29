@@ -44,20 +44,13 @@ const mockUseLayout = useLayout as ReturnType<typeof vi.fn>
 const mockUseScoreboard = useScoreboard as ReturnType<typeof vi.fn>
 
 describe('useAutoScroll', () => {
-  let mockContainer: HTMLDivElement
-  let rafCallbacks: FrameRequestCallback[] = []
-  let rafId = 0
-
   beforeEach(() => {
     vi.useFakeTimers()
 
     // Mock requestAnimationFrame and cancelAnimationFrame
-    rafCallbacks = []
-    rafId = 0
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-      rafCallbacks.push(cb)
-      return ++rafId
-    })
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16)
+    }))
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
 
     // Reset mocks to default values
@@ -85,14 +78,6 @@ describe('useAutoScroll', () => {
       currentCompetitor: null,
       onCourse: [],
     })
-
-    // Create a mock container element with scrollable content
-    mockContainer = document.createElement('div')
-    Object.defineProperties(mockContainer, {
-      scrollHeight: { value: 1000, writable: true, configurable: true },
-      clientHeight: { value: 400, writable: true, configurable: true },
-      scrollTop: { value: 0, writable: true, configurable: true },
-    })
   })
 
   afterEach(() => {
@@ -100,15 +85,6 @@ describe('useAutoScroll', () => {
     vi.clearAllMocks()
     vi.unstubAllGlobals()
   })
-
-  // Helper to run raf callbacks (prefixed with _ to suppress unused warning)
-  const _flushRaf = () => {
-    const callbacks = [...rafCallbacks]
-    rafCallbacks = []
-    callbacks.forEach((cb) => cb(performance.now()))
-  }
-  // Silence linter for helper
-  void _flushRaf
 
   describe('initial state', () => {
     it('starts in IDLE phase', () => {
@@ -347,25 +323,7 @@ describe('useAutoScroll', () => {
   })
 
   describe('highlight interaction', () => {
-    it('stays in IDLE when highlight is active (shouldScroll is false)', async () => {
-      mockUseHighlight.mockReturnValue({
-        highlightBib: '42',
-        isActive: true,
-        timeRemaining: 5000,
-        progress: 0,
-      })
-
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
-
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      // With highlight active, shouldScroll = false
-      expect(result.current.phase).toBe('IDLE')
-    })
-
-    it('shouldScroll becomes true when highlight expires', async () => {
+    it('resumes auto-scroll when highlight expires', async () => {
       // Start with highlight active
       mockUseHighlight.mockReturnValue({
         highlightBib: '42',
@@ -455,142 +413,18 @@ describe('useAutoScroll', () => {
         result.current.resume()
       })
 
-      // Should not crash
-      expect(result.current.phase).toBeDefined()
-    })
-  })
-
-  describe('stress tests', () => {
-    it('handles container with 100+ items without crashing', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
-
-      // Simulate attaching container (in real scenario, ref would be attached)
-      // Here we just verify the hook doesn't crash with large scroll distances
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      expect(result.current.phase).toBeDefined()
-      expect(['IDLE', 'WAITING', 'SCROLLING', 'PAUSED_AT_BOTTOM', 'RETURNING_TO_TOP']).toContain(
-        result.current.phase
-      )
+      expect(result.current.phase).toBe('IDLE')
     })
 
-    it('handles container with 500+ items (stress test)', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
-
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      // Should not crash and remain in valid state
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles rapid phase transitions', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
-
-      // Rapid operations
-      for (let i = 0; i < 20; i++) {
-        act(() => {
-          result.current.pause()
-        })
-
-        await act(async () => {
-          vi.advanceTimersByTime(50)
-        })
-
-        act(() => {
-          result.current.resume()
-        })
-
-        await act(async () => {
-          vi.advanceTimersByTime(50)
-        })
-
-        act(() => {
-          result.current.reset()
-        })
-
-        await act(async () => {
-          vi.advanceTimersByTime(50)
-        })
-      }
-
-      // Should not crash after rapid transitions
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles concurrent highlight changes with auto-scroll', async () => {
-      const { result, rerender } = renderHook(() =>
-        useAutoScroll({ enabled: true })
-      )
-
-      // Simulate rapid highlight on/off - mimics multiple competitors finishing quickly
-      for (let i = 0; i < 10; i++) {
-        // Highlight becomes active
-        mockUseHighlight.mockReturnValue({
-          highlightBib: String(100 + i),
-          isActive: true,
-          timeRemaining: 5000,
-          progress: 0,
-        })
-
-        rerender()
-        await act(async () => {
-          vi.advanceTimersByTime(500)
-        })
-
-        // Highlight expires
-        mockUseHighlight.mockReturnValue({
-          highlightBib: null,
-          isActive: false,
-          timeRemaining: 0,
-          progress: 0,
-        })
-
-        rerender()
-        await act(async () => {
-          vi.advanceTimersByTime(500)
-        })
-      }
-
-      // Should handle all transitions without crashing
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles component unmount during long pause', async () => {
-      const { result, unmount } = renderHook(() => useAutoScroll({ enabled: true }))
+    it('handles component unmount properly', async () => {
+      const { unmount } = renderHook(() => useAutoScroll({ enabled: true }))
 
       await act(async () => {
         vi.advanceTimersByTime(1000)
       })
 
-      // Unmount before timeout expires - should clean up properly
-      unmount()
-
-      // If we got here without error, cleanup worked
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles multiple rapid mount/unmount cycles', async () => {
-      // Simulate component remounting rapidly (e.g., due to parent re-renders)
-      for (let i = 0; i < 50; i++) {
-        const { result, unmount } = renderHook(() =>
-          useAutoScroll({ enabled: true })
-        )
-
-        await act(async () => {
-          vi.advanceTimersByTime(10)
-        })
-
-        expect(result.current.phase).toBeDefined()
-
-        unmount()
-      }
-
-      // If we completed all cycles without error, stress test passed
-      expect(true).toBe(true)
+      // Unmount should not throw
+      expect(() => unmount()).not.toThrow()
     })
   })
 })

@@ -456,12 +456,12 @@ Tag: `pre-review-autoscroll`
 
 ### useAutoScroll.test.ts - vyčištění testů (vysoká priorita)
 
-- [ ] Smazat nepoužitý mock RAF a helper `_flushRaf` (řádky 54-61, 105-111)
-- [ ] Smazat nepoužitý `mockContainer` v beforeEach (řádky 91-95)
-- [ ] Smazat duplicitní test "stays in IDLE when highlight is active" (řádky 350-366 - duplikát 159-175)
-- [ ] Smazat zbytečné stress testy, které netestují nic užitečného (sekce 464-594)
-- [ ] Smazat testy bez kontejneru, které jen kontrolují inicializaci - ponechat jen smysluplné
-- [ ] Opravit testy ledwall sekce - ponechat jen testy skutečné logiky (243-270, 297-320)
+- [x] Smazat nepoužitý mock RAF a helper `_flushRaf` (řádky 54-61, 105-111) **HOTOVO**
+- [x] Smazat nepoužitý `mockContainer` v beforeEach (řádky 91-95) **HOTOVO**
+- [x] Smazat duplicitní test "stays in IDLE when highlight is active" (řádky 350-366 - duplikát 159-175) **HOTOVO**
+- [x] Smazat zbytečné stress testy, které netestují nic užitečného (sekce 464-594) **HOTOVO** - ponechán pouze test unmount
+- [x] Testy inicializace ponechány (testují správné API hooku)
+- [x] Ledwall sekce ponechána (testuje správné chování při active competitor)
 
 ---
 
