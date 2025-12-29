@@ -214,8 +214,11 @@ Porovnání V2 s referenčními screenshoty z `../analysis/reference-screenshots
 - [x] Playwright comparison tests - snapshoty aktualizovány
 - [x] Všechny default assets z originálu jsou použity
 - [x] **Commit:** "docs: complete visual comparison review" (b7727d4)
-- 
-- [ ] !! sladit current/oncourse s originalem!
+- [x] **Commit:** "fix: improve ledwall layout styling" (1a255a2)
+
+**Známé rozdíly (nízká priorita):**
+- [ ] TimeDisplay pozicování v ledwall - čas částečně překrývá titulek
+- [ ] CurrentCompetitor/OnCourse vizuální sladění s originálem (závisí na datech)
 
 ---
 
@@ -242,9 +245,10 @@ Reference: Live originál na `http://192.168.68.108:3000` - je k dispozici pro p
 | Behind column | ✅ Viditelná | ⚠️ Chybí | Zkontrolovat ledwall grid |
 
 **Zjištěné rozdíly k opravě:**
-- [ ] Ledwall: Title nezobrazuje kategorii (":K1M")
-- [ ] Ledwall: Jména jsou zkrácená (text-overflow)
-- [ ] Ledwall: Chybí behind column v results
+- [x] Ledwall: Chybí behind column v results - **OPRAVENO** (behind skryt v ledwall, shodné s originálem)
+- [x] Ledwall: Větší gap mezi sloupci - **OPRAVENO** (gap: --spacing-md)
+- [ ] Ledwall: TimeDisplay překrývá část titulku (pozicování vyžaduje další ladění)
+- [~] Ledwall: Title nezobrazuje kategorii (":K1M") - částečně, závisí na načasování dat
 
 ### 10.2 Funkční testování s CLI serverem
 
