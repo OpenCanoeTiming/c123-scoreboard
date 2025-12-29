@@ -36,7 +36,7 @@ export interface LayoutConfig {
  */
 const LAYOUT_CONFIG = {
   vertical: {
-    headerHeight: 142, // Matched from original v1 computed styles
+    headerHeight: 100, // Matched from original v1 --top-bar-height (Title overlays TopBar)
     footerHeight: 60,
     minRowHeight: 44,
     maxRowHeight: 56,

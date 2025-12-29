@@ -1,12 +1,17 @@
 /* Title - Event/race title component */
 
 .title {
+  /* Title is absolutely positioned within the header to overlay TopBar */
+  position: absolute;
+  top: 24px;
+  left: 150px;
+  width: 65%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0;  /* Match original v1 - no padding on title wrapper */
+  justify-content: flex-start;
+  padding: 0;
   box-sizing: border-box;
+  z-index: 15;
 }
 
 .text {

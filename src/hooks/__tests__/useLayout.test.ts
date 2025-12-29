@@ -613,8 +613,8 @@ describe('useLayout', () => {
 
       const { result } = renderHook(() => useLayout())
 
-      // Vertical header height is 142 (matched from original v1 computed styles)
-      expect(result.current.headerHeight).toBe(142)
+      // Vertical header height is 100 (matched from original v1 --top-bar-height, Title overlays TopBar)
+      expect(result.current.headerHeight).toBe(100)
     })
 
     it('uses correct header height for ledwall layout', () => {
