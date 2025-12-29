@@ -1,129 +1,199 @@
 # Canoe Scoreboard v2
 
-Real-time scoreboard display for canoe slalom competitions. Built with React 19, TypeScript, and Vite.
+Real-time scoreboard display for canoe slalom competitions. Visual replica of the original scoreboard with clean modern architecture.
 
-## Features
-
-- Real-time results display with automatic updates
-- Current competitor display with gate penalties visualization
-- Highlight animation when competitor finishes
-- Auto-scroll through results
-- Responsive layouts: vertical (1080×1920) and ledwall (768×384)
-- Reconnection handling with state management
-
-## Installation
+## Quick Start
 
 ```bash
+# Install dependencies
 npm install
-```
 
-## Development
-
-```bash
+# Start development server (uses recorded demo data)
 npm run dev
 ```
 
-This starts the development server at `http://localhost:5173`. The app uses ReplayProvider by default, which replays recorded race data for development.
+Open `http://localhost:5173` to see the scoreboard in action.
 
-## Building for Production
+## Production Usage
+
+### Connect to Live Timing Server
 
 ```bash
+# Build for production
 npm run build
-npm run preview  # Preview the production build
+
+# Serve static files (use any static file server)
+npm run preview
 ```
 
-## Testing
+Access with CLI server connection:
+```
+http://localhost:4173/?source=cli&host=192.168.1.100:8081
+```
 
-```bash
-npm test          # Run unit tests with Vitest
-npm run test:ui   # Run tests with UI
-npm run test:e2e  # Run Playwright E2E tests
+### Deployment on Raspberry Pi
+
+1. Copy the `dist/` folder to Raspberry Pi
+2. Serve with nginx or any static file server
+3. Open in fullscreen browser (kiosk mode)
+
+Example nginx config:
+```nginx
+server {
+    listen 80;
+    root /var/www/scoreboard;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
 ## URL Parameters
 
-| Parameter | Values | Description |
-|-----------|--------|-------------|
-| `type` | `vertical`, `ledwall` | Force specific layout mode |
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `type` | `vertical`, `ledwall` | auto | Force layout mode |
+| `ledwallExactSize` | `true` | `false` | Use exact LED panel dimensions |
+| `source` | `replay`, `cli` | `replay` | Data source |
+| `host` | `ip:port` | `192.168.68.108:8081` | CLI server address |
+| `speed` | number | `10` | Replay speed multiplier |
+| `loop` | `true`, `false` | `true` | Loop replay |
 
-Example: `http://localhost:5173/?type=ledwall`
+### Common Configurations
 
-## Project Structure
+**LED Wall (768x384):**
+```
+?type=ledwall&ledwallExactSize=true&source=cli&host=192.168.1.100:8081
+```
+
+**Vertical Display (1080x1920):**
+```
+?type=vertical&source=cli&host=192.168.1.100:8081
+```
+
+**Development with slow replay:**
+```
+?source=replay&speed=1
+```
+
+## Layouts
+
+### Vertical (Portrait)
+- For TV displays in portrait mode (1080x1920)
+- Shows full TopBar with logo and partners
+- All result columns visible: Rank, Bib, Name, Penalty, Time, Behind
+- Footer with sponsors visible
+
+### Ledwall (Landscape)
+- For LED panels (768x384 or similar)
+- Compact TopBar
+- Optimized column layout
+- Footer hidden
+
+Layout is auto-detected based on aspect ratio, or forced via `type` parameter.
+
+## Data Sources
+
+### CLIProvider (Production)
+
+Connects to the CLI WebSocket server for live timing data.
 
 ```
-src/
-├── components/          # React components
-│   ├── ConnectionStatus/  # Connection status overlay
-│   ├── CurrentCompetitor/ # Current competitor display
-│   ├── EventInfo/         # TopBar and Title
-│   ├── Footer/            # Footer with sponsors
-│   ├── Layout/            # Main scoreboard layout
-│   ├── ResultsList/       # Results table
-│   └── TimeDisplay/       # Day time display
-├── context/             # React Context (ScoreboardContext)
-├── hooks/               # Custom hooks
-│   ├── useAutoScroll.ts   # Auto-scroll for results
-│   ├── useDeparting.ts    # Departing competitor logic
-│   ├── useHighlight.ts    # Highlight expiration
-│   ├── useLayout.ts       # Layout calculations
-│   └── useTimestamp.ts    # Shared timestamp logic
-├── providers/           # Data providers
-│   ├── ReplayProvider.ts  # Replay recorded data (dev)
-│   └── types.ts           # DataProvider interface
-├── styles/              # Global CSS
-│   ├── fonts.css          # Font face declarations
-│   ├── reset.css          # CSS reset
-│   └── variables.css      # CSS custom properties
-├── types/               # TypeScript types
-└── utils/               # Utility functions
-    ├── formatName.ts      # Name formatting
-    └── formatTime.ts      # Time formatting
+?source=cli&host=192.168.1.100:8081
+```
+
+Features:
+- Automatic reconnection with exponential backoff
+- Real-time race results and competitor data
+- Visibility control from timing system
+- Day time display
+
+### ReplayProvider (Development)
+
+Replays recorded race sessions for development and testing.
+
+```
+?source=replay&speed=10
+```
+
+Recorded sessions are stored in `public/recordings/`.
+
+## Custom Assets
+
+Replace these files in `public/assets/` to customize the display:
+
+| File | Description | Recommended Size |
+|------|-------------|------------------|
+| `logo.svg` | Event/Club logo (top-left) | SVG or 200px height |
+| `partners.png` | Partner logos (top-right) | 400x100px |
+| `footer.png` | Footer banner | 1080x200px |
+
+## Testing
+
+```bash
+npm test          # Unit tests (Vitest)
+npm run test:e2e  # E2E tests (Playwright)
 ```
 
 ## Architecture
 
 ### DataProvider Pattern
 
-The app uses a DataProvider abstraction for data sources:
+Abstracts data sources for easy switching between live and replay modes:
 
-```typescript
-interface DataProvider {
-  connect(): Promise<void>
-  disconnect(): void
-  onResults(callback: ResultsCallback): Unsubscribe
-  onOnCourse(callback: OnCourseCallback): Unsubscribe
-  onConfig(callback: ConfigCallback): Unsubscribe
-  onConnectionChange(callback: ConnectionCallback): Unsubscribe
-  readonly status: ConnectionStatus
-}
+```
+DataProvider
+├── CLIProvider    - WebSocket to CLI server
+├── ReplayProvider - Recorded session playback
+└── C123Provider   - Direct TCP to timing (future)
 ```
 
-Current implementations:
-- **ReplayProvider**: Replays recorded JSONL data (for development)
-- **CLIProvider**: WebSocket connection to CLI server (planned)
-- **C123Provider**: Direct TCP connection to timing system (planned)
+### Component Structure
 
-### ScoreboardContext
+```
+App
+└── ScoreboardProvider (context)
+    └── ScoreboardLayout
+        ├── TopBar (logo, partners)
+        ├── TimeDisplay (day time)
+        ├── Title (event name, category)
+        ├── CurrentCompetitor (on-course with gates)
+        ├── OnCourseDisplay (other competitors on course)
+        ├── ResultsList (scrollable results table)
+        └── Footer (sponsors)
+```
 
-Central state management using React Context:
-- Connection status and error handling
-- Results and current competitor data
-- Highlight and departing competitor logic
-- Visibility flags for UI components
+### Key Features
 
-### Layout System
+- **Highlight Animation**: Competitor flashes when finishing
+- **Auto-Scroll**: Results scroll through automatically
+- **Gate Badges**: Visual penalty indicators (yellow=2s, red=50s)
+- **Connection Status**: Overlay shows connection state
+- **Error Boundaries**: Component failures don't crash app
 
-Responsive layout using CSS custom properties:
-- Automatic layout detection based on aspect ratio
-- Vertical layout: tall screens (height > width × 1.5)
-- Ledwall layout: wide screens (aspect ratio ≈ 2:1)
-- Dynamic row height and font size calculation
+## Project Structure
 
-## Recordings
+```
+src/
+├── components/      # React components
+├── context/         # ScoreboardContext (state management)
+├── hooks/           # Custom hooks (useLayout, useAutoScroll, etc.)
+├── providers/       # DataProvider implementations
+├── styles/          # CSS (variables, reset, fonts)
+├── types/           # TypeScript definitions
+└── utils/           # Utility functions
 
-Test recordings are stored in `public/recordings/`. Format is JSONL with WebSocket messages.
+public/
+├── assets/          # Images (logo, partners, footer)
+└── recordings/      # JSONL replay files
+```
 
-## Related Documentation
+## Requirements
 
-- [Implementation Checklist](./csb-v2-implementacni-checklist.md)
-- [Analysis Documents](../analysis/)
+- Node.js 18+
+- Modern browser (Chrome, Firefox, Safari, Edge)
+- For production: CLI WebSocket server on timing system
+
+## License
+
+Private - for canoe slalom competition use.
