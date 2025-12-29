@@ -81,18 +81,6 @@ describe('ResultsList', () => {
       expect(screen.getByTestId('results-list')).toBeInTheDocument()
     })
 
-    it('renders header row with column labels', () => {
-      const results = [createResult()]
-      render(<ResultsList results={results} />)
-
-      expect(screen.getByText('#')).toBeInTheDocument()
-      expect(screen.getByText('St.')).toBeInTheDocument()
-      expect(screen.getByText('Jméno')).toBeInTheDocument()
-      expect(screen.getByText('Pen')).toBeInTheDocument()
-      expect(screen.getByText('Čas')).toBeInTheDocument()
-      expect(screen.getByText('Ztráta')).toBeInTheDocument()
-    })
-
     it('renders result rows for each result', () => {
       const results = [
         createResult({ rank: 1, bib: '42', name: 'NOVAK Jiri' }),
@@ -174,16 +162,11 @@ describe('ResultsList', () => {
       })
 
       const results = [createResult({ pen: 2, behind: '1.23' })]
-      render(<ResultsList results={results} />)
-
-      // Header should not have Pen and Ztráta
-      expect(screen.queryByText('Pen')).not.toBeInTheDocument()
-      expect(screen.queryByText('Ztráta')).not.toBeInTheDocument()
-      // Penalty and behind values should not be shown
-      // Note: checking for penalty cell class absence is more reliable since "2" could match other content
       const { container } = render(<ResultsList results={results} />)
+
+      // Penalty and behind values should not be shown
       const penaltyCells = container.querySelectorAll('[class*="penalty"]')
-      // Only header cells might have penalty in className, but not value cells
+      expect(penaltyCells.length).toBe(0)
       expect(screen.queryByText('+1.23')).not.toBeInTheDocument()
     })
 
@@ -203,8 +186,7 @@ describe('ResultsList', () => {
       const results = [createResult({ pen: 2, behind: '1.23' })]
       render(<ResultsList results={results} />)
 
-      expect(screen.getByText('Pen')).toBeInTheDocument()
-      expect(screen.getByText('Ztráta')).toBeInTheDocument()
+      // Penalty and behind values should be visible
       expect(screen.getByText('2')).toBeInTheDocument() // Penalty as number without 's'
       expect(screen.getByText('+1.23')).toBeInTheDocument()
     })
@@ -225,11 +207,10 @@ describe('ResultsList', () => {
       ]
       const { container } = render(<ResultsList results={results} />)
 
-      // Find the highlighted row - the second row (first data row after header)
+      // Find the highlighted row - rows[0] is first data row (bib 42), no header row
       const rows = container.querySelectorAll('[class*="row"]')
-      // rows[0] is header, rows[1] is first data row (bib 42)
-      expect(rows[1].className).toContain('highlighted')
-      expect(rows[2].className).not.toContain('highlighted')
+      expect(rows[0].className).toContain('highlighted')
+      expect(rows[1].className).not.toContain('highlighted')
     })
 
     it('does not apply highlight when isActive is false', () => {
@@ -244,8 +225,7 @@ describe('ResultsList', () => {
       const { container } = render(<ResultsList results={results} />)
 
       const rows = container.querySelectorAll('[class*="row"]')
-      // Skip header row
-      for (let i = 1; i < rows.length; i++) {
+      for (let i = 0; i < rows.length; i++) {
         expect(rows[i].className).not.toContain('highlighted')
       }
     })
@@ -265,7 +245,7 @@ describe('ResultsList', () => {
       const { container } = render(<ResultsList results={results} />)
 
       const rows = container.querySelectorAll('[class*="row"]')
-      for (let i = 1; i < rows.length; i++) {
+      for (let i = 0; i < rows.length; i++) {
         expect(rows[i].className).not.toContain('highlighted')
       }
     })

@@ -20,7 +20,6 @@ interface ResultsListProps {
  * ResultsList component
  *
  * Displays a scrollable list of race results with:
- * - Column headers (Rank, Bib, Name, Penalty, Time, Behind)
  * - Alternating row colors
  * - Highlight styling for recently finished competitors
  * - Auto-scroll to highlighted row
@@ -101,17 +100,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
 
   return (
     <div className={containerClasses} ref={containerRef} data-testid="results-list">
-      {/* Header row */}
-      <div className={`${styles.row} ${styles.header}`}>
-        <div className={styles.rank}>#</div>
-        <div className={styles.bib}>St.</div>
-        <div className={styles.name}>Jméno</div>
-        {showPenalty && <div className={styles.penalty}>Pen</div>}
-        <div className={styles.time}>Čas</div>
-        {showBehind && <div className={styles.behind}>Ztráta</div>}
-      </div>
-
-      {/* Result rows */}
+      {/* Result rows - no header row to match original v1 */}
       {results.map((result) => {
         const isHighlighted = isActive && result.bib === highlightBib
         return (

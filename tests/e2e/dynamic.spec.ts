@@ -150,19 +150,15 @@ test.describe('Results List', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 2
+        return list && list.querySelectorAll('div[class*="row"]').length > 1
       },
       { timeout: 30000 }
     )
 
     const results = page.getByTestId('results-list')
 
-    // Check that header exists
-    const header = results.locator('div[class*="header"]')
-    await expect(header).toBeVisible()
-
-    // Check that at least one data row exists
-    const dataRows = results.locator('div[class*="row"]:not([class*="header"])')
+    // No header row in original v1 - check that data rows exist directly
+    const dataRows = results.locator('div[class*="row"]')
     const count = await dataRows.count()
     expect(count).toBeGreaterThan(0)
   })
