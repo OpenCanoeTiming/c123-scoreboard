@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-29T18:56:15.116Z",
+  "timestamp": "2025-12-29T19:22:08.716Z",
   "original": {
     "body": {
       "fontSize": "16px",
@@ -17,14 +17,7 @@
       "padding": "0px",
       "margin": "0px"
     },
-    "oncourse": {
-      "fontSize": "16px",
-      "fontFamily": "Inter, Arial, sans-serif",
-      "color": "rgb(233, 233, 233)",
-      "backgroundColor": "rgba(18, 18, 18, 0.7)",
-      "padding": "0px",
-      "margin": "0px"
-    },
+    "oncourse": null,
     "topbar": {
       "fontSize": "16px",
       "fontFamily": "Inter, Arial, sans-serif",
@@ -59,20 +52,13 @@
       "padding": "0px",
       "margin": "0px"
     },
-    "oncourse": {
-      "fontSize": "16px",
-      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-      "color": "rgb(233, 233, 233)",
-      "backgroundColor": "rgba(18, 18, 18, 0.7)",
-      "padding": "0px",
-      "margin": "0px"
-    },
+    "oncourse": null,
     "topbar": {
       "fontSize": "16px",
       "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
       "color": "rgb(233, 233, 233)",
       "backgroundColor": "rgba(0, 0, 0, 0)",
-      "padding": "0px 24px",
+      "padding": "0px 10px",
       "margin": "0px"
     },
     "title": {
@@ -80,7 +66,7 @@
       "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
       "color": "rgb(233, 233, 233)",
       "backgroundColor": "rgba(0, 0, 0, 0)",
-      "padding": "8px 24px",
+      "padding": "0px",
       "margin": "0px"
     }
   }

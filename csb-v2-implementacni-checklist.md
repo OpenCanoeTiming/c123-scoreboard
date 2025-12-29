@@ -434,6 +434,26 @@ Provedeno automatizované porovnání screenshotů V2 s originálem pomocí E2E 
 
 **Závěr:** Žádné nové vizuální rozdíly nalezeny. V2 je plně shodná s originálem.
 
+### Přísná vizuální kontrola (2025-12-29, 20:20)
+
+Provedeno detailní porovnání V2 s live instancí originálu. Zjištěny a opraveny rozdíly:
+
+**Opravené problémy:**
+- Title wrapper padding: opraveno z `8px 24px` na `0px` (shodné s originálem)
+- TopBar padding: opraveno z `0 24px` na `0 10px` (shodné s originálem)
+- Main content area padding/gap: opraveno na `0` (více prostoru pro řádky)
+- Header padding: opraveno na `0`
+
+**Výsledek po opravě:**
+- Počet viditelných řádků v V2: 35 (zvýšeno z 34)
+- TopBar padding nyní shodný: `0px 10px`
+- Title padding nyní shodný: `0px`
+
+**Testovací sestava:**
+- Unit testy: ✅ 570 passed (25 test suites)
+- E2E testy: ✅ 124 passed, 2 skipped
+- Visual snapshoty: aktualizovány
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
