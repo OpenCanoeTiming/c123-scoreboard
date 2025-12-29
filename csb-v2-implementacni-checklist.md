@@ -95,18 +95,16 @@ Benchmarks: ✅ 29 performance benchmarků
 - [x] Odstranit související CSS styly
 - [x] Aktualizovat Playwright snapshoty
 
-### 9.7 Gate penalty badges - zobrazovat čísla branek
+### 9.7 Gate penalty badges - zobrazovat čísla branek ✅
 
 **Originál zobrazuje ČÍSLA BRANEK kde byla penalizace**, ne hodnoty penalty
 
 Příklad originálu: `[2][3][4]` = brány 2, 3, 4 měly penalizaci
-V2 aktuálně: `[0][0][0]` = hodnoty penalizace
 
-- [ ] Upravit parseGates/formatGates aby vracely čísla branek s penalizací
-- [ ] Gate badge zobrazí číslo brány (žlutá = 2s touch, červená = 50s miss)
-- [ ] Aktualizovat CurrentCompetitor.tsx
-- [ ] Aktualizovat OnCourseDisplay.tsx
-- [ ] Aktualizovat unit testy
+- [x] Gate badge zobrazí číslo brány (žlutá = 2s touch, červená = 50s miss)
+- [x] Aktualizovat CurrentCompetitor.tsx - zobrazuje pouze brány s penalizací
+- [x] OnCourseDisplay.tsx - již implementováno správně
+- [x] Aktualizovat unit testy a snapshoty
 
 ### 9.8 Přidat živý čas závodníka na trati
 
