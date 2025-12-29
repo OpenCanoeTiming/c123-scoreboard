@@ -5,24 +5,20 @@
  * expected schemas and that our validators correctly accept valid data.
  */
 
-import { describe, it, expect } from 'vitest'
-import * as fs from 'fs'
-import * as path from 'path'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
-  validateTopMessage,
   validateCompMessage,
   validateOnCourseMessage,
   validateControlMessage,
   validateTextMessage,
-  validateResultRow,
   validateCompetitorData,
   isObject,
   isArray,
   isString,
 } from '../../utils/validation'
-
-// Path to test recording
-const RECORDING_PATH = path.resolve(__dirname, '../../../../public/recordings/rec-2025-12-28T09-34-10.jsonl')
 
 interface RecordedMessage {
   ts: number
@@ -31,13 +27,20 @@ interface RecordedMessage {
   data: unknown
 }
 
+// Messages will be loaded on beforeAll
+let messages: RecordedMessage[] = []
+
 /**
  * Load and parse messages from JSONL recording
  */
 function loadRecording(): RecordedMessage[] {
-  const content = fs.readFileSync(RECORDING_PATH, 'utf-8')
-  const lines = content.split('\n').filter(line => line.trim())
-  const messages: RecordedMessage[] = []
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = dirname(__filename)
+  const recordingPath = resolve(__dirname, '../../../../public/recordings/rec-2025-12-28T09-34-10.jsonl')
+
+  const content = readFileSync(recordingPath, 'utf-8')
+  const lines = content.split('\n').filter((line: string) => line.trim())
+  const loadedMessages: RecordedMessage[] = []
 
   for (const line of lines) {
     try {
@@ -45,25 +48,27 @@ function loadRecording(): RecordedMessage[] {
       // Skip meta line
       if (parsed._meta) continue
       if (parsed.ts !== undefined && parsed.src && parsed.type) {
-        messages.push(parsed as RecordedMessage)
+        loadedMessages.push(parsed as RecordedMessage)
       }
     } catch {
       // Skip unparseable lines
     }
   }
 
-  return messages
+  return loadedMessages
 }
 
 /**
- * Filter messages by source and type
+ * Filter messages by source and type - uses current value of messages
  */
-function filterMessages(messages: RecordedMessage[], source: string, type: string): RecordedMessage[] {
+function getMessagesByType(source: string, type: string): RecordedMessage[] {
   return messages.filter(m => m.src === source && m.type === type)
 }
 
 describe('Message Contract Tests', () => {
-  const messages = loadRecording()
+  beforeAll(() => {
+    messages = loadRecording()
+  })
 
   describe('Recording file validation', () => {
     it('should load recording file successfully', () => {
@@ -85,13 +90,13 @@ describe('Message Contract Tests', () => {
   })
 
   describe('CLI "comp" message contract', () => {
-    const compMessages = filterMessages(messages, 'ws', 'comp')
-
     it('should have comp messages in recording', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       expect(compMessages.length).toBeGreaterThan(0)
     })
 
     it('should validate all comp messages', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const result = validateCompMessage(msg.data)
         expect(result.valid).toBe(true)
@@ -99,6 +104,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have correct structure for comp message data', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { msg: string; data: Record<string, unknown> }
         expect(data).toHaveProperty('msg', 'comp')
@@ -108,6 +114,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have valid competitor data when competitor present', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       const withCompetitor = compMessages.filter(msg => {
         const data = msg.data as { data: { Bib?: string } }
         return data.data?.Bib && data.data.Bib.trim() !== ''
@@ -124,6 +131,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should handle empty competitor data', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       const empty = compMessages.filter(msg => {
         const data = msg.data as { data: { Bib?: string } }
         return !data.data?.Bib || data.data.Bib.trim() === ''
@@ -137,6 +145,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have expected fields in competitor data', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       const expectedFields = ['Bib', 'Name', 'Nat', 'Pen', 'Gates', 'Total', 'TTBDiff', 'TTBName', 'Rank']
 
       for (const msg of compMessages.slice(0, 10)) {
@@ -149,13 +158,13 @@ describe('Message Contract Tests', () => {
   })
 
   describe('CLI "oncourse" message contract', () => {
-    const oncourseMessages = filterMessages(messages, 'ws', 'oncourse')
-
     it('should have oncourse messages in recording', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       expect(oncourseMessages.length).toBeGreaterThan(0)
     })
 
     it('should validate all oncourse messages', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       for (const msg of oncourseMessages) {
         const result = validateOnCourseMessage(msg.data)
         expect(result.valid).toBe(true)
@@ -163,6 +172,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have correct structure for oncourse message data', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       for (const msg of oncourseMessages) {
         const data = msg.data as { msg: string; data: unknown[] }
         expect(data).toHaveProperty('msg', 'oncourse')
@@ -172,6 +182,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have valid competitor data for each competitor on course', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       for (const msg of oncourseMessages) {
         const data = msg.data as { data: Record<string, unknown>[] }
         for (const competitor of data.data) {
@@ -182,6 +193,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have expected fields in oncourse competitor', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       const expectedFields = ['Bib', 'Name', 'Club', 'Gates', 'Pen', 'Race', 'RaceId']
 
       const withCompetitors = oncourseMessages.filter(msg => {
@@ -201,13 +213,13 @@ describe('Message Contract Tests', () => {
   })
 
   describe('CLI "control" message contract', () => {
-    const controlMessages = filterMessages(messages, 'ws', 'control')
-
     it('should have control messages in recording', () => {
+      const controlMessages = getMessagesByType('ws', 'control')
       expect(controlMessages.length).toBeGreaterThan(0)
     })
 
     it('should validate all control messages', () => {
+      const controlMessages = getMessagesByType('ws', 'control')
       for (const msg of controlMessages) {
         const result = validateControlMessage(msg.data)
         expect(result.valid).toBe(true)
@@ -215,6 +227,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have correct structure for control message data', () => {
+      const controlMessages = getMessagesByType('ws', 'control')
       for (const msg of controlMessages) {
         const data = msg.data as { msg: string; data: Record<string, unknown> }
         expect(data).toHaveProperty('msg', 'control')
@@ -224,6 +237,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have visibility flags as strings', () => {
+      const controlMessages = getMessagesByType('ws', 'control')
       const visibilityFlags = [
         'displayCurrent',
         'displayTop',
@@ -248,13 +262,13 @@ describe('Message Contract Tests', () => {
   })
 
   describe('CLI "title" message contract', () => {
-    const titleMessages = filterMessages(messages, 'ws', 'title')
-
     it('should have title messages in recording', () => {
+      const titleMessages = getMessagesByType('ws', 'title')
       expect(titleMessages.length).toBeGreaterThan(0)
     })
 
     it('should validate all title messages', () => {
+      const titleMessages = getMessagesByType('ws', 'title')
       for (const msg of titleMessages) {
         const result = validateTextMessage(msg.data, 'title')
         expect(result.valid).toBe(true)
@@ -262,6 +276,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have text field in title data', () => {
+      const titleMessages = getMessagesByType('ws', 'title')
       for (const msg of titleMessages) {
         const data = msg.data as { data: { text?: string } }
         expect(data.data).toHaveProperty('text')
@@ -271,13 +286,13 @@ describe('Message Contract Tests', () => {
   })
 
   describe('CLI "infotext" message contract', () => {
-    const infotextMessages = filterMessages(messages, 'ws', 'infotext')
-
     it('should have infotext messages in recording', () => {
+      const infotextMessages = getMessagesByType('ws', 'infotext')
       expect(infotextMessages.length).toBeGreaterThan(0)
     })
 
     it('should validate all infotext messages', () => {
+      const infotextMessages = getMessagesByType('ws', 'infotext')
       for (const msg of infotextMessages) {
         const result = validateTextMessage(msg.data, 'infotext')
         expect(result.valid).toBe(true)
@@ -285,6 +300,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have text field in infotext data', () => {
+      const infotextMessages = getMessagesByType('ws', 'infotext')
       for (const msg of infotextMessages) {
         const data = msg.data as { data: { text?: string } }
         expect(data.data).toHaveProperty('text')
@@ -294,10 +310,8 @@ describe('Message Contract Tests', () => {
   })
 
   describe('Gates string format contract', () => {
-    const compMessages = filterMessages(messages, 'ws', 'comp')
-    const oncourseMessages = filterMessages(messages, 'ws', 'oncourse')
-
     it('should have valid gates format in comp messages', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { data: { Gates?: string } }
         if (data.data.Gates) {
@@ -311,6 +325,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have valid gates format in oncourse messages', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       for (const msg of oncourseMessages) {
         const data = msg.data as { data: { Gates?: string }[] }
         for (const competitor of data.data) {
@@ -324,9 +339,8 @@ describe('Message Contract Tests', () => {
   })
 
   describe('Time format contract', () => {
-    const compMessages = filterMessages(messages, 'ws', 'comp')
-
     it('should have valid time format', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { data: { Total?: string; Time?: string } }
 
@@ -338,6 +352,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have valid TTBDiff format', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { data: { TTBDiff?: string } }
 
@@ -350,9 +365,8 @@ describe('Message Contract Tests', () => {
   })
 
   describe('Penalty format contract', () => {
-    const compMessages = filterMessages(messages, 'ws', 'comp')
-
     it('should have valid penalty values', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { data: { Pen?: string | number } }
 
@@ -369,10 +383,8 @@ describe('Message Contract Tests', () => {
   })
 
   describe('Bib format contract', () => {
-    const compMessages = filterMessages(messages, 'ws', 'comp')
-    const oncourseMessages = filterMessages(messages, 'ws', 'oncourse')
-
     it('should have string Bib values in comp messages', () => {
+      const compMessages = getMessagesByType('ws', 'comp')
       for (const msg of compMessages) {
         const data = msg.data as { data: { Bib?: unknown } }
         if (data.data.Bib !== undefined) {
@@ -382,6 +394,7 @@ describe('Message Contract Tests', () => {
     })
 
     it('should have string Bib values in oncourse messages', () => {
+      const oncourseMessages = getMessagesByType('ws', 'oncourse')
       for (const msg of oncourseMessages) {
         const data = msg.data as { data: { Bib?: unknown }[] }
         for (const competitor of data.data) {

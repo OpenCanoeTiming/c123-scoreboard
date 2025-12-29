@@ -310,8 +310,8 @@ describe('ReplayProvider Performance Benchmarks', () => {
       }
 
       const jsonl = JSON.stringify({ _meta: {} }) + '\n' + JSON.stringify(message)
-      const provider = new ReplayProvider(jsonl, { autoPlay: false })
-      // Just parsing, no async
+      // Create provider - parsing happens synchronously
+      void new ReplayProvider(jsonl, { autoPlay: false })
     })
 
     bench('parse top message with 500 results', () => {
@@ -331,8 +331,8 @@ describe('ReplayProvider Performance Benchmarks', () => {
       }
 
       const jsonl = JSON.stringify({ _meta: {} }) + '\n' + JSON.stringify(message)
-      const provider = new ReplayProvider(jsonl, { autoPlay: false })
-      // Just parsing, no async
+      // Create provider - parsing happens synchronously
+      void new ReplayProvider(jsonl, { autoPlay: false })
     })
   })
 })

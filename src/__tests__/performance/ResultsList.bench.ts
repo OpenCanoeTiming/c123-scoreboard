@@ -7,7 +7,7 @@
  * for different numbers of results.
  */
 
-import { describe, bench, beforeEach, afterEach } from 'vitest'
+import { describe, bench, beforeEach, afterEach, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import React from 'react'
 import type { Result } from '@/types'
