@@ -167,12 +167,40 @@ Testovat na **768×384** (`?type=ledwall&ledwallExactSize=true`)
 - [x] Scrollbar skrytý (přidáno CSS pro skrytí scrollbaru)
 - [x] Minimální spacing mezi komponenty (padding: 5px 0 0, gap: 0)
 
+### 9.14 CurrentCompetitor layout - sjednocení s originálem
+
+**Originál má jednořádkový layout:** Bib | Name | Gates+Penalty | Total
+
+V2 má víceřádkový: hlavní řádek + TTB řádek + penalties řádek
+
+- [ ] Refaktorovat CurrentCompetitor na jednořádkový layout jako originál
+- [ ] Bib vlevo (se žlutým border-left jako indikátor)
+- [ ] Name vedle bib
+- [ ] Gate badges + total penalty badge uprostřed
+- [ ] Živý čas vpravo
+- [ ] Odstranit TTB řádek (originál ho nemá)
+- [ ] Odstranit club zobrazení (originál ho nemá v CurrentCompetitor)
+
+### 9.15 OnCourseDisplay - správné použití
+
+**Originál zobrazuje OnCourseDisplay pouze pro další závodníky na trati** (intervalový start)
+
+- [ ] OnCourseDisplay se zobrazuje pouze když jsou na trati 2+ závodníci
+- [ ] Ověřit že excludeBib správně filtruje current competitor
+
+### 9.16 Použití skutečných assets z originálu ✅
+
+- [x] Zkopírovat skvscb_logo_light.svg jako logo.svg
+- [x] Zkopírovat logo-csk.png jako partners.png
+- [x] Zkopírovat footer_skvscb.png jako footer.png
+- [x] Aktualizovat App.tsx - použít logo.svg místo logo.png
+
 ### 🔍 Revize: Fáze 9
 
 - [ ] Screenshot V2 ledwall je pixel-identical s originálem
 - [ ] Screenshot V2 vertical je pixel-identical s originálem
 - [ ] Playwright comparison tests prochází s < 1% pixel diff
-- [ ] Všechny default assets z originálu jsou použity
+- [x] Všechny default assets z originálu jsou použity
 - [ ] **Commit:** "feat: achieve visual parity with v1"
 
 ---

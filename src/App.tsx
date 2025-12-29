@@ -83,7 +83,7 @@ function ScoreboardContent() {
           <>
             <TopBar
               visible={visibility.displayTopBar}
-              logoUrl="/assets/logo.png"
+              logoUrl="/assets/logo.svg"
               partnerLogoUrl="/assets/partners.png"
             />
             <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
