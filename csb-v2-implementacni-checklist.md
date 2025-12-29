@@ -1817,12 +1817,14 @@ src/components/__tests__/snapshots/*.test.tsx
 - ResultRow, CurrentCompetitor, Footer snapshots
 - Detekovat nečekané změny ve výstupu komponent
 
-#### 3. Contract testy pro WebSocket zprávy (priorita: střední)
+#### 3. Contract testy pro WebSocket zprávy (priorita: střední) - ✅ HOTOVO
 ```bash
-src/providers/__tests__/contracts/
+src/providers/__tests__/contracts/messageContracts.test.ts
 ```
-- JSON schema validace pro message typy
-- Testovat proti recording samples
+- [x] 35 contract testů validujících reálné zprávy z recording
+- [x] Pokrývá: comp, oncourse, control, title, infotext zprávy
+- [x] Validuje formát gates, času, penalt, Bib
+- [x] Ověřuje konzistenci timestampů a pořadí zpráv
 
 #### 4. Chaos engineering testy (priorita: nízká)
 ```bash
@@ -1932,6 +1934,78 @@ Všechny kroky, které lze provést automaticky (bez prohlížeče, bez přístu
 | C123Provider | 3 | TCP socket nelze v prohlížeči |
 | Hardware test | ~4 | Fyzická zařízení |
 | Architekturální rozhodnutí | ~5 | Vyžaduje rozhodnutí uživatele |
+
+---
+
+## Review v1.8 (2025-12-29) - Tag: `review-ready-v1.8`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (440 kB JS, 14 kB CSS)
+Unit testy: ✅ 463 testů prochází (18 test suites)
+Benchmarks: ✅ 29 performance benchmarků
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Contract testy pro WebSocket zprávy**
+   - Nový soubor: `src/providers/__tests__/contracts/messageContracts.test.ts`
+   - 35 testů validujících reálné zprávy z recording souboru
+   - Pokryté typy zpráv: comp, oncourse, control, title, infotext
+   - Validace formátů: gates (comma/space separated), time, TTBDiff, Penalty, Bib
+   - Kontrola konzistence: timestamps v neklesajícím pořadí, rozumné mezery mezi zprávami
+   - Ověření source typů a CLI protokolu
+
+### Celková statistika testů
+
+| Kategorie | Počet |
+|-----------|-------|
+| Unit testy (utility) | 93 |
+| Unit testy (providers) | 99 |
+| Unit testy (hooks) | 61 |
+| Unit testy (components) | 65 |
+| Unit testy (context) | 45 |
+| Contract testy | 35 |
+| Fuzz testy | 22 |
+| Memory leak testy | 10 |
+| ErrorBoundary testy | 20 |
+| Performance benchmarks | 29 |
+| **Celkem** | **463 unit + 29 bench** |
+
+### Závěr - všechny automatizovatelné kroky dokončeny
+
+Všechny kroky v checklistu, které lze provést automaticky bez prohlížeče, bez přístupu k live serveru a bez fyzického hardware, byly dokončeny.
+
+### Zbývající kroky - vyžadují manuální práci člověka
+
+| Kategorie | Důvod |
+|-----------|-------|
+| **Vizuální testování** | Prohlížeč + lidské oči pro porovnání s reference screenshoty |
+| **Live server test** | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** | TCP socket nelze v browser JS - vyžaduje WebSocket proxy |
+| **Hardware test** | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+### Doporučení pro další práci
+
+1. **Manuální testování v prohlížeči:**
+   ```bash
+   npm run dev
+   # http://localhost:5173/?source=replay&speed=10
+   ```
+
+2. **Live server test** (pokud dostupný):
+   ```
+   ?source=cli&host=192.168.68.108:8081
+   ```
+
+3. **Vizuální ladění:**
+   - Porovnat s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+   - Zkopírovat barvy z `*-styles.json` do `variables.css`
 
 ---
 
