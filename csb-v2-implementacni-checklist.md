@@ -424,8 +424,8 @@ cd /workspace/csb-v2/canoe-scoreboard-v2 && npm run dev
 ### Důležitý výsledek manuálního ověření, které prošlo všechny body nad reálným přípojení na CLI se simulováním různých situací
 Tohle je seznam k dalšímu postupnému opravování a zapracování:
 
- - [ ] zrušit nepoužitý ledwallExactSize=true
- - [ ] denní čas vypnout defailtně všude, nechat jako nepoužitou komponentu na později
+ - [x] zrušit nepoužitý ledwallExactSize=true (parametr nebyl nikdy implementován)
+ - [x] denní čas vypnout defailtně všude, nechat jako nepoužitou komponentu na později
  - [ ] Connection status předělat na drobnou tečku vpravo nahoře jako v originálu - jen mění barvy nebo poblikává
  - [ ] na ledwall vytékají třímístné bibs (trochu už i dvoumístné) z toho podbarveného boxu v rsults a desetinná místa výsledného času většího než 100s (třímístné vteřiny) doprava z obrazovky, na vertical je oboje v pohodě, formátování bib box (proporčně) by šlo převzít z vertical do ledwall.
  - [ ] běžící čas závodníka oncourse je na ledwall nějak disproporčně malý
@@ -436,6 +436,7 @@ Tohle je seznam k dalšímu postupnému opravování a zapracování:
  - [ ] záhlaví vertical je moc vysoké, název akce je jakoby odsazený dolu. Myslím že kdyby title prostě překrýval topbar nebo byl jeho součástí, tak je to správně. Na ledwall je to v pohodě.
  - [ ] když jsou dva závodníci na trati, tak je řádek oncourse úplně blbě, jen se tam nějak divně přepisují, čas jim neběží. Uděláme to tak, že ledwall ukazuje závodníka z oncourse/current, který má nejvyšší čas (tedy current) nebo který právě dojel do cíle, abychom odprezentovali jeho výsledek. Vertical bude obsahovat všechny jedoucí závodníky (běží jim čas) nebo závodníky co dojeli do cíle (ukazujeme jejich výsledek), tzn bude tam i více řádků oncourse/current pod sebou.
  - [ ] teď větší věc: škálování ledwall. Udělej si před touto změnou tag v gitu a všechno commitni, ať se kdyžtak můžeme vrátit. V rámci tohoto bodu pouze rozepiš do checklistu samostatnou kapitolu "škálování ledwall", neprogramuj. ledwall potřebujeme škálovat, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy sice tabule má velké rozlišení, ale je daleko a stejně musíme mít jen pár řádků a písmena velká. Takže ledwall mód by měl mít parametr displayRows, který uvádí kolik řádků výsledků má být vidět pod nadpisem a jedním řádkem oncourse. Ledwall se naškáluje tak, aby na výšku vyplnil disponibilní viewport tak, že bude vidět právě zadaný počet řádků ... a na šířku se samozřejmě responsivně přizpůsobí.
+ - [ ] aktualizuj readme.md tak, aby melo podobnou strukturu a napln jako u original, ovsem platne k soucasnemu stavu projektu v2
  
  
  

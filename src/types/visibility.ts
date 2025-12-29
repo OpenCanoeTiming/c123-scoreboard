@@ -20,6 +20,6 @@ export const defaultVisibility: VisibilityState = {
   displayTitle: true,
   displayTopBar: true,
   displayFooter: true,
-  displayDayTime: true,
+  displayDayTime: false, // disabled by default, kept for future use
   displayOnCourse: true,
 }
