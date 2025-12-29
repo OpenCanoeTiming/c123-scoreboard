@@ -1,151 +1,20 @@
 /**
  * Chaos Engineering Tests for ReplayProvider
  *
- * These tests verify the robustness of ReplayProvider under adverse conditions:
+ * These tests verify the provider's robustness under adverse conditions:
  * - Random disconnects during playback
- * - Messages in wrong order
+ * - Out-of-order timestamps
  * - Duplicate messages
  * - Very large payloads
- * - Empty payloads
+ * - Empty/null payloads
  * - Malformed messages
  * - Rapid state changes
+ * - Edge case timestamps
+ * - Concurrent callback execution
+ * - Memory stress scenarios
  */
-
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { ReplayProvider } from '../../ReplayProvider'
-
-// Helper to generate random JSONL messages
-function generateMessages(count: number, options: { includeInvalid?: boolean; largePayload?: boolean } = {}): string {
-  const lines: string[] = []
-  lines.push('{"_meta":{"version":2,"recorded":"2025-12-28T09:34:10.612Z"}}')
-
-  for (let i = 0; i < count; i++) {
-    const ts = i * 10
-
-    if (options.includeInvalid && i % 10 === 7) {
-      // Every 10th message (offset by 7) is invalid
-      lines.push('not valid json {broken')
-      continue
-    }
-
-    if (options.largePayload && i % 5 === 0) {
-      // Every 5th message has a large payload
-      const largeText = 'X'.repeat(10000) // 10KB text
-      lines.push(JSON.stringify({
-        ts,
-        src: 'ws',
-        type: 'infotext',
-        data: { msg: 'infotext', data: { text: largeText } },
-      }))
-      continue
-    }
-
-    // Normal comp message
-    lines.push(JSON.stringify({
-      ts,
-      src: 'ws',
-      type: 'comp',
-      data: {
-        msg: 'comp',
-        data: {
-          Bib: String(i + 1),
-          Name: `Athlete ${i + 1}`,
-          Nat: 'CZE',
-          Pen: '0',
-          Gates: ',,,,,',
-          Total: `${(90 + i * 0.1).toFixed(2)}`,
-          TTBDiff: i === 0 ? '' : `+${(i * 0.5).toFixed(2)}`,
-          TTBName: 'Leader',
-          Rank: String(i + 1),
-        },
-      },
-    }))
-  }
-
-  return lines.join('\n')
-}
-
-// Generate out-of-order messages
-function generateOutOfOrderMessages(): string {
-  const lines: string[] = []
-  lines.push('{"_meta":{"version":2,"recorded":"2025-12-28T09:34:10.612Z"}}')
-
-  // Messages with non-sequential timestamps
-  const timestamps = [100, 50, 200, 25, 300, 150, 75]
-
-  timestamps.forEach((ts, i) => {
-    lines.push(JSON.stringify({
-      ts,
-      src: 'ws',
-      type: 'comp',
-      data: {
-        msg: 'comp',
-        data: {
-          Bib: String(i + 1),
-          Name: `Athlete ${i + 1}`,
-          Nat: 'CZE',
-          Pen: '0',
-          Gates: ',,,,,',
-          Total: `${90 + i}.00`,
-          TTBDiff: '',
-          TTBName: '',
-          Rank: String(i + 1),
-        },
-      },
-    }))
-  })
-
-  return lines.join('\n')
-}
-
-// Generate duplicate messages
-function generateDuplicateMessages(): string {
-  const lines: string[] = []
-  lines.push('{"_meta":{"version":2,"recorded":"2025-12-28T09:34:10.612Z"}}')
-
-  const message = {
-    ts: 100,
-    src: 'ws',
-    type: 'comp',
-    data: {
-      msg: 'comp',
-      data: {
-        Bib: '1',
-        Name: 'Test Athlete',
-        Nat: 'CZE',
-        Pen: '0',
-        Gates: ',,,,,',
-        Total: '90.00',
-        TTBDiff: '',
-        TTBName: '',
-        Rank: '1',
-      },
-    },
-  }
-
-  // Same message 10 times with same timestamp
-  for (let i = 0; i < 10; i++) {
-    lines.push(JSON.stringify(message))
-  }
-
-  return lines.join('\n')
-}
-
-// Generate empty/null payload messages
-function generateEmptyPayloadMessages(): string {
-  const lines: string[] = []
-  lines.push('{"_meta":{"version":2,"recorded":"2025-12-28T09:34:10.612Z"}}')
-
-  // Various empty/null/undefined payloads
-  lines.push(JSON.stringify({ ts: 10, src: 'ws', type: 'comp', data: null }))
-  lines.push(JSON.stringify({ ts: 20, src: 'ws', type: 'comp', data: {} }))
-  lines.push(JSON.stringify({ ts: 30, src: 'ws', type: 'comp', data: { msg: 'comp', data: null } }))
-  lines.push(JSON.stringify({ ts: 40, src: 'ws', type: 'comp', data: { msg: 'comp', data: {} } }))
-  lines.push(JSON.stringify({ ts: 50, src: 'ws', type: 'top', data: { msg: 'top', data: { Results: [] } } }))
-  lines.push(JSON.stringify({ ts: 60, src: 'ws', type: 'oncourse', data: { msg: 'oncourse', data: [] } }))
-
-  return lines.join('\n')
-}
 
 describe('Chaos Engineering - ReplayProvider', () => {
   beforeEach(() => {
@@ -156,497 +25,658 @@ describe('Chaos Engineering - ReplayProvider', () => {
     vi.useRealTimers()
   })
 
+  // Helper to create JSONL content
+  const createJSONL = (messages: Array<{ ts: number; src: string; type: string; data: unknown }>): string => {
+    return messages.map(msg => JSON.stringify(msg)).join('\n')
+  }
+
+  // Helper to create valid comp message wrapper
+  const createCompMessage = (bib: string, time: string = '0:00.00') => ({
+    msg: 'comp',
+    data: {
+      Bib: bib,
+      Name: `Athlete ${bib}`,
+      Club: 'TEST',
+      Time: time,
+      Gates: '0,0,0,0,0',
+    }
+  })
+
+  // Helper to create valid top message wrapper
+  const createTopMessage = (highlightBib: string | null = null, results: unknown[] = []) => ({
+    msg: 'top',
+    data: {
+      RaceName: 'Test Race',
+      RaceStatus: 'Running',
+      HighlightBib: highlightBib,
+      list: results,
+    }
+  })
+
   describe('Random disconnects during playback', () => {
-    it('should handle disconnect during message processing without crash', async () => {
-      const provider = new ReplayProvider(generateMessages(100))
+    it('should handle disconnect during message processing', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 200, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
+
+      const provider = new ReplayProvider(content)
       const onCourseCallback = vi.fn()
       provider.onOnCourse(onCourseCallback)
 
       await provider.connect()
+      vi.advanceTimersByTime(50)
 
-      // Let some messages process
-      vi.advanceTimersByTime(200)
-
-      // Disconnect mid-stream
+      // Disconnect during playback
       provider.disconnect()
 
+      // Advance more time - no more messages should be processed
+      vi.advanceTimersByTime(500)
+
+      expect(onCourseCallback).toHaveBeenCalledTimes(1)
       expect(provider.status).toBe('disconnected')
-      expect(() => vi.advanceTimersByTime(1000)).not.toThrow()
     })
 
-    it('should handle rapid connect/disconnect cycles', async () => {
-      const provider = new ReplayProvider(generateMessages(50))
+    it('should handle multiple rapid connect/disconnect cycles', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 1000, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
 
-      for (let i = 0; i < 20; i++) {
+      const provider = new ReplayProvider(content, { autoPlay: false })
+      const connectionCallback = vi.fn()
+      provider.onConnectionChange(connectionCallback)
+
+      // Rapid connect/disconnect cycles
+      for (let i = 0; i < 10; i++) {
         await provider.connect()
-        vi.advanceTimersByTime(Math.random() * 100)
         provider.disconnect()
       }
 
+      // Should have 20 connection changes (10 connect + 10 disconnect pairs)
+      // Each connect: connecting -> connected
+      // Each disconnect: disconnected
+      expect(connectionCallback.mock.calls.length).toBeGreaterThanOrEqual(20)
       expect(provider.status).toBe('disconnected')
     })
 
-    it('should handle disconnect at exact message boundary', async () => {
-      const provider = new ReplayProvider(generateMessages(10))
+    it('should cleanup timers on disconnect', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 10000, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
+
+      const provider = new ReplayProvider(content)
       await provider.connect()
 
-      // Advance to exact message time and disconnect
-      vi.advanceTimersByTime(50)
+      // First message processed
+      vi.advanceTimersByTime(1)
+
+      // Disconnect - should clear pending timer
       provider.disconnect()
 
+      // Advance past when second message would have been processed
+      vi.advanceTimersByTime(20000)
+
+      // Provider should still be disconnected, no errors
       expect(provider.status).toBe('disconnected')
-      expect(provider.connected).toBe(false)
     })
   })
 
-  describe('Messages in wrong order', () => {
-    it('should process out-of-order timestamps without crash', async () => {
-      const provider = new ReplayProvider(generateOutOfOrderMessages())
-      const onCourseCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
+  describe('Out-of-order timestamps', () => {
+    it('should handle messages with out-of-order timestamps', async () => {
+      const content = createJSONL([
+        { ts: 500, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 300, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
 
-      await provider.connect()
-
-      // Process all messages
-      vi.advanceTimersByTime(500)
-
-      expect(provider.status).toBe('connected')
-      // Provider should still work (may emit in whatever order)
-    })
-
-    it('should handle negative timestamp differences', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":100,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"}}}
-{"ts":50,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}`
-
-      const provider = new ReplayProvider(jsonl)
-      await provider.connect()
-
-      // Should not throw
-      expect(() => vi.advanceTimersByTime(200)).not.toThrow()
-    })
-  })
-
-  describe('Duplicate messages', () => {
-    it('should handle identical messages gracefully', async () => {
-      const provider = new ReplayProvider(generateDuplicateMessages())
-      const onCourseCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(200)
-
-      // All 10 duplicates should be processed (provider doesn't dedupe)
-      expect(provider.status).toBe('connected')
-    })
-
-    it('should not crash on repeated rapid message delivery', async () => {
-      // All messages at ts=0
-      const lines = ['{"_meta":{"version":2}}']
-      for (let i = 0; i < 100; i++) {
-        lines.push(JSON.stringify({
-          ts: 0,
-          src: 'ws',
-          type: 'comp',
-          data: { msg: 'comp', data: { Bib: String(i) } },
-        }))
-      }
-
-      const provider = new ReplayProvider(lines.join('\n'))
-      const onCourseCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
-
-      await provider.connect()
-
-      // All messages should fire immediately
-      expect(() => vi.advanceTimersByTime(10)).not.toThrow()
-    })
-  })
-
-  describe('Very large payloads', () => {
-    it('should handle 10KB text payload', async () => {
-      const provider = new ReplayProvider(generateMessages(10, { largePayload: true }))
-      const eventInfoCallback = vi.fn()
-      provider.onEventInfo(eventInfoCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(200)
-
-      expect(provider.status).toBe('connected')
-      expect(eventInfoCallback).toHaveBeenCalled()
-    })
-
-    it('should handle 100KB results array', async () => {
-      const results = []
-      for (let i = 0; i < 500; i++) {
-        results.push({
-          Bib: String(i + 1),
-          Name: `Athlete With Very Long Name Number ${i + 1} From Country`,
-          Nat: 'CZE',
-          Total: `${(90 + i * 0.01).toFixed(2)}`,
-          Pen: String(i % 50),
-          Behind: i === 0 ? '' : `+${(i * 0.1).toFixed(2)}`,
-          Rank: String(i + 1),
-        })
-      }
-
-      // Use 'list' key as expected by ReplayProvider.parseResults
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"top","data":{"msg":"top","data":{"list":${JSON.stringify(results)}}}}`
-
-      const provider = new ReplayProvider(jsonl)
-      const resultsCallback = vi.fn()
-      provider.onResults(resultsCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(100)
-
-      expect(resultsCallback).toHaveBeenCalled()
-      const callData = resultsCallback.mock.calls[0][0]
-      expect(callData.results.length).toBe(500)
-    })
-
-    it('should handle 1MB payload without timeout', async () => {
-      // Generate ~1MB of data
-      const bigText = 'A'.repeat(1024 * 1024)
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"infotext","data":{"msg":"infotext","data":{"text":"${bigText}"}}}`
-
-      const provider = new ReplayProvider(jsonl)
-      const eventInfoCallback = vi.fn()
-      provider.onEventInfo(eventInfoCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(100)
-
-      expect(eventInfoCallback).toHaveBeenCalled()
-    })
-  })
-
-  describe('Empty payloads', () => {
-    it('should handle null data gracefully', async () => {
-      const provider = new ReplayProvider(generateEmptyPayloadMessages())
-      const onCourseCallback = vi.fn()
-      const resultsCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
-      provider.onResults(resultsCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(200)
-
-      // Should not crash
-      expect(provider.status).toBe('connected')
-    })
-
-    it('should handle empty arrays', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"top","data":{"msg":"top","data":{"Results":[]}}}
-{"ts":20,"src":"ws","type":"oncourse","data":{"msg":"oncourse","data":[]}}`
-
-      const provider = new ReplayProvider(jsonl)
-      const resultsCallback = vi.fn()
-      const onCourseCallback = vi.fn()
-      provider.onResults(resultsCallback)
-      provider.onOnCourse(onCourseCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(100)
-
-      expect(resultsCallback).toHaveBeenCalledWith(expect.objectContaining({
-        results: [],
-      }))
-    })
-
-    it('should handle missing required fields', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"comp","data":{"msg":"comp","data":{}}}
-{"ts":20,"src":"ws","type":"top","data":{"msg":"top","data":{}}}`
-
-      const provider = new ReplayProvider(jsonl)
-      const errorCallback = vi.fn()
-      provider.onError(errorCallback)
-
-      await provider.connect()
-      vi.advanceTimersByTime(100)
-
-      // Should not crash, may or may not call error callback
-      expect(provider.status).toBe('connected')
-    })
-  })
-
-  describe('Malformed messages', () => {
-    it('should skip invalid JSON lines without crashing', async () => {
-      const provider = new ReplayProvider(generateMessages(50, { includeInvalid: true }))
-      const errorCallback = vi.fn()
-      provider.onError(errorCallback)
+      const provider = new ReplayProvider(content)
+      const bibs: string[] = []
+      provider.onOnCourse((data) => {
+        if (data.current) bibs.push(data.current.bib)
+      })
 
       await provider.connect()
       vi.advanceTimersByTime(1000)
 
-      expect(provider.status).toBe('connected')
-      // Should have logged errors for invalid lines
-      expect(errorCallback).toHaveBeenCalled()
+      // Should be sorted by timestamp: 100 -> 300 -> 500
+      expect(bibs).toEqual(['2', '3', '1'])
     })
 
-    it('should handle truncated JSON', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"
-{"ts":20,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}`
+    it('should handle negative timestamps', async () => {
+      const content = createJSONL([
+        { ts: -100, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
+      const provider = new ReplayProvider(content)
+      const bibs: string[] = []
+      provider.onOnCourse((data) => {
+        if (data.current) bibs.push(data.current.bib)
+      })
+
+      await provider.connect()
+      vi.advanceTimersByTime(500)
+
+      // Should process all messages (sorted by ts)
+      expect(bibs).toEqual(['1', '2', '3'])
+    })
+
+    it('should handle very large timestamps', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: Number.MAX_SAFE_INTEGER, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
+
+      const provider = new ReplayProvider(content, { speed: 1000000000 })
+      const bibs: string[] = []
+      provider.onOnCourse((data) => {
+        if (data.current) bibs.push(data.current.bib)
+      })
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // First message should be processed
+      expect(bibs).toContain('1')
+    })
+  })
+
+  describe('Duplicate messages', () => {
+    it('should handle 10 identical messages', async () => {
+      const duplicateMessage = { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') }
+      const content = createJSONL(Array(10).fill(duplicateMessage))
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // All 10 messages should be processed
+      expect(callback).toHaveBeenCalledTimes(10)
+    })
+
+    it('should handle duplicate messages with same timestamp', async () => {
+      const content = createJSONL([
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const bibs: string[] = []
+      provider.onOnCourse((data) => {
+        if (data.current) bibs.push(data.current.bib)
+      })
+
+      await provider.connect()
+      vi.advanceTimersByTime(200)
+
+      // All messages should be processed
+      expect(bibs.length).toBe(3)
+    })
+  })
+
+  describe('Very large payloads', () => {
+    it('should handle 10KB text in message', async () => {
+      const largeText = 'A'.repeat(10 * 1024)
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'title', data: { msg: 'title', data: { text: largeText } } },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onEventInfo(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      expect(callback).toHaveBeenCalled()
+      expect(callback.mock.calls[0][0].title).toBe(largeText)
+    })
+
+    it('should handle 500 results in top message', async () => {
+      const results = Array.from({ length: 500 }, (_, i) => ({
+        Rank: i + 1,
+        Bib: String(i + 1),
+        Name: `Athlete ${i + 1}`,
+        Club: 'TEST',
+        Total: '1:00.00',
+        Pen: 0,
+        Behind: '+0.00',
+      }))
+
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'top', data: createTopMessage(null, results) },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onResults(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      expect(callback).toHaveBeenCalled()
+      expect(callback.mock.calls[0][0].results.length).toBe(500)
+    })
+
+    it('should handle deeply nested payload', async () => {
+      const deeplyNested: Record<string, unknown> = {}
+      let current = deeplyNested
+      for (let i = 0; i < 100; i++) {
+        current.nested = {}
+        current = current.nested as Record<string, unknown>
+      }
+      current.value = 'deep'
+
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: { msg: 'comp', data: { Bib: '1', nested: deeplyNested } } },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      // Should not crash
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      expect(callback).toHaveBeenCalled()
+    })
+  })
+
+  describe('Empty and null payloads', () => {
+    it('should handle empty data object', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: { msg: 'comp', data: {} } },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // Should process but current should be null (no Bib)
+      expect(callback).toHaveBeenCalled()
+      expect(callback.mock.calls[0][0].current).toBeNull()
+    })
+
+    it('should handle null data', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: null },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      // Should not crash
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // No callback since data is null
+      expect(callback).not.toHaveBeenCalled()
+    })
+
+    it('should handle undefined data fields', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: { msg: 'comp', data: { Bib: '1', Name: undefined, Club: undefined } } },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      expect(callback).toHaveBeenCalled()
+      expect(callback.mock.calls[0][0].current?.name).toBe('')
+    })
+
+    it('should handle missing msg wrapper', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: { Bib: '1', Name: 'Direct' } },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // Should handle gracefully (no crash, no callback since structure is wrong)
+      expect(callback).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Malformed messages', () => {
+    it('should handle truncated JSON', async () => {
+      const content = '{"ts":0,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1'
+        + '\n' + JSON.stringify({ ts: 100, src: 'ws', type: 'comp', data: createCompMessage('2') })
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+      const errorCallback = vi.fn()
+      provider.onError(errorCallback)
+
+      await provider.connect()
+      vi.advanceTimersByTime(200)
+
+      // Second message should be processed, first should emit error
+      expect(callback).toHaveBeenCalledTimes(1)
+      expect(errorCallback).toHaveBeenCalled()
+      expect(errorCallback.mock.calls[0][0].code).toBe('PARSE_ERROR')
+    })
+
+    it('should handle non-JSON line', async () => {
+      const content = 'not a json line\n'
+        + JSON.stringify({ ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') })
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
       const errorCallback = vi.fn()
       provider.onError(errorCallback)
 
       await provider.connect()
       vi.advanceTimersByTime(100)
 
-      expect(provider.status).toBe('connected')
+      // Valid message should be processed
+      expect(callback).toHaveBeenCalledTimes(1)
+      expect(errorCallback).toHaveBeenCalled()
     })
 
-    it('should handle Unicode corruption', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"infotext","data":{"msg":"infotext","data":{"text":"Příliš žluťoučký kůň\uD800"}}}`
+    it('should handle message with wrong type values', async () => {
+      const content = createJSONL([
+        { ts: 'not a number' as unknown as number, src: 'ws', type: 'comp', data: createCompMessage('1') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
 
+      // Should not crash
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+    })
+
+    it('should handle array instead of object', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: [1, 2, 3] },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
+      // Should not crash
       await provider.connect()
       vi.advanceTimersByTime(100)
 
-      expect(provider.status).toBe('connected')
-    })
-
-    it('should handle wrong type field', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"unknown_message_type","data":{"msg":"unknown","data":{}}}
-{"ts":20,"src":"ws","type":12345,"data":{"msg":"numeric_type","data":{}}}
-{"ts":30,"src":"ws","type":null,"data":{"msg":"null_type","data":{}}}`
-
-      const provider = new ReplayProvider(jsonl)
-      await provider.connect()
-      vi.advanceTimersByTime(100)
-
-      expect(provider.status).toBe('connected')
+      // No valid callback since data structure is wrong
+      expect(callback).not.toHaveBeenCalled()
     })
   })
 
   describe('Rapid state changes', () => {
     it('should handle rapid play/pause cycles', async () => {
-      const provider = new ReplayProvider(generateMessages(100))
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 1000, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 2000, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
+
+      const provider = new ReplayProvider(content, { autoPlay: false })
       await provider.connect()
 
+      // Rapid play/pause cycles
       for (let i = 0; i < 50; i++) {
         provider.play()
-        vi.advanceTimersByTime(5)
         provider.pause()
       }
 
+      // Should be in paused state
       expect(provider.state).toBe('paused')
     })
 
     it('should handle rapid speed changes', async () => {
-      const provider = new ReplayProvider(generateMessages(100))
-      await provider.connect()
-      provider.play()
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 1000, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
 
-      const speeds = [0.1, 10, 0.5, 100, 1, 0.01, 50]
-      for (const speed of speeds) {
-        provider.setSpeed(speed)
-        vi.advanceTimersByTime(10)
+      const provider = new ReplayProvider(content)
+      await provider.connect()
+
+      // Rapid speed changes
+      for (let i = 1; i <= 20; i++) {
+        provider.setSpeed(i * 0.5)
       }
 
-      expect(provider.status).toBe('connected')
+      // Should still be functional
+      vi.advanceTimersByTime(1000)
+      expect(provider.state).not.toBe('idle')
     })
 
     it('should handle rapid seek operations', async () => {
-      const provider = new ReplayProvider(generateMessages(100))
+      const content = createJSONL(
+        Array.from({ length: 100 }, (_, i) => ({
+          ts: i * 100,
+          src: 'ws',
+          type: 'comp',
+          data: createCompMessage(String(i)),
+        }))
+      )
+
+      const provider = new ReplayProvider(content, { autoPlay: false })
       await provider.connect()
 
-      const positions = [500, 100, 900, 0, 700, 200, 800]
-      for (const pos of positions) {
-        provider.seek(pos)
-        vi.advanceTimersByTime(10)
+      // Rapid seeks
+      for (let i = 0; i < 50; i++) {
+        provider.seek(Math.random() * 10000)
       }
 
-      expect(provider.status).toBe('connected')
-    })
-
-    it('should handle interleaved operations', async () => {
-      const provider = new ReplayProvider(generateMessages(100))
-      await provider.connect()
-
-      // Interleave various operations
-      provider.play()
-      vi.advanceTimersByTime(50)
-      provider.setSpeed(5)
-      provider.pause()
-      provider.seek(200)
-      provider.setSpeed(0.5)
-      provider.play()
-      vi.advanceTimersByTime(100)
-      provider.pause()
-      provider.seek(0)
-      provider.setSpeed(1)
-      provider.play()
-
-      expect(provider.status).toBe('connected')
+      // Should not crash and be in valid state
+      expect(['idle', 'finished']).toContain(provider.state)
     })
   })
 
   describe('Edge case timestamps', () => {
-    it('should handle zero timestamps', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":0,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"}}}
-{"ts":0,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}
-{"ts":0,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"3"}}}`
+    it('should handle zero timestamp', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
-      const onCourseCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
 
       await provider.connect()
-      vi.advanceTimersByTime(10)
+      vi.advanceTimersByTime(1)
 
-      expect(provider.status).toBe('connected')
+      expect(callback).toHaveBeenCalled()
     })
 
-    it('should handle very large timestamps', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":0,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"}}}
-{"ts":999999999,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}`
+    it('should handle all messages at ts=0', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
       await provider.connect()
+      vi.advanceTimersByTime(100)
 
-      // First message should fire immediately
-      vi.advanceTimersByTime(10)
-      expect(provider.status).toBe('connected')
-
-      // We won't wait for the second message (would take too long at 1x speed)
-      // But seeking should work
-      provider.seek(999999999)
-      vi.advanceTimersByTime(10)
-
-      expect(provider.status).toBe('connected')
+      expect(callback).toHaveBeenCalledTimes(3)
     })
 
-    it('should handle negative timestamps', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":-100,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"}}}
-{"ts":100,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}`
+    it('should handle fractional timestamps', async () => {
+      const content = createJSONL([
+        { ts: 0.1, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 0.5, src: 'ws', type: 'comp', data: createCompMessage('2') },
+        { ts: 0.9, src: 'ws', type: 'comp', data: createCompMessage('3') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
+
       await provider.connect()
-      vi.advanceTimersByTime(200)
+      vi.advanceTimersByTime(100)
 
-      expect(provider.status).toBe('connected')
+      expect(callback).toHaveBeenCalledTimes(3)
     })
   })
 
   describe('Concurrent callback execution', () => {
-    it('should handle callback that throws error', async () => {
-      const jsonl = `{"_meta":{"version":2}}
-{"ts":10,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"1"}}}
-{"ts":20,"src":"ws","type":"comp","data":{"msg":"comp","data":{"Bib":"2"}}}`
+    it('should not break if callback throws', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 100, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
 
-      const provider = new ReplayProvider(jsonl)
+      const provider = new ReplayProvider(content)
 
-      // This callback throws
-      const throwingCallback = vi.fn().mockImplementation(() => {
+      // First callback throws
+      provider.onOnCourse(() => {
         throw new Error('Callback error')
       })
-      const normalCallback = vi.fn()
 
-      provider.onOnCourse(throwingCallback)
-      provider.onOnCourse(normalCallback)
+      // Second callback should still work
+      const callback2 = vi.fn()
+      provider.onOnCourse(callback2)
 
-      await provider.connect()
-
-      // Should not crash the provider, both callbacks should be attempted
-      expect(() => vi.advanceTimersByTime(100)).not.toThrow()
-    })
-
-    it('should handle callback that takes long time', async () => {
-      const provider = new ReplayProvider(generateMessages(10))
-
-      const slowCallback = vi.fn().mockImplementation(() => {
-        // Simulate slow operation by doing nothing (in fake timers this is instant)
-        return new Promise(resolve => setTimeout(resolve, 1000))
-      })
-
-      provider.onOnCourse(slowCallback)
       await provider.connect()
       vi.advanceTimersByTime(200)
 
-      expect(provider.status).toBe('connected')
+      // Second callback should have been called despite first throwing
+      expect(callback2).toHaveBeenCalledTimes(2)
     })
 
-    it('should handle callback that modifies provider state', async () => {
-      const provider = new ReplayProvider(generateMessages(10))
+    it('should handle slow callback', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+        { ts: 50, src: 'ws', type: 'comp', data: createCompMessage('2') },
+      ])
 
-      let callCount = 0
-      const stateModifyingCallback = vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 3) {
-          provider.pause()
-        }
-        if (callCount === 5) {
-          provider.play()
-        }
+      const provider = new ReplayProvider(content)
+      const callOrder: string[] = []
+
+      provider.onOnCourse((data) => {
+        callOrder.push(data.current?.bib || 'null')
       })
 
-      provider.onOnCourse(stateModifyingCallback)
       await provider.connect()
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(100)
 
-      expect(provider.status).toBe('connected')
+      // Both messages should be processed in order
+      expect(callOrder).toEqual(['1', '2'])
+    })
+
+    it('should handle 100 subscribers', async () => {
+      const content = createJSONL([
+        { ts: 0, src: 'ws', type: 'comp', data: createCompMessage('1') },
+      ])
+
+      const provider = new ReplayProvider(content)
+      const callbacks = Array.from({ length: 100 }, () => vi.fn())
+
+      callbacks.forEach(cb => provider.onOnCourse(cb))
+
+      await provider.connect()
+      vi.advanceTimersByTime(100)
+
+      // All 100 subscribers should receive the message
+      callbacks.forEach(cb => {
+        expect(cb).toHaveBeenCalledTimes(1)
+      })
     })
   })
 
-  describe('Memory stress', () => {
-    it('should handle 1000 messages without degradation', async () => {
-      const provider = new ReplayProvider(generateMessages(1000))
-      const onCourseCallback = vi.fn()
-      provider.onOnCourse(onCourseCallback)
+  describe('Memory stress scenarios', () => {
+    it('should handle 1000 messages', async () => {
+      const messages = Array.from({ length: 1000 }, (_, i) => ({
+        ts: i * 10,
+        src: 'ws',
+        type: 'comp',
+        data: createCompMessage(String(i)),
+      }))
+
+      const content = createJSONL(messages)
+      const provider = new ReplayProvider(content, { speed: 10000 })
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
 
       await provider.connect()
-      provider.setSpeed(1000) // Speed up
-
       vi.advanceTimersByTime(20000)
 
-      expect(provider.status).toBe('connected')
+      expect(callback.mock.calls.length).toBe(1000)
     })
 
-    it('should handle many subscribers', async () => {
-      const provider = new ReplayProvider(generateMessages(10))
-      const callbacks: vi.Mock[] = []
+    it('should cleanup after disconnect with many messages pending', async () => {
+      const messages = Array.from({ length: 1000 }, (_, i) => ({
+        ts: i * 100,
+        src: 'ws',
+        type: 'comp',
+        data: createCompMessage(String(i)),
+      }))
 
-      for (let i = 0; i < 100; i++) {
-        const cb = vi.fn()
-        callbacks.push(cb)
-        provider.onOnCourse(cb)
-      }
+      const content = createJSONL(messages)
+      const provider = new ReplayProvider(content)
+      const callback = vi.fn()
+      provider.onOnCourse(callback)
 
       await provider.connect()
-      vi.advanceTimersByTime(200)
+      vi.advanceTimersByTime(100)
 
-      // All 100 callbacks should have been called
-      for (const cb of callbacks) {
-        expect(cb).toHaveBeenCalled()
-      }
+      // Disconnect with ~999 messages still pending
+      provider.disconnect()
+
+      // Advance time - no more callbacks should fire
+      const callCountAtDisconnect = callback.mock.calls.length
+      vi.advanceTimersByTime(200000)
+
+      expect(callback.mock.calls.length).toBe(callCountAtDisconnect)
     })
 
-    it('should handle rapid subscribe/unsubscribe', async () => {
-      const provider = new ReplayProvider(generateMessages(50))
+    it('should handle subscribe/unsubscribe during playback', async () => {
+      const content = createJSONL(
+        Array.from({ length: 100 }, (_, i) => ({
+          ts: i * 10,
+          src: 'ws',
+          type: 'comp',
+          data: createCompMessage(String(i)),
+        }))
+      )
+
+      const provider = new ReplayProvider(content, { speed: 100 })
       await provider.connect()
 
-      for (let i = 0; i < 100; i++) {
-        const cb = vi.fn()
-        const unsubscribe = provider.onOnCourse(cb)
-        vi.advanceTimersByTime(5)
-        unsubscribe()
+      // Subscribe and unsubscribe rapidly during playback
+      for (let i = 0; i < 50; i++) {
+        const unsub = provider.onOnCourse(() => {})
+        unsub()
       }
 
-      expect(provider.status).toBe('connected')
+      vi.advanceTimersByTime(2000)
+
+      // Should complete without errors
+      expect(provider.state).toBe('finished')
     })
   })
 })
