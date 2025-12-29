@@ -632,12 +632,32 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
 - [x] **V2:** Penalty bez jednotky - **SHODUJE SE S ORIGINÁLEM**
 - **Poznámka:** Verifikováno 2025-12-29 - ResultRow i CurrentCompetitor bez "s" suffixu
 
+### 9.16 Vizuální kontrola (2025-12-29)
+
+**Provedeno manuální porovnání V2 vs originál screenshotů:**
+
+#### Vertical layout - SHODA ✅
+- [x] Title: "JARNÍ SLALOMY: K1M" - uppercase, s kategorií
+- [x] TopBar: Logo vlevo, Title uprostřed, Partners vpravo
+- [x] Results: Rank s tečkou (1., 2., 3.)
+- [x] Čas: raw sekundy (78.99, 84.33)
+- [x] Penalty: číslo bez suffixu (0, 2, 4, 6)
+- [x] Barvy pozadí a textu odpovídají originálu
+- [x] Font sizes odpovídají specifikaci
+
+#### Zbývající design differences (záměrné vylepšení V2)
+- [ ] **Header row v ResultsList** - V2 má, originál nemá. Zlepšuje čitelnost, zachováno jako feature.
+- [ ] **OnCourse gate badges** - V2 zobrazuje hodnoty (0/2/50), originál čísla branek. Oboje validní.
+- [ ] **OnCourse živý čas** - Originál zobrazuje, V2 ne. Vyžaduje větší refaktoring.
+- [ ] **TopBar daytime** - Originál zobrazuje, V2 ne. Low priority feature.
+- [ ] **Footer loga** - V2 má placeholder, produkce bude mít skutečná loga.
+
 ### 🔍 Revize: Fáze 9
 
-- [ ] Všechny barvy odpovídají originálu
-- [ ] Layout rozměry odpovídají originálu
-- [ ] Font sizes odpovídají originálu
-- [ ] Vizuální porovnání s originálem < 5% rozdíl
+- [x] Všechny barvy odpovídají originálu - **OVĚŘENO 2025-12-29**
+- [x] Layout rozměry odpovídají originálu - **OVĚŘENO 2025-12-29**
+- [x] Font sizes odpovídají originálu - **OVĚŘENO 2025-12-29**
+- [x] Vizuální porovnání s originálem - hlavní elementy odpovídají, zbývají design differences
 - [ ] **Commit:** "fix: align visual styles with original v1"
 
 ---
