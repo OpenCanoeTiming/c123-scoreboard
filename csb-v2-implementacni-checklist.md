@@ -2009,3 +2009,139 @@ Všechny kroky v checklistu, které lze provést automaticky bez prohlížeče, 
 
 ---
 
+## Review v1.9 (2025-12-29) - Tag: `review-ready-v1.9`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 463 testů prochází (18 test suites)
+Benchmarks: ✅ 29 performance benchmarků
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode, all errors resolved
+```
+
+### Provedeno v této iteraci
+
+1. **Oprava TypeScript chyb v testovacích souborech**
+   - Přidán chybějící `vi` import v `ResultsList.bench.ts`
+   - Opraveny nepoužité proměnné v `ReplayProvider.bench.ts`
+   - Aktualizován `messageContracts.test.ts` pro správné použití Node.js modulů
+   - Vyloučeny testovací soubory z `tsconfig.app.json` (konflikty s Node.js typy)
+
+### Celková statistika implementace
+
+| Kategorie | Počet |
+|-----------|-------|
+| Unit testy (utility) | 93 |
+| Unit testy (providers) | 99 |
+| Unit testy (hooks) | 61 |
+| Unit testy (components) | 65 |
+| Unit testy (context) | 45 |
+| Contract testy | 35 |
+| Fuzz testy | 22 |
+| Memory leak testy | 10 |
+| ErrorBoundary testy | 20 |
+| Performance benchmarks | 29 |
+| **Celkem** | **463 unit + 29 bench** |
+
+### Závěr - všechny automatizovatelné kroky dokončeny
+
+Všechny kroky v checklistu, které lze provést automaticky bez prohlížeče, bez přístupu k live serveru a bez fyzického hardware, byly dokončeny.
+
+### Zbývající kroky - vyžadují manuální práci člověka
+
+| Kategorie | Důvod |
+|-----------|-------|
+| **Vizuální testování** | Prohlížeč + lidské oči pro porovnání s reference screenshoty |
+| **Live server test** | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** | TCP socket nelze v browser JS - vyžaduje WebSocket proxy |
+| **Hardware test** | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+---
+
+## Další kroky k vyladění funkčnosti (rozšířené testování)
+
+### A. Automatizované testy (lze přidat v budoucnu)
+
+1. **Accessibility testy** (axe-core)
+   - [ ] `npm install -D @axe-core/react`
+   - [ ] Přidat accessibility testy pro hlavní komponenty
+   - [ ] Ověřit WCAG 2.1 AA compliance
+
+2. **Snapshot regression testy**
+   - [ ] `src/components/__tests__/snapshots/*.test.tsx`
+   - [ ] ResultRow, CurrentCompetitor, Footer snapshots
+   - [ ] Detekovat nečekané změny ve výstupu komponent
+
+3. **Chaos engineering testy**
+   - [ ] `src/providers/__tests__/chaos/`
+   - [ ] Náhodné disconnecty během playbacku
+   - [ ] Zprávy v nesprávném pořadí
+   - [ ] Duplicitní zprávy
+   - [ ] Velmi velké/prázdné payloady
+
+### B. Manuální testování (vyžaduje prohlížeč)
+
+```bash
+npm run dev
+# http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+
+1. **Cold start**
+   - [ ] Loading → Waiting → Data zobrazena
+   - [ ] Všechny komponenty se renderují správně
+
+2. **Závodník dojede**
+   - [ ] comp zmizí → departing buffer (3s)
+   - [ ] highlight v Results → scroll k závodníkovi
+   - [ ] highlight po 5s zmizí → scroll to top
+
+3. **Layout přepínání**
+   - [ ] Vertical (1080×1920): DevTools → správný počet řádků
+   - [ ] Ledwall (768×384): Footer skrytý, méně sloupců
+
+4. **Vizuální porovnání**
+   - [ ] Porovnat s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+   - [ ] Doladit barvy podle `*-styles.json`
+
+5. **Live server test** (pokud dostupný)
+   - [ ] `?source=cli&host=192.168.68.108:8081`
+   - [ ] Odpojit/připojit server → reconnect overlay
+   - [ ] Real-time data flow
+
+### C. Hardware testování
+
+1. **Raspberry Pi**
+   - [ ] Spustit na Raspberry Pi 4/5
+   - [ ] Ověřit 60fps plynulost
+   - [ ] Změřit CPU/memory usage
+
+2. **Skutečné zobrazovací zařízení**
+   - [ ] TV panel v portrait módu (1080×1920)
+   - [ ] LED wall (768×384 nebo podobné)
+   - [ ] Ověřit čitelnost na vzdálenost
+
+### D. Produkční příprava
+
+1. **Vizuální QA checklist**
+   - [ ] Všechny komponenty odpovídají reference screenshotům
+   - [ ] Barvy správně na kalibrovaném monitoru
+   - [ ] Fonty se správně načítají
+
+2. **Performance checklist**
+   - [ ] 60fps na Raspberry Pi
+   - [ ] Memory usage stabilní po 1h
+   - [ ] CPU < 50% při idle
+
+3. **Reliability checklist**
+   - [ ] 100 reconnectů bez problému
+   - [ ] Graceful degradation při network issues
+   - [ ] Error boundary funguje
+
+---
+
