@@ -81,11 +81,15 @@ function ScoreboardContent() {
       <ScoreboardLayout
         header={
           <>
-            <TopBar visible={visibility.displayTopBar} />
+            <TopBar
+              visible={visibility.displayTopBar}
+              logoUrl="/assets/logo.png"
+              partnerLogoUrl="/assets/partners.png"
+            />
             <Title title={title} raceName={raceName} visible={visibility.displayTitle} />
           </>
         }
-        footer={<Footer visible={visibility.displayFooter} />}
+        footer={<Footer visible={visibility.displayFooter} imageUrl="/assets/footer.png" />}
       >
         {/* Current competitor - shows departing if no current */}
         <ErrorBoundary componentName="CurrentCompetitor">

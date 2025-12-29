@@ -124,19 +124,19 @@ Příklad originálu: `[2][3][4]` = brány 2, 3, 4 měly penalizaci
 - [ ] Zobrazit čas v pravé části TopBaru
 - [ ] Formát: HH:MM:SS
 
-### 9.10 Zkopírovat default assets z originálu
+### 9.10 Zkopírovat default assets z originálu ✅
 
 **Grafika pro TopBar a Footer musí být z originálu**
 
 Zdrojové soubory: `../canoe-scoreboard-original/default-assets/`
 
-- [ ] Zkopírovat `logo.png` → `public/assets/logo.png`
-- [ ] Zkopírovat `partners.png` → `public/assets/partners.png`
-- [ ] Zkopírovat `footer.png` → `public/assets/footer.png`
-- [ ] Zkopírovat `bib.png` → `public/assets/bib.png`
-- [ ] Aktualizovat TopBar.tsx - načítat `/assets/logo.png` a `/assets/partners.png`
-- [ ] Aktualizovat Footer.tsx - načítat `/assets/footer.png`
-- [ ] Odstranit placeholder texty "LOGO", "PARTNERS", "SPONSOR BANNER"
+- [x] Zkopírovat `logo.png` → `public/assets/logo.png`
+- [x] Zkopírovat `partners.png` → `public/assets/partners.png`
+- [x] Zkopírovat `footer.png` → `public/assets/footer.png`
+- [x] Zkopírovat `bib.png` → `public/assets/bib.png`
+- [x] Aktualizovat TopBar - načítat `/assets/logo.png` a `/assets/partners.png`
+- [x] Aktualizovat Footer - načítat `/assets/footer.png`
+- [x] Placeholder texty zobrazeny jen když není imageUrl
 
 ### 9.11 Penalty badge styling v results
 

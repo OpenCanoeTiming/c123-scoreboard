@@ -32,3 +32,10 @@
   width: auto;
   object-fit: contain;
 }
+
+/* Sponsor banner image */
+.sponsorImage {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}

@@ -6,6 +6,8 @@ import styles from './Footer.module.css'
 interface FooterProps {
   /** Whether the footer is visible */
   visible?: boolean
+  /** Optional sponsor banner image URL */
+  imageUrl?: string
 }
 
 /**
@@ -19,7 +21,7 @@ interface FooterProps {
  * <Footer visible={visibility.displayFooter} />
  * ```
  */
-export function Footer({ visible = true }: FooterProps) {
+export function Footer({ visible = true, imageUrl }: FooterProps) {
   if (!visible) {
     return null
   }
@@ -27,8 +29,11 @@ export function Footer({ visible = true }: FooterProps) {
   return (
     <div className={styles.footer} data-testid="footer">
       <div className={styles.sponsorBanner}>
-        {/* Sponsor logo/text placeholder */}
-        <span className={styles.sponsorText}>Sponsor Banner</span>
+        {imageUrl ? (
+          <img src={imageUrl} alt="Sponsor banner" className={styles.sponsorImage} />
+        ) : (
+          <span className={styles.sponsorText}>Sponsor Banner</span>
+        )}
       </div>
     </div>
   )
