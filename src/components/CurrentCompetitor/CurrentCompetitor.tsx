@@ -179,7 +179,7 @@ export function CurrentCompetitor({
           <span
             className={`${styles.penaltyValue} ${getPenaltyClass(competitor.pen)}`}
           >
-            {competitor.pen}s
+            {competitor.pen}
           </span>
         </div>
 

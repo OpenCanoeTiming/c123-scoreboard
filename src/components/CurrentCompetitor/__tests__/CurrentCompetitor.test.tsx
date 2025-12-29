@@ -209,7 +209,7 @@ describe('CurrentCompetitor', () => {
       render(<CurrentCompetitor competitor={competitor} />)
 
       expect(screen.getByText('Pen')).toBeInTheDocument()
-      expect(screen.getByText('4s')).toBeInTheDocument()
+      expect(screen.getByText('4')).toBeInTheDocument()
     })
 
     it('applies clear class for zero penalty', () => {
