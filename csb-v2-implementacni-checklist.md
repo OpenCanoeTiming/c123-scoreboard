@@ -65,7 +65,7 @@ Benchmarks: ✅ 29 performance benchmarků
 
 ### 9.3 ResultsList základy ✅
 - [x] Grid template columns vertical: `70px 50px 1fr 70px 140px 100px`
-- [x] Grid template columns ledwall: `80px 40px 1fr 100px`
+- [x] Grid template columns ledwall: `80px 40px 1fr 40px 100px` (5 sloupců, behind skrytý)
 - [x] Row height vertical: 48px
 - [x] Row height ledwall: 56px
 - [x] Alternující barvy: liché `#1d1d1d`, sudé `#111111`
@@ -260,12 +260,14 @@ Server: `ws://192.168.68.108:8081` - je k dispozici pro prostredi kde bezi claud
 - [ ] Disconnect/reconnect
 - [ ] Visibility control zprávy
 
-### 10.3 Layout testování - provest automaticky!
+### 10.3 Layout testování - provest automaticky! ✅
 
-- [ ] Vertical 1080×1920 - plný layout
-- [ ] Ledwall 768×384 (exactSize) - kompaktní layout
-- [ ] Ledwall 1920×480 - široký ledwall (pokud podporován)
-- [ ] Resize přepínání
+Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
+
+- [x] Vertical 1080×1920 - plný layout (6 sloupců, footer viditelný)
+- [x] Ledwall 768×384 (exactSize) - kompaktní layout (5 sloupců, footer skrytý)
+- [x] Ledwall 1920×480 - široký ledwall
+- [x] Resize přepínání (vertical↔ledwall, rapid resize handling)
 
 ### 10.4 Hardware testování
 
