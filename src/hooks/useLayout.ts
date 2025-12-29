@@ -160,6 +160,7 @@ function getFontSizeCategory(
 
 /**
  * Update CSS custom properties on :root
+ * Sets font sizes based on layout mode (vertical vs ledwall) per analysis/06-styly.md
  */
 function updateCSSVariables(config: LayoutConfig): void {
   if (typeof document === 'undefined') return
@@ -171,6 +172,25 @@ function updateCSSVariables(config: LayoutConfig): void {
   root.style.setProperty('--header-height', `${config.headerHeight}px`)
   root.style.setProperty('--footer-height', `${config.footerHeight}px`)
   root.style.setProperty('--layout-mode', config.layoutMode)
+
+  // Set result row font sizes based on layout mode (from analysis/06-styly.md)
+  if (config.layoutMode === 'ledwall') {
+    // Ledwall font sizes
+    root.style.setProperty('--result-rank-size', '36px')
+    root.style.setProperty('--result-bib-size', '22px')
+    root.style.setProperty('--result-name-size', '36px')
+    root.style.setProperty('--result-penalty-size', '22px')
+    root.style.setProperty('--result-time-size', '36px')
+    root.style.setProperty('--result-behind-size', '22px')
+  } else {
+    // Vertical font sizes
+    root.style.setProperty('--result-rank-size', '32px')
+    root.style.setProperty('--result-bib-size', '24px')
+    root.style.setProperty('--result-name-size', '32px')
+    root.style.setProperty('--result-penalty-size', '24px')
+    root.style.setProperty('--result-time-size', '32px')
+    root.style.setProperty('--result-behind-size', '24px')
+  }
 }
 
 /**

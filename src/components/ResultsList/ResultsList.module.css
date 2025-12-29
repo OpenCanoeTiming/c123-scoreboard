@@ -68,18 +68,18 @@
   }
 }
 
-/* Column styling */
+/* Column styling - Vertical layout font sizes from analysis/06-styly.md */
 .rank {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  font-size: var(--result-rank-size);
+  font-weight: 700;
   color: var(--color-text-secondary);
   text-align: center;
 }
 
 .bib {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-md);
+  font-size: var(--result-bib-size);
   font-weight: 700;
   color: var(--color-text-primary);
   text-align: center;
@@ -90,8 +90,8 @@
 
 .name {
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-md);
-  font-weight: 500;
+  font-size: var(--result-name-size);
+  font-weight: 700;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -100,8 +100,8 @@
 
 .penalty {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-size: var(--result-penalty-size);
+  font-weight: 500;
   text-align: center;
   background-color: var(--color-bg-results);
   padding: 2px 4px;
@@ -122,15 +122,16 @@
 
 .time {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  font-size: var(--result-time-size);
+  font-weight: 500;
   color: var(--color-text-primary);
   text-align: right;
 }
 
 .behind {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--result-behind-size);
+  font-weight: 400;
   color: var(--color-text-secondary);
   text-align: right;
 }

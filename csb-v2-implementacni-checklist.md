@@ -427,21 +427,21 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 
 **Reference:** `analysis/06-styly.md` tabulka
 
-- [ ] Rank: 32px, weight 700, font JetBrains Mono
-- [ ] BIB: 24px, weight 700, font JetBrains Mono
-- [ ] Name: 32px, weight 700, font Inter
-- [ ] Penalty: 24px, weight 500, font JetBrains Mono
-- [ ] Total: 32px, weight 500, font JetBrains Mono
-- [ ] Behind: 24px, weight 400, font JetBrains Mono
+- [x] Rank: 32px, weight 700, font JetBrains Mono - **OPRAVENO 2025-12-29**
+- [x] BIB: 24px, weight 700, font JetBrains Mono - **OPRAVENO 2025-12-29**
+- [x] Name: 32px, weight 700, font Inter - **OPRAVENO 2025-12-29**
+- [x] Penalty: 24px, weight 500, font JetBrains Mono - **OPRAVENO 2025-12-29**
+- [x] Total: 32px, weight 500, font JetBrains Mono - **OPRAVENO 2025-12-29**
+- [x] Behind: 24px, weight 400, font JetBrains Mono - **OPRAVENO 2025-12-29**
 
 ### 9.6 Oprava font sizes (Ledwall)
 
-- [ ] Rank: 36px, weight 700
-- [ ] BIB: 22px, weight 700
-- [ ] Name: 36px, weight 700
-- [ ] Penalty: 22px, weight 500
-- [ ] Total: 36px, weight 500
-- [ ] Behind: 22px, weight 400 (skrytý na ledwall)
+- [x] Rank: 36px, weight 700 - **OPRAVENO 2025-12-29**
+- [x] BIB: 22px, weight 700 - **OPRAVENO 2025-12-29**
+- [x] Name: 36px, weight 700 - **OPRAVENO 2025-12-29**
+- [x] Penalty: 22px, weight 500 - **OPRAVENO 2025-12-29**
+- [x] Total: 36px, weight 500 - **OPRAVENO 2025-12-29**
+- [x] Behind: 22px, weight 400 (skrytý na ledwall) - **OPRAVENO 2025-12-29**
 
 ### 9.7 Oprava OnCourse/CurrentCompetitor
 

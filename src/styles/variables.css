@@ -52,6 +52,22 @@
   --font-size-2xl: 32px;
   --font-size-3xl: 48px;
 
+  /* Result row font sizes - Vertical layout (from analysis/06-styly.md) */
+  --result-rank-size: 32px;
+  --result-bib-size: 24px;
+  --result-name-size: 32px;
+  --result-penalty-size: 24px;
+  --result-time-size: 32px;
+  --result-behind-size: 24px;
+
+  /* Result row font sizes - Ledwall layout (from analysis/06-styly.md) */
+  --result-rank-size-ledwall: 36px;
+  --result-bib-size-ledwall: 22px;
+  --result-name-size-ledwall: 36px;
+  --result-penalty-size-ledwall: 22px;
+  --result-time-size-ledwall: 36px;
+  --result-behind-size-ledwall: 22px;
+
   /* Layout - defaults, will be overridden by useLayout hook */
   --row-height: 48px;
   --visible-rows: 10;
