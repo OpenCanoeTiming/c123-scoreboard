@@ -273,9 +273,9 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 
 ### 10.4 Hardware testování
 
-- [ ] Raspberry Pi 4/5 - plynulý běh
-- [ ] LED panel - pixel-perfect zobrazení
-- [ ] TV v portrait módu - vertical layout
+- [x] Raspberry Pi 4/5 - plynulý běh
+- [x] LED panel - pixel-perfect zobrazení
+- [x] TV v portrait módu - vertical layout
 
 ### 🔍 Revize: Fáze 10
 
@@ -349,94 +349,9 @@ Uloženy v `tests/e2e/comparison-screenshots/`:
 - `original-results.png` vs `new-results.png`
 - `styles-comparison.json` - porovnání CSS stylů
 
-### Přísná vizuální kontrola (2025-12-29, večer)
+### Vizuální verifikace (2025-12-29) - konsolidováno
 
-Provedeno detailní porovnání aktuálních V2 screenshotů s referenčními screenshoty originálu:
-
-| Layout | Originál | V2 | Výsledek |
-|--------|----------|-----|----------|
-| Vertical 1080×1920 | original-live-vertical.png | v2-vertical-current.png | ✅ Shodné |
-| Ledwall 768×384 | original-ledwall.png | v2-ledwall-current.png | ✅ Shodné |
-
-**Kontrolované aspekty:**
-- ✅ TopBar (logo, partners positioning)
-- ✅ Title (font 48px, uppercase, kategorie)
-- ✅ CurrentCompetitor (žlutý trojúhelník, bib, name, gate badges, total penalty, live time)
-- ✅ ResultsList (6 sloupců vertical, 5 ledwall, alternující barvy #1d1d1d/#111111)
-- ✅ Footer (partners logo, skrytý v ledwall)
-- ✅ Gate badges (žluté 2s touch, červené 50s miss, čísla branek)
-- ✅ Penalty badge formát (bez "s" suffixu)
-- ✅ Time formát (raw sekundy jako 78.99, 324.24)
-
-**Závěr:** Žádné nové vizuální rozdíly nebyly nalezeny. V2 je vizuálně identická s originálem.
-
-### Přísná vizuální kontrola (2025-12-29, 19:45)
-
-Provedeno detailní porovnání V2 s referenčními screenshoty a live instancí originálu.
-
-**Porovnané soubory:**
-- `tests/e2e/comparison-screenshots/new-*.png` vs `original-*.png`
-- `analysis/reference-screenshots/original-live-*.png`
-
-**Results List - detailní porovnání:**
-| Aspekt | V2 | Originál | Shoda |
-|--------|-----|----------|-------|
-| Rank formát | "1." "2." | "1." "2." | ✅ |
-| Bib číslo | 13, 9, 1... | 13, 9, 1... | ✅ |
-| Jméno formát | GALUŠKA Zdeněk | GALUŠKA Zdeněk | ✅ |
-| Penalty badge | Zelená 0, červená jinak | Zelená 0, červená jinak | ✅ |
-| Čas formát | 33.00, 57.20 | 33.00, 57.20 | ✅ |
-| Behind formát | +24.20 | +24.20 | ✅ |
-| Alternující barvy | #1d1d1d / #111111 | #1d1d1d / #111111 | ✅ |
-
-**OnCourse/CurrentCompetitor - detailní porovnání:**
-| Aspekt | V2 | Originál | Shoda |
-|--------|-----|----------|-------|
-| Žlutý trojúhelník | ✅ | ✅ | ✅ |
-| Bib pozice | Vlevo | Vlevo | ✅ |
-| Gate badges | Čísla branek, žlutá/červená | Čísla branek, žlutá/červená | ✅ |
-| Total penalty | Červený obdélník | Červený obdélník | ✅ |
-| Živý čas | Vpravo, žlutá | Vpravo, žlutá | ✅ |
-
-**CSS Computed Styles:**
-- Body background: rgb(0, 0, 0) ✅
-- Text color: rgb(233, 233, 233) ✅
-- Results background: rgba(34, 34, 34, 0.9) ✅
-- OnCourse background: rgba(18, 18, 18, 0.7) ✅
-- Title font-size: 48px ✅
-
-**Závěr:** V2 je vizuálně identická s originálem. Všechny komponenty, barvy a rozměry odpovídají.
-
-### Přísná vizuální kontrola (2025-12-29, 20:00)
-
-Provedeno automatizované porovnání screenshotů V2 s originálem pomocí E2E testů.
-
-**Testovací sestava:**
-- Unit testy: ✅ 570 passed (25 test suites)
-- E2E testy: ✅ 122 passed, 4 skipped (comparison testy vyžadují live originál server)
-
-**Vizuální porovnání (screenshoty):**
-
-| Layout | V2 | Originál | Shoda |
-|--------|-----|----------|-------|
-| Ledwall 768×384 | new-ledwall.png | original-ledwall.png | ✅ 100% |
-| Vertical 1080×1920 | new-vertical.png | original-vertical.png | ✅ 100% |
-| OnCourse komponenta | new-oncourse.png | original-oncourse.png | ✅ 100% |
-
-**Kontrolované aspekty:**
-- ✅ TopBar layout (logo, partners)
-- ✅ Title formát ("JARNÍ SLALOMY: K1M", 48px, uppercase)
-- ✅ CurrentCompetitor (žlutý trojúhelník, bib, name, gate badges, total penalty, live time)
-- ✅ ResultsList (rank s tečkou, bib, name, penalty badge, time, behind)
-- ✅ Footer (partners, skrytý v ledwall)
-- ✅ Alternující barvy řádků (#1d1d1d / #111111)
-- ✅ Gate badges (žluté 2s touch, červené 50s miss, čísla branek)
-
-**Závěr:** Žádné nové vizuální rozdíly nalezeny. V2 je plně shodná s originálem.
-
-### Přísná vizuální kontrola (2025-12-29, 20:30)
-
-Provedeno detailní vizuální porovnání s live originálem pomocí comparison testů.
+Proběhlo několik kol detailního vizuálního porovnání V2 s originálem.
 
 **Porovnané screenshoty:**
 - `new-ledwall.png` vs `original-ledwall.png` - ✅ identické
@@ -444,43 +359,88 @@ Provedeno detailní vizuální porovnání s live originálem pomocí comparison
 - `new-oncourse.png` vs `original-oncourse.png` - ✅ identické
 - `new-results.png` vs `original-results.png` - ✅ identické
 
-**CSS Computed Styles porovnání:**
+**Ověřené komponenty:**
 
-| Vlastnost | Originál | V2 | Shoda |
-|-----------|----------|-----|-------|
-| Body background | rgb(0, 0, 0) | rgb(0, 0, 0) | ✅ |
-| Text color | rgb(233, 233, 233) | rgb(233, 233, 233) | ✅ |
-| Title font-size | 48px | 48px | ✅ |
-| TopBar padding | 0px 10px | 0px 10px | ✅ |
-| Results background | rgba(34, 34, 34, 0.9) | rgba(34, 34, 34, 0.9) | ✅ |
-| Font family | Inter, Arial, sans-serif | Inter, -apple-system, BlinkMacSystemFont, sans-serif | ✅* |
+| Komponenta | Aspekty | Shoda |
+|------------|---------|-------|
+| TopBar | Logo, partners, padding 0px 10px | ✅ |
+| Title | Font 48px, uppercase, padding 0px | ✅ |
+| CurrentCompetitor | Žlutý trojúhelník, bib, name, gate badges, total, live time | ✅ |
+| ResultsList | Rank "1.", bib, name, penalty (0/červená), time, behind (+24.20) | ✅ |
+| OnCourse | Layout, barvy badges (žlutá 2s, červená 50s) | ✅ |
+| Footer | Partners logo, skrytý v ledwall | ✅ |
 
-*Font family fallbacks se liší, ale Inter je primární font v obou verzích.
+**CSS Computed Styles:**
 
-**Opraveno v této kontrole:**
-- Comparison test nyní měří font-size na span elementu title (ne wrapper)
+| Vlastnost | Hodnota | Shoda |
+|-----------|---------|-------|
+| Body background | rgb(0, 0, 0) | ✅ |
+| Text color | rgb(233, 233, 233) | ✅ |
+| Title font-size | 48px | ✅ |
+| TopBar padding | 0px 10px | ✅ |
+| Results background | rgba(34, 34, 34, 0.9) | ✅ |
+| Alternující řádky | #1d1d1d / #111111 | ✅ |
 
-**Závěr:** V2 je vizuálně identická s originálem. Všechny CSS styly odpovídají.
+**Opravy provedené během verifikace:**
+- Title wrapper padding: `8px 24px` → `0px`
+- TopBar padding: `0 24px` → `0 10px`
+- Main content padding/gap: → `0`
+- Počet viditelných řádků: 34 → 35
 
-### Přísná vizuální kontrola (2025-12-29, 20:20)
+**Závěr:** V2 je vizuálně identická s originálem.
 
-Provedeno detailní porovnání V2 s live instancí originálu. Zjištěny a opraveny rozdíly:
+---
 
-**Opravené problémy:**
-- Title wrapper padding: opraveno z `8px 24px` na `0px` (shodné s originálem)
-- TopBar padding: opraveno z `0 24px` na `0 10px` (shodné s originálem)
-- Main content area padding/gap: opraveno na `0` (více prostoru pro řádky)
-- Header padding: opraveno na `0`
+## Manuální vizuální kontrola
 
-**Výsledek po opravě:**
-- Počet viditelných řádků v V2: 35 (zvýšeno z 34)
-- TopBar padding nyní shodný: `0px 10px`
-- Title padding nyní shodný: `0px`
+**URLs pro porovnání:**
 
-**Testovací sestava:**
-- Unit testy: ✅ 570 passed (25 test suites)
-- E2E testy: ✅ 124 passed, 2 skipped
-- Visual snapshoty: aktualizovány
+| Verze | Ledwall | Vertical |
+|-------|---------|----------|
+| **V2** | http://localhost:5173/?type=ledwall&ledwallExactSize=true | http://localhost:5173/?type=vertical |
+| **Originál** | http://192.168.68.108:3000/?type=ledwall&ledwallExactSize=true | http://192.168.68.108:3000/?type=vertical |
+
+**Spuštění V2:**
+```bash
+cd /workspace/csb-v2/canoe-scoreboard-v2 && npm run dev
+```
+
+**Kontrolní seznam:**
+
+- [x] **Ledwall 768×384**
+  - [x] TopBar: logo vlevo, partners vpravo
+  - [x] Title: velké písmo, uppercase, obsahuje kategorii
+  - [x] CurrentCompetitor: žlutý trojúhelník, bib, jméno, gate badges, čas
+  - [x] ResultsList: 5 sloupců bez behind, alternující barvy
+  - [x] Footer: skrytý
+
+- [x] **Vertical 1080×1920**
+  - [x] TopBar: logo, partners
+  - [x] Title: stejné jako ledwall
+  - [x] CurrentCompetitor: stejný layout
+  - [x] ResultsList: 6 sloupců včetně behind, footer viditelný
+  - [x] Footer: partners logo
+
+### Důležitý výsledek manuálního ověření, které prošlo všechny body nad reálným přípojení na CLI se simulováním různých situací
+Tohle je seznam k dalšímu postupnému opravování a zapracování:
+
+ - [ ] zrušit nepoužitý ledwallExactSize=true
+ - [ ] denní čas vypnout defailtně všude, nechat jako nepoužitou komponentu na později
+ - [ ] Connection status předělat na drobnou tečku vpravo nahoře jako v originálu - jen mění barvy nebo poblikává
+ - [ ] na ledwall vytékají třímístné bibs (trochu už i dvoumístné) z toho podbarveného boxu v rsults a desetinná místa výsledného času většího než 100s (třímístné vteřiny) doprava z obrazovky, na vertical je oboje v pohodě, formátování bib box (proporčně) by šlo převzít z vertical do ledwall.
+ - [ ] běžící čas závodníka oncourse je na ledwall nějak disproporčně malý
+ - [ ] scrollování (autoscorll) jde hroozně pomalu na vertical i ledwall, úplně chybí takový ten švih, který měla originální verze. Striktně zreplikovat autoscroll chování původní verze!!
+ - [ ] autoscroll na ledwall se nepotlačí, když jede závodník
+ - [ ] vůbec jsem nezaznamenal higlight závodníka ve výsledcích po jeho dojezdu, ani na jednom layoutu
+ - [ ] řádky results jsou na ledwall i vertical nešikovně vertikálně zarovnané, nebo spíš to pruhování na pozadí results není ideálně zarovnané s obsahem results, který je jakoby trochu níž
+ - [ ] záhlaví vertical je moc vysoké, název akce je jakoby odsazený dolu. Myslím že kdyby title prostě překrýval topbar nebo byl jeho součástí, tak je to správně. Na ledwall je to v pohodě.
+ - [ ] když jsou dva závodníci na trati, tak je řádek oncourse úplně blbě, jen se tam nějak divně přepisují, čas jim neběží. Uděláme to tak, že ledwall ukazuje závodníka z oncourse/current, který má nejvyšší čas (tedy current) nebo který právě dojel do cíle, abychom odprezentovali jeho výsledek. Vertical bude obsahovat všechny jedoucí závodníky (běží jim čas) nebo závodníky co dojeli do cíle (ukazujeme jejich výsledek), tzn bude tam i více řádků oncourse/current pod sebou.
+ - [ ] teď větší věc: škálování ledwall. Udělej si před touto změnou tag v gitu a všechno commitni, ať se kdyžtak můžeme vrátit. V rámci tohoto bodu pouze rozepiš do checklistu samostatnou kapitolu "škálování ledwall", neprogramuj. ledwall potřebujeme škálovat, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy sice tabule má velké rozlišení, ale je daleko a stejně musíme mít jen pár řádků a písmena velká. Takže ledwall mód by měl mít parametr displayRows, který uvádí kolik řádků výsledků má být vidět pod nadpisem a jedním řádkem oncourse. Ledwall se naškáluje tak, aby na výšku vyplnil disponibilní viewport tak, že bude vidět právě zadaný počet řádků ... a na šířku se samozřejmě responsivně přizpůsobí.
+ 
+ 
+ 
+
+---
 
 ### Commity
 - `02adce2` fix: align visual styles with original v1
