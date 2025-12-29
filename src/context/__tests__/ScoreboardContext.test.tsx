@@ -197,8 +197,29 @@ describe('ScoreboardContext', () => {
     })
   })
 
-  describe('highlight deduplication', () => {
-    it('does NOT activate highlight when competitor is on course', () => {
+  describe('highlight activation', () => {
+    it('activates highlight when highlightBib is set in results', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Send results with highlightBib
+      act(() => {
+        mockProvider.triggerResults({
+          results: [],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+
+      // Highlight SHOULD be active
+      expect(result.current.highlightBib).toBe('42')
+      expect(result.current.highlightTimestamp).not.toBeNull()
+    })
+
+    it('activates highlight even when competitor is on course (server knows best)', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
@@ -214,7 +235,7 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Then try to highlight same competitor
+      // Then highlight same competitor (server says they just finished)
       act(() => {
         mockProvider.triggerResults({
           results: [],
@@ -224,66 +245,9 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Highlight should NOT be active (deduplication)
-      expect(result.current.highlightBib).toBeNull()
-    })
-
-    it('activates highlight when competitor is NOT on course', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
-
-      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other Athlete' })
-
-      // Set a DIFFERENT competitor on course
-      act(() => {
-        mockProvider.triggerOnCourse({
-          current: competitor99,
-          onCourse: [competitor99],
-        })
-      })
-
-      // Highlight someone who is not on course
-      act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      // Highlight SHOULD be active
+      // Highlight SHOULD be active - trust server's HighlightBib value
       expect(result.current.highlightBib).toBe('42')
       expect(result.current.highlightTimestamp).not.toBeNull()
-    })
-
-    it('activates highlight when onCourse is empty', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
-
-      // No competitor on course
-      act(() => {
-        mockProvider.triggerOnCourse({
-          current: null,
-          onCourse: [],
-        })
-      })
-
-      // Highlight a competitor
-      act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      expect(result.current.highlightBib).toBe('42')
     })
 
     it('does not reset timestamp for same highlightBib', () => {

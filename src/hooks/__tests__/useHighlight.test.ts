@@ -165,7 +165,7 @@ describe('useHighlight', () => {
     expect(result.current.progress).toBeGreaterThanOrEqual(1)
   })
 
-  it('does not activate highlight for competitor on course', () => {
+  it('activates highlight for competitor even when on course (server knows best)', () => {
     let resultsCallback: ((data: unknown) => void) | null = null
     let onCourseCallback: ((data: unknown) => void) | null = null
 
@@ -195,7 +195,7 @@ describe('useHighlight', () => {
       }
     })
 
-    // Then try to highlight the same competitor
+    // Then highlight the same competitor (server says they just finished)
     act(() => {
       if (resultsCallback) {
         resultsCallback({
@@ -207,9 +207,9 @@ describe('useHighlight', () => {
       }
     })
 
-    // Highlight should NOT be active (competitor is on course - deduplication)
-    expect(result.current.isActive).toBe(false)
-    expect(result.current.highlightBib).toBeNull()
+    // Highlight SHOULD be active - trust server's HighlightBib value
+    expect(result.current.isActive).toBe(true)
+    expect(result.current.highlightBib).toBe('42')
   })
 
   it('activates highlight for competitor NOT on course', () => {
