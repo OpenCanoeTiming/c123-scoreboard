@@ -283,7 +283,21 @@ export class ReplayProvider implements DataProvider {
 
   private setStatus(status: ConnectionStatus): void {
     this._status = status
-    this.connectionCallbacks.forEach((cb) => cb(status))
+    this.safeCallCallbacks(this.connectionCallbacks, status)
+  }
+
+  /**
+   * Safely call all callbacks, catching any errors thrown by individual callbacks
+   */
+  private safeCallCallbacks<T>(callbacks: Set<(arg: T) => void>, arg: T): void {
+    callbacks.forEach((cb) => {
+      try {
+        cb(arg)
+      } catch (err) {
+        // Log error but don't propagate - one bad callback shouldn't break others
+        console.error('Callback threw error:', err)
+      }
+    })
   }
 
   private emitError(
@@ -297,7 +311,7 @@ export class ReplayProvider implements DataProvider {
       cause,
       timestamp: Date.now(),
     }
-    this.errorCallbacks.forEach((cb) => cb(error))
+    this.safeCallCallbacks(this.errorCallbacks, error)
   }
 
   private async loadMessages(): Promise<void> {
@@ -424,7 +438,10 @@ export class ReplayProvider implements DataProvider {
 
   private handleTopMessage(data: unknown): void {
     // CLI message format: { msg: 'top', data: { ... } }
-    const wrapper = data as { msg: string; data: Record<string, unknown> }
+    const wrapper = data as { msg: string; data: Record<string, unknown> } | null
+    if (!wrapper || !wrapper.data) {
+      return
+    }
     const payload = wrapper.data
 
     // Transform to ResultsData
@@ -435,7 +452,7 @@ export class ReplayProvider implements DataProvider {
       highlightBib: payload.HighlightBib ? String(payload.HighlightBib) : null,
     }
 
-    this.resultsCallbacks.forEach((cb) => cb(results))
+    this.safeCallCallbacks(this.resultsCallbacks, results)
   }
 
   private parseResults(payload: Record<string, unknown>): ResultsData['results'] {
@@ -460,7 +477,11 @@ export class ReplayProvider implements DataProvider {
 
   private handleCompMessage(data: unknown): void {
     // CLI message format: { msg: 'comp', data: { ... } }
-    const wrapper = data as { msg: string; data: Record<string, unknown> }
+    const wrapper = data as { msg: string; data: Record<string, unknown> } | null
+    if (!wrapper || !wrapper.data) {
+      // Skip messages with null/missing data
+      return
+    }
     const payload = wrapper.data
 
     const current = this.parseCompetitor(payload)
@@ -470,7 +491,7 @@ export class ReplayProvider implements DataProvider {
       onCourse: current ? [current] : [],
     }
 
-    this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
+    this.safeCallCallbacks(this.onCourseCallbacks, onCourseData)
   }
 
   private handleOnCourseMessage(data: unknown): void {
@@ -485,7 +506,7 @@ export class ReplayProvider implements DataProvider {
       onCourse: parsed,
     }
 
-    this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
+    this.safeCallCallbacks(this.onCourseCallbacks, onCourseData)
   }
 
   private parseCompetitor(data: Record<string, unknown>): OnCourseCompetitor | null {
@@ -513,7 +534,10 @@ export class ReplayProvider implements DataProvider {
 
   private handleControlMessage(data: unknown): void {
     // CLI message format: { msg: 'control', data: { ... } }
-    const wrapper = data as { msg: string; data: Record<string, string> }
+    const wrapper = data as { msg: string; data: Record<string, string> } | null
+    if (!wrapper || !wrapper.data) {
+      return
+    }
     const payload = wrapper.data
 
     const visibility: VisibilityState = {
@@ -526,45 +550,45 @@ export class ReplayProvider implements DataProvider {
       displayOnCourse: payload.displayOnCourse === '1',
     }
 
-    this.visibilityCallbacks.forEach((cb) => cb(visibility))
+    this.safeCallCallbacks(this.visibilityCallbacks, visibility)
   }
 
   private handleTitleMessage(data: unknown): void {
     // CLI message format: { msg: 'title', data: { text: '...' } }
-    const wrapper = data as { msg: string; data: { text: string } }
+    const wrapper = data as { msg: string; data: { text: string } } | null
 
     const info: EventInfoData = {
-      title: wrapper.data?.text || '',
+      title: wrapper?.data?.text || '',
       infoText: '',
       dayTime: '',
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.safeCallCallbacks(this.eventInfoCallbacks, info)
   }
 
   private handleInfoTextMessage(data: unknown): void {
     // CLI message format: { msg: 'infotext', data: { text: '...' } }
-    const wrapper = data as { msg: string; data: { text: string } }
+    const wrapper = data as { msg: string; data: { text: string } } | null
 
     const info: EventInfoData = {
       title: '',
-      infoText: wrapper.data?.text || '',
+      infoText: wrapper?.data?.text || '',
       dayTime: '',
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.safeCallCallbacks(this.eventInfoCallbacks, info)
   }
 
   private handleDayTimeMessage(data: unknown): void {
     // CLI message format: { msg: 'daytime', data: { time: '...' } }
-    const wrapper = data as { msg: string; data: { time: string } }
+    const wrapper = data as { msg: string; data: { time: string } } | null
 
     const info: EventInfoData = {
       title: '',
       infoText: '',
-      dayTime: wrapper.data?.time || '',
+      dayTime: wrapper?.data?.time || '',
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.safeCallCallbacks(this.eventInfoCallbacks, info)
   }
 }

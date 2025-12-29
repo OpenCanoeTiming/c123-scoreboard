@@ -1692,7 +1692,7 @@ Skript provádí:
 
 ### E. Chaos engineering testy
 
-- [ ] `src/providers/__tests__/chaos/`
+- [x] `src/providers/__tests__/chaos/`
   - Test: náhodné disconnecty během playbacku
   - Test: zprávy přicházejí v nesprávném pořadí
   - Test: duplicitní zprávy
@@ -2192,7 +2192,7 @@ npm run dev
 
 ---
 
-## Review v2.1 (2025-12-29) - Tag: `review-ready-v2.1`
+## Review v2.3 (2025-12-29) - Tag: `review-ready-v2.3`
 
 ### Stav projektu
 
@@ -2374,5 +2374,101 @@ http://localhost:5173/?source=replay&speed=10
    - [ ] `?source=cli&host=192.168.68.108:8081`
    - [ ] Odpojit/připojit server → reconnect overlay
    - [ ] Real-time data flow
+
+---
+
+
+## Review v2.3 (2025-12-29) - Tag: `review-ready-v2.3`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 522 testů prochází (22 test suites)
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Chaos engineering testy pro ReplayProvider**
+   - Nový test soubor: `src/providers/__tests__/chaos/chaosReplayProvider.test.ts`
+   - 30 testů pokrývajících:
+     - Náhodné disconnecty během playbacku
+     - Zprávy v nesprávném pořadí (out-of-order timestamps)
+     - Duplicitní zprávy (10x stejná zpráva)
+     - Velmi velké payloady (10KB text, 100KB results array, 1MB payload)
+     - Prázdné a null payloady
+     - Malformed messages (truncated JSON, Unicode corruption, wrong types)
+     - Rapid state changes (play/pause, speed, seek)
+     - Edge case timestamps (zero, negative, very large)
+     - Concurrent callback execution (throwing callbacks, slow callbacks)
+     - Memory stress (1000 messages, 100 subscribers)
+
+2. **Bug fixes nalezené chaos testy**
+   - ReplayProvider: Přidána kontrola null/undefined data v `handleCompMessage`, `handleTopMessage`, `handleControlMessage`
+   - ReplayProvider: Přidána metoda `safeCallCallbacks` pro bezpečné volání callbacků
+   - Všechny callback volání nyní používají try-catch, takže jedna chybující callback nezruší ostatní
+
+### Shrnutí zbývajících kroků
+
+Všechny zbývající nesplněné kroky vyžadují **manuální práci člověka**:
+
+| Kategorie | Proč nelze automatizovat | Počet kroků |
+|-----------|--------------------------|-------------|
+| **Manuální vizuální testování** | Vyžaduje prohlížeč + lidské oči | ~25 |
+| **Live server test** | CLI server 192.168.68.108 není přístupný | ~5 |
+| **Playwright E2E** | Chybí systémové závislosti (chromium) | ~4 |
+| **C123Provider** | TCP socket nelze v prohlížeči | 3 |
+| **Hardware test** | Fyzická zařízení (RPi, TV, LED) | ~4 |
+| **Accessibility audit** | Vyžaduje instalaci axe-core a manuální kontrolu | ~4 |
+| **Browser compatibility** | Vyžaduje testování v různých prohlížečích | ~5 |
+
+### Další doporučené kroky pro ladění funkčnosti
+
+#### A. Manuální testování v prohlížeči (DOPORUČENO)
+
+```bash
+npm run dev
+# Otevřít http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+1. Cold start: Loading → Waiting → Data zobrazena
+2. Závodník dojede: comp zmizí → departing 3s → highlight v Results
+3. Highlight timeout: po 5s zmizí, scroll to top
+4. Layout přepínání: Vertical (1080×1920) vs Ledwall (768×384)
+5. Prázdný závod: graceful empty state
+
+#### B. Vizuální porovnání s originálem
+
+Referenční materiály:
+- `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+- `/workspace/csb-v2/analysis/reference-screenshots/*-styles.json`
+
+**Co porovnat:**
+1. Barvy pozadí, textu, akcentů
+2. Typografie (velikosti, řezy, fonty)
+3. Spacing a padding
+4. Penalty barvy (0=zelená, 2=oranžová, 50=červená)
+5. Highlight efekt na řádku výsledků
+
+#### C. Live server testování (pokud dostupný)
+
+```
+?source=cli&host=192.168.68.108:8081
+```
+
+1. Připojení k reálnému CLI serveru
+2. Odpojit/připojit server → reconnect overlay
+3. Real-time data flow
+4. Závodník dojede → highlight → scroll
+
+#### D. Performance testování na cílovém hardware
+
+1. Spustit na Raspberry Pi 4/5
+2. Ověřit 60fps plynulost
+3. Změřit CPU/memory usage
+4. Nechat běžet 1h a sledovat memory leaks
 
 ---
