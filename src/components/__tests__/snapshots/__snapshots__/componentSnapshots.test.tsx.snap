@@ -1,0 +1,386 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Component Snapshots > Footer > renders hidden footer correctly 1`] = `<div />`;
+
+exports[`Component Snapshots > Footer > renders visible footer correctly 1`] = `
+<div>
+  <div
+    class="_footer_acfd2c"
+    data-testid="footer"
+  >
+    <div
+      class="_sponsorBanner_acfd2c"
+    >
+      <span
+        class="_sponsorText_acfd2c"
+      >
+        Sponsor Banner
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders basic result row 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders highlighted result row 1`] = `
+<div>
+  <div
+    class="_row_ec9a59 _highlighted_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with 2s penalty (touch) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyTouch_ec9a59"
+    >
+      2s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with 50s penalty (miss) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyMiss_ec9a59"
+    >
+      50s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with behind time 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    >
+      +1.50
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with high time (over 100s) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      2:05.75
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with long name (truncation) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      PRSKAVEC-SKANTAR Jiří Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result with zero penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result without behind column (ledwall mode) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Component Snapshots > ResultRow > renders result without penalty column (ledwall mode) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jiri
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:30.50
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
