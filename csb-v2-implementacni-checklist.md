@@ -2264,3 +2264,115 @@ Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální pr�
 
 ---
 
+
+## Review v2.2 (2025-12-29) - Tag: `review-ready-v2.2`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 492 testů prochází (21 test suites)
+Benchmarks: ✅ 29 performance benchmarků
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Rozšířené snapshot regression testy**
+   - Nové soubory:
+     - `src/components/__tests__/snapshots/Footer.snapshot.test.tsx` (3 testy)
+     - `src/components/__tests__/snapshots/ResultRow.snapshot.test.tsx` (14 testů)
+   - Celkem 17 nových snapshot testů pokrývajících:
+     - Footer (visible/hidden/default props)
+     - ResultRow - základní stavy (leader, with behind, highlighted)
+     - ResultRow - penalty stavy (0, 2s, 4s, 50s, 52s, 100s)
+     - ResultRow - column visibility (penalty hidden, behind hidden, both hidden)
+     - ResultRow - name formatting (long name, short name)
+
+### Celková statistika testů
+
+| Kategorie | Počet |
+|-----------|-------|
+| Unit testy (utility) | 93 |
+| Unit testy (providers) | 99 |
+| Unit testy (hooks) | 61 |
+| Unit testy (components) | 65 |
+| Unit testy (context) | 45 |
+| Contract testy | 35 |
+| Fuzz testy | 22 |
+| Memory leak testy | 10 |
+| ErrorBoundary testy | 20 |
+| Snapshot testy | 29 |
+| Performance benchmarks | 29 |
+| **Celkem** | **492 unit + 29 bench** |
+
+### Závěr - všechny automatizovatelné kroky dokončeny
+
+Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální práci člověka**:
+
+| Kategorie | Důvod |
+|-----------|-------|
+| **Vizuální testování** (~45 kroků) | Vyžaduje prohlížeč + lidské oči pro porovnání s reference screenshoty |
+| **Live server test** (~10 kroků) | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** (~5 kroků) | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** (3 kroky) | TCP socket nelze v browser JS - technicky nemožné bez WebSocket proxy |
+| **Hardware test** (~5 kroků) | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** (~5 kroků) | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+### Další kroky pro vyladění funkčnosti aplikace
+
+#### 1. Accessibility testy (axe-core) - DOPORUČENO
+```bash
+npm install -D @axe-core/react
+```
+- Přidat automatické accessibility testy
+- Ověřit WCAG 2.1 AA compliance
+- Zkontrolovat screen reader kompatibilitu
+
+#### 2. Chaos engineering testy - VOLITELNÉ
+- Testovat náhodné disconnecty během playbacku
+- Testovat zprávy v nesprávném pořadí
+- Testovat duplicitní zprávy
+- Testovat velmi velké/prázdné payloady
+
+#### 3. Integration testy s mock serverem - VOLITELNÉ
+- Vytvořit mock WebSocket server pro testování
+- Testovat end-to-end flow bez reálného serveru
+- Simulovat různé scénáře (disconnect, slow network, etc.)
+
+### Manuální testování - checklist pro uživatele
+
+```bash
+# Spustit dev server
+npm run dev
+
+# Otevřít v prohlížeči
+http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+
+1. **Cold start**
+   - [ ] Loading → Waiting → Data zobrazena
+   - [ ] Všechny komponenty se renderují správně
+
+2. **Závodník dojede**
+   - [ ] comp zmizí → departing buffer (3s)
+   - [ ] highlight v Results → scroll k závodníkovi
+   - [ ] highlight po 5s zmizí → scroll to top
+
+3. **Layout přepínání**
+   - [ ] Vertical (1080×1920): DevTools → správný počet řádků
+   - [ ] Ledwall (768×384): Footer skrytý, méně sloupců
+
+4. **Vizuální porovnání**
+   - [ ] Porovnat s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+   - [ ] Doladit barvy podle `*-styles.json`
+
+5. **Live server test** (pokud dostupný)
+   - [ ] `?source=cli&host=192.168.68.108:8081`
+   - [ ] Odpojit/připojit server → reconnect overlay
+   - [ ] Real-time data flow
+
+---

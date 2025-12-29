@@ -1,0 +1,505 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultRow snapshots > basic states > should match snapshot - highlighted 1`] = `
+<div>
+  <div
+    class="_row_ec9a59 _highlighted_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > basic states > should match snapshot - leader (no behind) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > basic states > should match snapshot - with behind time 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      2
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      15
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      SVOBODA Petr
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:37.45
+    </div>
+    <div
+      class="_behind_ec9a59"
+    >
+      +2.13
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > column visibility > should match snapshot - behind hidden 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > column visibility > should match snapshot - both columns hidden (compact ledwall) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > column visibility > should match snapshot - penalty hidden (ledwall mode) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > name formatting > should match snapshot - long name 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      ALEXANDROPOULOS-SMITHSON
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > name formatting > should match snapshot - short name 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      LI Wei
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - 2s touch penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyTouch_ec9a59"
+    >
+      2s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:37.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - 4s double touch penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyTouch_ec9a59"
+    >
+      4s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:39.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - 50s miss penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyMiss_ec9a59"
+    >
+      50s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      2:25.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - 52s combined penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyMiss_ec9a59"
+    >
+      52s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      2:27.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - 100s multiple miss penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyMiss_ec9a59"
+    >
+      100s
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      3:15.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > penalty states > should match snapshot - zero penalty 1`] = `
+<div>
+  <div
+    class="_row_ec9a59"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      -
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      1:35.32
+    </div>
+    <div
+      class="_behind_ec9a59"
+    />
+  </div>
+</div>
+`;
