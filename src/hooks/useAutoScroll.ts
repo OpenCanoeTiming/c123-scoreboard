@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { useHighlight } from './useHighlight'
 import { useLayout } from './useLayout'
 import { useScoreboard } from '@/context/ScoreboardContext'
@@ -22,6 +22,10 @@ type ScrollPhase =
  * - vertical: pageInterval=12000, bottomPauseTime=8000
  * - ledwall: pageInterval=3000, bottomPauseTime=1500
  */
+// Constants for scroll detection
+const BOTTOM_THRESHOLD_PX = 20
+const PAGE_HEIGHT_RATIO = 0.9
+
 const SCROLL_CONFIG = {
   vertical: {
     initialDelay: 3000,      // 3s wait before first scroll
@@ -115,101 +119,68 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const scrollConfig = SCROLL_CONFIG[layoutMode]
 
   // Respect prefers-reduced-motion (also used by Playwright for stable screenshots)
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion = useMemo(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    []
+  )
 
-  /**
-   * Pause auto-scroll manually
-   */
-  const pause = useCallback(() => {
+  // Control functions - simple state setters don't need useCallback
+  const pause = () => {
     setManuallyPaused(true)
     setPhase('IDLE')
-  }, [])
+  }
 
-  /**
-   * Resume auto-scroll
-   */
-  const resume = useCallback(() => {
+  const resume = () => {
     setManuallyPaused(false)
-  }, [])
+  }
 
-  /**
-   * Reset to beginning
-   */
-  const reset = useCallback(() => {
+  const reset = () => {
     setManuallyPaused(false)
     setPhase('IDLE')
     currentRowIndexRef.current = 0
     if (containerRef.current) {
       containerRef.current.scrollTop = 0
     }
-  }, [])
+  }
 
-  /**
-   * Check if we've reached the bottom of the scroll container
-   */
-  const isAtBottom = useCallback(() => {
+  // Helper functions - inline in effect to avoid unnecessary re-renders
+  const isAtBottom = () => {
     const container = containerRef.current
     if (!container) return false
-    // 20px threshold matching original v1
-    return container.scrollHeight - container.scrollTop - container.clientHeight <= 20
-  }, [])
+    return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
+  }
 
-  /**
-   * Get rows per page (how many rows fit in the visible container)
-   * Original v1 uses 90% of container height
-   */
-  const getRowsPerPage = useCallback(() => {
+  const getRowsPerPage = () => {
     const container = containerRef.current
     if (!container) return 1
+    return Math.max(1, Math.floor((container.clientHeight * PAGE_HEIGHT_RATIO) / rowHeight))
+  }
 
-    const containerHeight = container.clientHeight
-    const rowsPerPage = Math.max(1, Math.floor((containerHeight * 0.9) / rowHeight))
-    return rowsPerPage
-  }, [rowHeight])
-
-  /**
-   * Get total number of rows
-   */
-  const getTotalRows = useCallback(() => {
+  const getTotalRows = () => {
     const container = containerRef.current
     if (!container) return 0
     return container.children.length
-  }, [])
+  }
 
-  /**
-   * Scroll to a specific row index
-   * Uses browser smooth scroll for the "snap" effect
-   */
-  const scrollToRow = useCallback((rowIndex: number) => {
+  const scrollToRow = (rowIndex: number) => {
     const container = containerRef.current
     if (!container) return
 
-    const rows = container.children
-    if (rowIndex >= rows.length) return
-
-    const targetRow = rows[rowIndex] as HTMLElement
+    const targetRow = container.children[rowIndex] as HTMLElement | undefined
     if (!targetRow) return
 
     container.scrollTo({
       top: targetRow.offsetTop,
       behavior: 'smooth',
     })
-  }, [])
+  }
 
-  /**
-   * Scroll to top
-   */
-  const scrollToTop = useCallback(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    container.scrollTo({
+  const scrollToTop = () => {
+    containerRef.current?.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
-  }, [])
+  }
 
   /**
    * Determine if scrolling should be active
@@ -335,16 +306,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [
-    shouldScroll,
-    phase,
-    scrollConfig,
-    getRowsPerPage,
-    getTotalRows,
-    isAtBottom,
-    scrollToRow,
-    scrollToTop,
-  ])
+    // Note: helper functions are intentionally not in deps - they read from refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldScroll, phase, scrollConfig])
 
   return {
     phase,

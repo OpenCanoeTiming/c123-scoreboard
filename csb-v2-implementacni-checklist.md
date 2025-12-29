@@ -446,13 +446,13 @@ Tag: `pre-review-autoscroll`
 
 ### useAutoScroll.ts - refaktoring (střední priorita)
 
-- [ ] Odstranit zbytečné `useCallback` u `pause()`, `resume()`, `reset()` (řádky 125-147)
-- [ ] Zjednodušit dependency array v main effect - odstranit getRowsPerPage, getTotalRows, isAtBottom z dependencies
-- [ ] Sjednotit null checks v `scrollToRow` - 3 úrovně kontroly lze zkombinovat
-- [ ] Extrahovat magic numbers do konstant: threshold 20px (isAtBottom), ratio 0.9 (getRowsPerPage)
-- [ ] Přepsat highlight scroll pomocí useMemo pro nalezení řádku
-- [ ] Vytvořit helper `centerRowInViewport()` pro čitelnější scroll logiku
-- [ ] Odstranit zbytečný SSR check `typeof window !== 'undefined'` u prefersReducedMotion
+- [x] Odstranit zbytečné `useCallback` u `pause()`, `resume()`, `reset()` **HOTOVO**
+- [x] Zjednodušit dependency array v main effect **HOTOVO**
+- [x] Sjednotit null checks v `scrollToRow` **HOTOVO** - zjednodušeno na jeden optional chain
+- [x] Extrahovat magic numbers do konstant **HOTOVO** - BOTTOM_THRESHOLD_PX, PAGE_HEIGHT_RATIO
+- [x] Odstranit zbytečný SSR check `typeof window !== 'undefined'` u prefersReducedMotion **HOTOVO**
+- [~] Přepsat highlight scroll pomocí useMemo - neimplementováno (přílišná komplexita pro minimální přínos)
+- [~] Vytvořit helper `centerRowInViewport()` - neimplementováno (současný kód je dostatečně čitelný)
 
 ### useAutoScroll.test.ts - vyčištění testů (vysoká priorita)
 
