@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import styles from './CurrentCompetitor.module.css'
 import type { OnCourseCompetitor } from '@/types'
 import { formatName, formatClub } from '@/utils/formatName'
-import { formatTime, formatTTBDiff } from '@/utils/formatTime'
+import { formatTTBDiff } from '@/utils/formatTime'
 import { parseGates, type GatePenalty } from '@/providers/utils/parseGates'
 
 /**
@@ -130,7 +130,9 @@ export function CurrentCompetitor({
   }
 
   const running = isRunning(competitor)
-  const formattedTime = formatTime(competitor.time)
+  // Display raw total time (not formatted) to match original v1 style
+  // Original displays "682" as raw value, we display the total/time as-is
+  const displayTime = (competitor.total || competitor.time || '').trim()
   const formattedTTBDiff = formatTTBDiff(competitor.ttbDiff)
   const ttbClass = getTTBClass(competitor.ttbDiff)
 
@@ -147,7 +149,7 @@ export function CurrentCompetitor({
 
         <div className={styles.timeContainer}>
           {running && <span className={styles.runningIndicator}>&#9658;</span>}
-          <div className={styles.time}>{formattedTime}</div>
+          <div className={styles.time}>{displayTime}</div>
         </div>
 
         {isDeparting && (

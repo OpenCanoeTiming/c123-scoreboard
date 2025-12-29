@@ -106,14 +106,14 @@ Příklad originálu: `[2][3][4]` = brány 2, 3, 4 měly penalizaci
 - [x] OnCourseDisplay.tsx - již implementováno správně
 - [x] Aktualizovat unit testy a snapshoty
 
-### 9.8 Přidat živý čas závodníka na trati
+### 9.8 Přidat živý čas závodníka na trati ✅
 
 **Originál zobrazuje aktuální čas závodníka** (např. "689" = 6.89s nebo 68.9s)
 
-- [ ] Přidat `time` field do CurrentCompetitor komponenty
-- [ ] Zobrazit čas vpravo v OnCourse řádku
-- [ ] Čas pochází z `comp` zprávy (time field)
-- [ ] Formát: raw číslo bez desetinné tečky
+- [x] Zobrazit raw `total` hodnotu v CurrentCompetitor (ne formátovaný čas)
+- [x] Odstranit formatTime(), zobrazit hodnotu as-is s trimem
+- [x] OnCourseDisplay již správně zobrazuje raw total hodnotu
+- [x] Aktualizovat testy a snapshoty
 
 ### 9.9 Přidat daytime do TopBaru
 

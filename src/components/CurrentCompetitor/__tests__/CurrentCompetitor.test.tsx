@@ -73,12 +73,13 @@ describe('CurrentCompetitor', () => {
       expect(screen.getByText('USK Praha')).toBeInTheDocument()
     })
 
-    it('renders time', () => {
-      const competitor = createCompetitor({ time: '95.50' })
+    it('renders time as raw value (not formatted)', () => {
+      // Component displays raw total value to match original v1 style
+      const competitor = createCompetitor({ total: '95.50', time: '93.50' })
       render(<CurrentCompetitor competitor={competitor} />)
 
-      // formatTime converts 95.50 to 1:35.50
-      expect(screen.getByText('1:35.50')).toBeInTheDocument()
+      // Uses total (not time), displayed as-is without MM:SS formatting
+      expect(screen.getByText('95.50')).toBeInTheDocument()
     })
   })
 
