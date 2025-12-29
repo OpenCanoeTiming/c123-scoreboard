@@ -210,7 +210,7 @@ test.describe('Performance Metrics', () => {
   test('measures initial load time', async ({ page }) => {
     const startTime = Date.now()
 
-    await page.goto('/?type=vertical&speed=100&pauseAfter=20')
+    await page.goto('/?type=vertical&speed=100&pauseAfter=150')
     await page.waitForLoadState('domcontentloaded')
 
     const domContentLoaded = Date.now() - startTime
@@ -493,7 +493,7 @@ test.describe('Lighthouse Audit', () => {
 
   test('measures Web Vitals (simulated Lighthouse)', async ({ page }) => {
     // Navigate to app with stable data
-    await page.goto('/?type=vertical&speed=100&pauseAfter=30&disableScroll=true')
+    await page.goto('/?type=vertical&speed=100&pauseAfter=150&disableScroll=true')
     await page.waitForLoadState('load')
 
     // Wait for data to appear
