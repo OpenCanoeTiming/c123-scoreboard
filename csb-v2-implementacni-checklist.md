@@ -1648,34 +1648,22 @@ Všechny kroky, které lze provést automaticky (bez prohlížeče, bez přístu
 
 ## Další kroky pro vyladění funkčnosti (rozšířené testování)
 
-### A. Integrovaý testovací skript
+### A. Integrovaný testovací skript
 
-Vytvořit `scripts/run-all-tests.sh` který spustí všechny automatické testy:
+- [x] `scripts/run-all-tests.sh` - spustí všechny automatické testy
 
 ```bash
-#!/bin/bash
-echo "=== Canoe Scoreboard v2 - Test Suite ==="
-echo ""
-
-# 1. TypeScript check
-echo "1. TypeScript..."
-npx tsc --noEmit && echo "✅ TypeScript OK" || echo "❌ TypeScript FAILED"
-
-# 2. ESLint
-echo "2. ESLint..."
-npm run lint && echo "✅ ESLint OK" || echo "❌ ESLint FAILED"
-
-# 3. Unit testy
-echo "3. Unit testy..."
-npm test -- --reporter=dot && echo "✅ Unit testy OK" || echo "❌ Unit testy FAILED"
-
-# 4. Build
-echo "4. Build..."
-npm run build && echo "✅ Build OK" || echo "❌ Build FAILED"
-
-echo ""
-echo "=== Test Suite dokončen ==="
+./scripts/run-all-tests.sh
 ```
+
+Skript provádí:
+1. TypeScript strict check
+2. ESLint
+3. Unit testy (428 testů)
+4. Production build
+5. Bundle size check (< 500 kB)
+6. Kontrola console.log v produkčním kódu
+7. Kontrola TODO/FIXME komentářů
 
 ### B. Performance benchmark testy
 
@@ -1775,6 +1763,113 @@ Otestovat manuálně v:
 2. **Rollback plán:**
    - [ ] Mít připravenou předchozí verzi
    - [ ] Dokumentovat rollback postup
+
+---
+
+## Review v1.6 (2025-12-29) - Tag: `review-ready-v1.6`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (440 kB JS, 14 kB CSS)
+Unit testy: ✅ 428 testů prochází (17 test suites)
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode
+Test skript: ✅ scripts/run-all-tests.sh vytvořen
+```
+
+### Provedeno v této iteraci
+
+1. **Integrovaný testovací skript** - `scripts/run-all-tests.sh`
+   - Spouští všechny automatické testy jedním příkazem
+   - Kontroluje: TypeScript, ESLint, unit testy, build, bundle size, console.log, TODO/FIXME
+   - Vrací souhrnný výstup s počtem prošlých/selhaných testů
+
+### Závěr - zbývající kroky nelze automatizovat
+
+Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální práci člověka**:
+
+| Kategorie | Proč nelze automatizovat |
+|-----------|--------------------------|
+| **Vizuální testování** | Vyžaduje prohlížeč, lidské oči pro porovnání s reference screenshoty |
+| **Live server test** | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** | TCP socket není možný v browser JS - vyžaduje WebSocket proxy |
+| **Hardware test** | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+### Další kroky k vyladění funkčnosti (rozšířené testování)
+
+#### 1. Performance benchmark (priorita: střední)
+```bash
+# Vytvořit Vitest bench testy
+src/__tests__/performance/ResultsList.bench.ts
+src/__tests__/performance/ReplayProvider.bench.ts
+```
+- Měřit render time pro různé počty položek
+- Cíl: < 16ms pro 60fps
+
+#### 2. Snapshot regression testy (priorita: nízká)
+```bash
+src/components/__tests__/snapshots/*.test.tsx
+```
+- ResultRow, CurrentCompetitor, Footer snapshots
+- Detekovat nečekané změny ve výstupu komponent
+
+#### 3. Contract testy pro WebSocket zprávy (priorita: střední)
+```bash
+src/providers/__tests__/contracts/
+```
+- JSON schema validace pro message typy
+- Testovat proti recording samples
+
+#### 4. Chaos engineering testy (priorita: nízká)
+```bash
+src/providers/__tests__/chaos/
+```
+- Náhodné disconnecty, nesprávné pořadí zpráv, duplicity
+- Velmi velké/prázdné payloady
+
+#### 5. Accessibility audit (priorita: střední)
+```bash
+npm install -D @axe-core/react
+```
+- Přidat accessibility testy
+- Ověřit WCAG 2.1 AA compliance
+
+### Manuální testování - checklist pro uživatele
+
+```bash
+# Spustit dev server
+npm run dev
+
+# Otevřít v prohlížeči
+http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+
+1. **Cold start**
+   - [ ] Loading → Waiting → Data zobrazena
+   - [ ] Všechny komponenty se renderují správně
+
+2. **Závodník dojede**
+   - [ ] comp zmizí → departing buffer (3s)
+   - [ ] highlight v Results → scroll k závodníkovi
+   - [ ] highlight po 5s zmizí → scroll to top
+
+3. **Layout přepínání**
+   - [ ] Vertical (1080×1920): DevTools → správný počet řádků
+   - [ ] Ledwall (768×384): Footer skrytý, méně sloupců
+
+4. **Vizuální porovnání**
+   - [ ] Porovnat s `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+   - [ ] Doladit barvy podle `*-styles.json`
+
+5. **Live server test** (pokud dostupný)
+   - [ ] `?source=cli&host=192.168.68.108:8081`
+   - [ ] Odpojit/připojit server → reconnect overlay
+   - [ ] Real-time data flow
 
 ---
 
