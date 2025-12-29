@@ -437,9 +437,31 @@ Tohle je seznam k dalšímu postupnému opravování a zapracování:
  - [ ] když jsou dva závodníci na trati, tak je řádek oncourse úplně blbě, jen se tam nějak divně přepisují, čas jim neběží. Uděláme to tak, že ledwall ukazuje závodníka z oncourse/current, který má nejvyšší čas (tedy current) nebo který právě dojel do cíle, abychom odprezentovali jeho výsledek. Vertical bude obsahovat všechny jedoucí závodníky (běží jim čas) nebo závodníky co dojeli do cíle (ukazujeme jejich výsledek), tzn bude tam i více řádků oncourse/current pod sebou.
  - [ ] teď větší věc: škálování ledwall. Udělej si před touto změnou tag v gitu a všechno commitni, ať se kdyžtak můžeme vrátit. V rámci tohoto bodu pouze rozepiš do checklistu samostatnou kapitolu "škálování ledwall", neprogramuj. ledwall potřebujeme škálovat, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy sice tabule má velké rozlišení, ale je daleko a stejně musíme mít jen pár řádků a písmena velká. Takže ledwall mód by měl mít parametr displayRows, který uvádí kolik řádků výsledků má být vidět pod nadpisem a jedním řádkem oncourse. Ledwall se naškáluje tak, aby na výšku vyplnil disponibilní viewport tak, že bude vidět právě zadaný počet řádků ... a na šířku se samozřejmě responsivně přizpůsobí.
  - [ ] aktualizuj readme.md tak, aby melo podobnou strukturu a napln jako u original, ovsem platne k soucasnemu stavu projektu v2
- 
- 
- 
+
+---
+
+## Review nálezy k zapracování (2025-12-29)
+
+Tag: `pre-review-autoscroll`
+
+### useAutoScroll.ts - refaktoring (střední priorita)
+
+- [ ] Odstranit zbytečné `useCallback` u `pause()`, `resume()`, `reset()` (řádky 125-147)
+- [ ] Zjednodušit dependency array v main effect - odstranit getRowsPerPage, getTotalRows, isAtBottom z dependencies
+- [ ] Sjednotit null checks v `scrollToRow` - 3 úrovně kontroly lze zkombinovat
+- [ ] Extrahovat magic numbers do konstant: threshold 20px (isAtBottom), ratio 0.9 (getRowsPerPage)
+- [ ] Přepsat highlight scroll pomocí useMemo pro nalezení řádku
+- [ ] Vytvořit helper `centerRowInViewport()` pro čitelnější scroll logiku
+- [ ] Odstranit zbytečný SSR check `typeof window !== 'undefined'` u prefersReducedMotion
+
+### useAutoScroll.test.ts - vyčištění testů (vysoká priorita)
+
+- [ ] Smazat nepoužitý mock RAF a helper `_flushRaf` (řádky 54-61, 105-111)
+- [ ] Smazat nepoužitý `mockContainer` v beforeEach (řádky 91-95)
+- [ ] Smazat duplicitní test "stays in IDLE when highlight is active" (řádky 350-366 - duplikát 159-175)
+- [ ] Smazat zbytečné stress testy, které netestují nic užitečného (sekce 464-594)
+- [ ] Smazat testy bez kontejneru, které jen kontrolují inicializaci - ponechat jen smysluplné
+- [ ] Opravit testy ledwall sekce - ponechat jen testy skutečné logiky (243-270, 297-320)
 
 ---
 
