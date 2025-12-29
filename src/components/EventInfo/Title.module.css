@@ -11,11 +11,12 @@
 
 .text {
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-3xl);  /* 48px - same for vertical and ledwall */
   font-weight: 600;
   color: var(--color-text-primary);
   text-align: center;
   line-height: 1.2;
+  letter-spacing: 0.02em;
   /* Handle long titles */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -32,5 +33,6 @@
 }
 
 .ledwall .text {
-  font-size: var(--font-size-lg);
+  /* Same 48px font size as vertical - per original v1 styles */
+  font-size: var(--font-size-3xl);
 }

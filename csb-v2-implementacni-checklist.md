@@ -453,16 +453,16 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 
 ### 9.8 Oprava Footer
 
-- [ ] Footer skrytý na ledwall (`display: none`)
-- [ ] Footer viditelný na vertical
+- [x] Footer skrytý na ledwall (`display: none`) - **UŽ IMPLEMENTOVÁNO** v ScoreboardLayout.tsx:61 (`showFooter && footer`)
+- [x] Footer viditelný na vertical - **UŽ IMPLEMENTOVÁNO** v useLayout.ts (`showFooter: layoutMode !== 'ledwall'`)
 
 ### 9.9 Oprava Title
 
-- [ ] Title font-size: 48px (stejný pro vertical i ledwall)
+- [x] Title font-size: 48px (stejný pro vertical i ledwall) - **OPRAVENO 2025-12-29** v Title.module.css
 - [x] Title color: `#e9e9e9` (bílá/světle šedá, NE žlutá!) - již bylo správně v variables.css
 - [x] Title text-transform: uppercase - implementováno v Title.tsx (2025-12-29)
 - [x] Title obsahuje kategorii z RaceName - implementováno v Title.tsx (2025-12-29)
-- [ ] Title letter-spacing: ~0.02em
+- [x] Title letter-spacing: ~0.02em - **OPRAVENO 2025-12-29** v Title.module.css
 
 ### 9.10 Aktualizace Playwright snapshots
 
