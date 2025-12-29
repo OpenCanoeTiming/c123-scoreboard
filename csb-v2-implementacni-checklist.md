@@ -487,7 +487,7 @@ Tag: `pre-review-refactor`
 - [ ] **useTimestamp Date.now() redundance** - calculateIsActive/calculateTimeRemaining/calculateProgress volají Date.now() nezávisle. Vypočítat jednou a reusovat
 - [x] **CLIProvider.ts:343 behind replace** - `.replace('&nbsp;', '')` nahradí jen první výskyt. **OPRAVENO** - nyní používáme `.replaceAll()` v parseMessages.ts
 - [ ] **ReplayProvider error truncation** - line.substring(0, 100) vs line.substring(0, 50) nekonzistence
-- [ ] **OnCourseDisplay defensive check** - Line 73-82 kontroluje `!competitors || !Array.isArray(competitors)` ale TypeScript to garantuje
+- [x] **OnCourseDisplay defensive check** - Line 73-82 kontroluje `!competitors || !Array.isArray(competitors)` ale TypeScript to garantuje. **OPRAVENO** - odstraněn runtime check i zbytečné testy pro null/undefined
 - [ ] **ResultRow forwardRef** - ref se používá jen pro data-bib lookup, forwardRef může být zbytečný overhead
 - [ ] **types.ts:92 onConfig** - callback je v interface ale nikde není implementován
 

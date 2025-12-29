@@ -64,8 +64,6 @@ export function OnCourseDisplay({
 
   // Filter out invalid competitors and exclude current competitor
   const filteredCompetitors = useMemo(() => {
-    if (!competitors || !Array.isArray(competitors)) return []
-
     return competitors.filter((competitor) => {
       // Exclude the current competitor (shown separately)
       if (excludeBib && competitor.bib === excludeBib) return false

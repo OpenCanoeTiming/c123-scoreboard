@@ -342,19 +342,8 @@ describe('OnCourseDisplay', () => {
   })
 
   describe('edge cases', () => {
-    it('handles null competitors array', () => {
-      // @ts-expect-error Testing runtime null handling
-      const { container } = render(<OnCourseDisplay competitors={null} />)
-
-      expect(container.firstChild).toBeNull()
-    })
-
-    it('handles undefined competitors array', () => {
-      // @ts-expect-error Testing runtime undefined handling
-      const { container } = render(<OnCourseDisplay competitors={undefined} />)
-
-      expect(container.firstChild).toBeNull()
-    })
+    // Note: null/undefined competitors tests removed - TypeScript guarantees
+    // the competitors prop is always an array, runtime checks are unnecessary
 
     it('handles competitor with empty name', () => {
       const competitors = [createCompetitor({ name: '' })]
