@@ -66,6 +66,21 @@ export function safeNumber(value: unknown, defaultValue: number = 0): number {
 }
 
 /**
+ * Safely converts a value to string for error messages
+ */
+function safeStringify(value: unknown): string {
+  if (value === null) return 'null'
+  if (value === undefined) return 'undefined'
+  if (typeof value === 'symbol') return value.toString()
+  if (typeof value === 'bigint') return value.toString()
+  try {
+    return String(value)
+  } catch {
+    return '[unstringifiable]'
+  }
+}
+
+/**
  * Validates CLI 'top' message structure
  */
 export function validateTopMessage(message: unknown): ValidationResult {
@@ -75,7 +90,7 @@ export function validateTopMessage(message: unknown): ValidationResult {
 
   const msg = message.msg || message.type
   if (msg !== 'top') {
-    return { valid: false, error: `Invalid message type: ${msg}` }
+    return { valid: false, error: `Invalid message type: ${safeStringify(msg)}` }
   }
 
   if (!isObject(message.data)) {
@@ -102,7 +117,7 @@ export function validateCompMessage(message: unknown): ValidationResult {
 
   const msg = message.msg || message.type
   if (msg !== 'comp') {
-    return { valid: false, error: `Invalid message type: ${msg}` }
+    return { valid: false, error: `Invalid message type: ${safeStringify(msg)}` }
   }
 
   if (!isObject(message.data)) {
@@ -122,7 +137,7 @@ export function validateOnCourseMessage(message: unknown): ValidationResult {
 
   const msg = message.msg || message.type
   if (msg !== 'oncourse') {
-    return { valid: false, error: `Invalid message type: ${msg}` }
+    return { valid: false, error: `Invalid message type: ${safeStringify(msg)}` }
   }
 
   if (!isArray(message.data)) {
@@ -142,7 +157,7 @@ export function validateControlMessage(message: unknown): ValidationResult {
 
   const msg = message.msg || message.type
   if (msg !== 'control') {
-    return { valid: false, error: `Invalid message type: ${msg}` }
+    return { valid: false, error: `Invalid message type: ${safeStringify(msg)}` }
   }
 
   if (!isObject(message.data)) {
@@ -165,7 +180,7 @@ export function validateTextMessage(
 
   const msg = message.msg || message.type
   if (msg !== expectedType) {
-    return { valid: false, error: `Invalid message type: ${msg}` }
+    return { valid: false, error: `Invalid message type: ${safeStringify(msg)}` }
   }
 
   if (!isObject(message.data)) {

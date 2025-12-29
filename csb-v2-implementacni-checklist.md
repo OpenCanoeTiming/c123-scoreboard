@@ -1211,7 +1211,7 @@ TypeScript: ✅ Strict mode
 
 - [x] **Edge cases pro highlight** - více závodníků dojede < 100ms po sobě (5 nových testů v ScoreboardContext.test.tsx)
 - [x] **Stress test pro auto-scroll** - 10 nových testů: 100+ items, 500+ items, rapid phase transitions, concurrent highlight changes, extreme scroll speeds, mount/unmount cycles
-- [ ] **Fuzz testing pro message parsing** - náhodná malformed data
+- [x] **Fuzz testing pro message parsing** - náhodná malformed data (22 testů v fuzz.test.ts)
 - [ ] **Memory leak test** - spustit ReplayProvider 1000x v loop
 
 #### Manuální testování scénáře (vyžaduje prohlížeč)
@@ -1413,6 +1413,93 @@ Všechny zbývající kroky v checklistu vyžadují některou z těchto podmíne
 4. **Playwright testy**
    - Vyřešit timeout problém - pravděpodobně ReplayProvider potřebuje delší čas na načtení
    - Možná přidat explicit wait na status "connected"
+
+---
+
+## Review v1.3 (2025-12-29) - Tag: `review-ready-v1.3`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný
+Unit testy: ✅ 418 testů prochází (16 test suites)
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Fuzz testing pro message parsing**
+   - Nový test soubor: `src/providers/utils/__tests__/fuzz.test.ts`
+   - 22 testů pokrývajících náhodná a malformed vstupní data
+   - Testuje: isObject, isArray, isString, isNumeric, safeString, safeNumber
+   - Testuje: všechny message validátory (top, comp, oncourse, control, title, infotext, daytime)
+   - Testuje: parseGates, detectFinish
+   - Testuje: edge cases (deeply nested objects, large arrays, prototype pollution, frozen objects)
+
+2. **Opravené bugy nalezené fuzz testy**
+   - `parseGates`: Přidána kontrola na non-string vstupy (původně padal na null/undefined/number)
+   - `validation.ts`: Přidána funkce `safeStringify` pro bezpečnou konverzi hodnot na string
+   - Všechny validační funkce nyní ošetřují Symbol a BigInt hodnoty
+
+### Shrnutí zbývajících kroků
+
+Všechny zbývající nesplněné kroky v checklistu spadají do těchto kategorií:
+
+| Kategorie | Důvod nelze provést automaticky | Počet kroků |
+|-----------|--------------------------------|-------------|
+| **Manuální vizuální testování** | Vyžaduje prohlížeč, DevTools, lidské oči | ~25 |
+| **Live server test** | CLI server 192.168.68.108 není přístupný z tohoto prostředí | ~5 |
+| **Playwright E2E** | Chybí systémové závislosti (chromium, fonty) | ~4 |
+| **C123Provider** | TCP socket nelze v prohlížeči | 3 |
+| **Hardware test** | Fyzické zařízení (RPi, TV, LED) | ~4 |
+| **Architekturální refaktoring** | Vyžaduje rozhodnutí uživatele | ~5 |
+| **Memory leak test** | Potřebuje speciální setup (Node --expose-gc) | 1 |
+
+### Další kroky pro vyladění funkčnosti (doporučeno)
+
+#### A. Memory leak test (lze přidat)
+- [ ] Vytvořit benchmark script s `--expose-gc` flag
+- [ ] Spustit ReplayProvider 1000x v loop
+- [ ] Měřit heap size po každých 100 iteracích
+- [ ] Detekovat timer/listener leaky
+
+#### B. Performance benchmark (lze přidat)
+- [ ] Vytvořit skript měřící render time pro ResultsList s 50, 100, 200 položkami
+- [ ] Změřit latenci od update dat → render na obrazovce
+- [ ] Identifikovat bottlenecky
+
+#### C. Manuální testování (vyžaduje prohlížeč)
+
+```bash
+npm run dev
+# Otevřít http://localhost:5173/?source=replay&speed=10
+```
+
+**Scénáře k otestování:**
+1. Cold start: Loading → Waiting → Data zobrazena
+2. Závodník dojede: comp zmizí → departing 3s → highlight v Results
+3. Highlight timeout: po 5s zmizí, scroll to top
+4. Resize: přepínat mezi vertical (1080×1920) a ledwall (768×384)
+5. Prázdný závod: graceful empty state
+
+#### D. Live server test (vyžaduje síťový přístup)
+
+```
+?source=cli&host=192.168.68.108:8081
+```
+
+**Testovat:**
+1. Připojení k reálnému CLI serveru
+2. Odpojit/připojit server → reconnect overlay
+3. Real-time data flow
+4. Závodník dojede → highlight → scroll
+
+#### E. Vizuální porovnání
+
+Referenční materiály:
+- `/workspace/csb-v2/analysis/reference-screenshots/original-live-*.png`
+- `/workspace/csb-v2/analysis/reference-screenshots/*-styles.json`
 
 ---
 
