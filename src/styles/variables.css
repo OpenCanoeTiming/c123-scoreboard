@@ -1,13 +1,15 @@
 /* CSS Custom Properties - Canoe Scoreboard v2 */
 
 :root {
-  /* Colors - Background */
-  --color-bg-primary: #0a0a0a;
-  --color-bg-secondary: #1a1a1a;
-  --color-bg-tertiary: #2a2a2a;
+  /* Colors - Background (matched from original v1) */
+  --color-bg-primary: #111111;      /* rgb(17, 17, 17) - even rows */
+  --color-bg-secondary: #1d1d1d;    /* rgb(29, 29, 29) - odd rows */
+  --color-bg-tertiary: #222222;     /* rgb(34, 34, 34) - header */
+  --color-bg-results: rgba(34, 34, 34, 0.9);  /* results list container */
+  --color-bg-body: #000000;         /* rgb(0, 0, 0) - body background */
 
-  /* Colors - Text */
-  --color-text-primary: #ffffff;
+  /* Colors - Text (matched from original v1) */
+  --color-text-primary: #e9e9e9;    /* rgb(233, 233, 233) */
   --color-text-secondary: #b0b0b0;
   --color-text-muted: #666666;
 

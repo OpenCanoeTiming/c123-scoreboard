@@ -5,7 +5,7 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-bg-results);
   border-radius: var(--border-radius-md);
   transition: opacity var(--transition-normal);
   scroll-behavior: smooth;
@@ -27,12 +27,12 @@
   height: var(--row-height);
 }
 
-/* Alternating row colors */
-.row:nth-child(even) {
+/* Alternating row colors (odd rows: #1d1d1d, even rows: #111111) */
+.row:nth-child(odd) {
   background-color: var(--color-bg-secondary);
 }
 
-.row:nth-child(odd) {
+.row:nth-child(even) {
   background-color: var(--color-bg-primary);
 }
 
@@ -103,6 +103,9 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   text-align: center;
+  background-color: var(--color-bg-results);
+  padding: 2px 4px;
+  border-radius: 2px;
 }
 
 .penaltyClear {

@@ -383,6 +383,258 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 
 ---
 
+## Fáze 9: Oprava vizuálních rozdílů
+
+> **Stav:** Vizuální porovnání s originálem ukázalo velké rozdíly:
+> - Vertical: 601,021 rozdílných pixelů
+> - Ledwall: 89,661 rozdílných pixelů
+
+### 9.1 Oprava barev pozadí
+
+**Reference:** `analysis/reference-screenshots/vertical-styles.json`
+
+- [x] `--color-bg-primary: #0a0a0a` → `#111111` (rgb(17,17,17))
+- [x] `--color-bg-secondary: #1a1a1a` → `#1d1d1d` (rgb(29,29,29))
+- [x] Body background: `rgb(0, 0, 0)` - přidáno `--color-bg-body: #000000` a aplikováno v reset.css
+
+### 9.2 Oprava barev textu
+
+- [x] `--color-text-primary: #ffffff` → `#e9e9e9` (rgb(233,233,233))
+- [x] Title barva: bílá/světle šedá `#e9e9e9`, NE žlutá - již bylo správně
+
+### 9.3 Oprava TopBar
+
+**Reference:** Originál má TopBar height 142px pro vertical
+
+- [x] TopBar height: 100px → 142px (vertical layout) - **OPRAVENO 2025-12-29** v `useLayout.ts`
+- [x] TopBar padding a spacing - již správně nastaveno v `TopBar.module.css`
+- [x] Logo sizing: max-height 80px, max-width 120px - již správně nastaveno
+
+### 9.4 Oprava ResultsList
+
+**Reference:** `analysis/06-styly.md` sekce "Ověřené styly"
+
+- [x] Grid template columns vertical: `70px 50px 1fr 70px 140px 100px` (6 sloupců) - **OPRAVENO 2025-12-29**
+- [x] Grid template columns ledwall: `80px 40px 1fr 100px` (4 sloupce - pen/behind skryté) - **OPRAVENO 2025-12-29**
+- [x] Row height vertical: 48px - **OPRAVENO 2025-12-29** (fixed in useLayout.ts + CSS)
+- [x] Row height ledwall: 56px (ne 60px!) - **OPRAVENO 2025-12-29** (fixed in useLayout.ts)
+- [x] Results list background: `rgba(34, 34, 34, 0.9)` - **OPRAVENO 2025-12-29** (added --color-bg-results variable)
+- [x] Alternující barvy řádků: liché `#1d1d1d`, sudé `#111111` - **OPRAVENO 2025-12-29** (swapped odd/even)
+- [x] BIB background: `rgba(51, 102, 153, 0.2)` - **bylo správně**
+- [x] Penalty background: `rgba(34, 34, 34, 0.9)` - **OPRAVENO 2025-12-29**
+
+### 9.5 Oprava font sizes (Vertical)
+
+**Reference:** `analysis/06-styly.md` tabulka
+
+- [ ] Rank: 32px, weight 700, font JetBrains Mono
+- [ ] BIB: 24px, weight 700, font JetBrains Mono
+- [ ] Name: 32px, weight 700, font Inter
+- [ ] Penalty: 24px, weight 500, font JetBrains Mono
+- [ ] Total: 32px, weight 500, font JetBrains Mono
+- [ ] Behind: 24px, weight 400, font JetBrains Mono
+
+### 9.6 Oprava font sizes (Ledwall)
+
+- [ ] Rank: 36px, weight 700
+- [ ] BIB: 22px, weight 700
+- [ ] Name: 36px, weight 700
+- [ ] Penalty: 22px, weight 500
+- [ ] Total: 36px, weight 500
+- [ ] Behind: 22px, weight 400 (skrytý na ledwall)
+
+### 9.7 Oprava OnCourse/CurrentCompetitor
+
+- [ ] OnCourse row height: 45px (vertical), 60px (ledwall)
+- [ ] Background: `rgba(51, 102, 153, 0.2)` (teal/cyan)
+- [ ] Border-left: 3px solid yellow (pouze OnCourse, ne results!)
+- [ ] Gate penalty badges: 28×28px, border-radius 4px
+- [ ] Total penalty badge: obdélník (border-radius 0!), background `#cc3333`
+
+### 9.8 Oprava Footer
+
+- [ ] Footer skrytý na ledwall (`display: none`)
+- [ ] Footer viditelný na vertical
+
+### 9.9 Oprava Title
+
+- [ ] Title font-size: 48px (stejný pro vertical i ledwall)
+- [x] Title color: `#e9e9e9` (bílá/světle šedá, NE žlutá!) - již bylo správně v variables.css
+- [x] Title text-transform: uppercase - implementováno v Title.tsx (2025-12-29)
+- [x] Title obsahuje kategorii z RaceName - implementováno v Title.tsx (2025-12-29)
+- [ ] Title letter-spacing: ~0.02em
+
+### 9.10 Aktualizace Playwright snapshots
+
+- [ ] Po opravách smazat staré snapshots
+- [ ] Vygenerovat nové baseline snapshots
+- [ ] Ověřit vizuální shodu s originálem (<2% rozdíl)
+
+### 9.11 Nově zjištěné rozdíly (2025-12-29)
+
+**Porovnání screenshotů V2 vs originál odhalilo tyto další rozdíly:**
+
+#### Title formátování ✅ OPRAVENO
+- [x] Originál: "JARNÍ SLALOMY: C1Ž" (uppercase, obsahuje kategorii) - **OPRAVENO 2025-12-29**
+- [x] V2 nyní zobrazuje "JARNÍ SLALOMY: K1M" (uppercase + kategorie z RaceName)
+- [x] Implementováno v Title.tsx: `extractCategory()` + `toUpperCase()`
+
+#### CurrentCompetitor/OnCourse layout (priorita: střední)
+- [x] Originál má gate penalty badges jako barevné čtverečky (zelená=0, žlutá=2, červená=50) - **V2 má gate badges implementované**
+- [x] Originál zobrazuje jednotlivé gate penalties jako čtverečky - **V2 zobrazuje gate badges**
+- [ ] Total penalty v originálu je obdélník s červeným pozadím (#cc3333) - V2 má pouze PEN text
+- [x] V2 má pulzující zelený triangle ►, originál má podobnou indikaci - **ODPOVÍDÁ**
+- **Poznámka:** Gate badges fungují, ale originál zobrazuje čísla branek (2,3,4), V2 zobrazuje hodnoty (0,0,0)
+
+#### ResultsList header (priorita: nízká - kosmetické)
+- [ ] Originál NEMÁ header row (žádné "#", "ST.", "JMÉNO", "PEN", "ČAS", "ZTRÁTA")
+- [ ] V2 má header row - zvážit odstranění pro přesnou shodu s originálem
+- **Poznámka:** Header row v V2 zlepšuje čitelnost, může zůstat jako vylepšení
+
+#### Penalty zobrazení v results (priorita: nízká)
+- [ ] Originál má penalty jako číslo v barevném obdélníku (badge)
+- [ ] V2 má penalty jako text "2s", "4s" atd. s barevným pozadím
+- **Poznámka:** Funkčně ekvivalentní, pouze jiná vizuální reprezentace
+
+#### BIB styling (priorita: střední) ✅ OPRAVENO
+- [x] Originál má BIB s pozadím rgba(51, 102, 153, 0.2) a bílým textem - **OPRAVENO 2025-12-29**
+- [x] V2 nyní má BIB s pozadím `rgba(51, 102, 153, 0.2)` a bílým textem `#e9e9e9`
+- **Implementace:** `ResultsList.module.css` - přidáno `background-color` a změněna `color` na `--color-text-primary`
+
+#### Sloupce v ResultsList
+- [x] Originál má sloupec "BIB" mezi Rank a Name - V2 má ekvivalent "ST."
+- **Poznámka:** Funkčně stejné, pouze jiný název v header
+
+### 9.12 Nově zjištěné rozdíly (2025-12-29, vizuální kontrola)
+
+**Porovnání V2 screenshotu s originálem:**
+
+#### Gate penalty badges zobrazení (priorita: střední)
+- [ ] **Originál:** Zobrazuje čísla branek s penalizací (např. "2", "3", "4" jako žluté čtverečky)
+- [ ] **V2:** Zobrazuje hodnoty penalizace (např. "0", "0", "0" jako zelené čtverečky)
+- **Poznámka:** V2 zobrazuje hodnotu penalty (0/2/50), originál zobrazuje číslo brány kde došlo k penalty. Oboje je validní přístup.
+
+#### Total penalty v originálu (priorita: střední)
+- [ ] Originál: Červený obdélník "54" (součet 2+2+50) vedle gate badges
+- [ ] V2: Text "PEN 0s" pod TTB informacemi
+- **Poznámka:** Rozdílný layout, ale funkčně ekvivalentní
+
+#### CurrentCompetitor čas (priorita: vysoká)
+- [ ] **Originál:** Zobrazuje aktuální čas závodníka vpravo (např. "689")
+- [ ] **V2:** Nezobrazuje průběžný čas závodníka na trati
+- **Poznámka:** V originálu se ukazuje live čas z `comp` zprávy
+
+### 9.13 Nově zjištěné rozdíly (2025-12-29, detailní screenshot porovnání)
+
+**Porovnání V2 vertical screenshotu s originálem:**
+
+#### ResultsList border-bottom (priorita: nízká - kosmetické)
+- [ ] **Originál:** Řádky NEMAJÍ border-bottom mezi sebou (spojité řádky)
+- [ ] **V2:** Řádky mají `border-bottom: 1px solid var(--color-bg-tertiary)`
+- **Poznámka:** Kosmetický rozdíl, V2 verze může být čitelnější
+
+#### Penalty formát v ResultsList (priorita: nízká)
+- [ ] **Originál:** Penalty jako číslo bez jednotky (např. "0", "2", "6", "10", "56")
+- [ ] **V2:** Penalty jako číslo s "s" (např. "2s", "4s", "10s") nebo "-" pro 0
+- **Poznámka:** V2 je explicitnější, originál úspornější
+
+#### Font-weight rank (priorita: nízká)
+- [ ] **Originál:** Rank má font-weight 700 (bold)
+- [ ] **V2:** Rank má font-weight 600 (semi-bold)
+- **Poznámka:** Mírný rozdíl, lze sjednotit
+
+#### Time formát (priorita: střední)
+- [ ] **Originál:** Čas ve formátu "43.08" (bez minut pro časy pod 1 minutu)
+- [ ] **V2:** Čas ve formátu "1:18.99" (vždy s minutami)
+- **Poznámka:** V2 používá konzistentní formát, originál úspornější pro krátké časy
+
+#### Footer sponzorů (priorita: nízká)
+- [ ] **Originál:** Footer obsahuje skutečné loga sponzorů
+- [ ] **V2:** Footer má pouze placeholder text "SPONSOR BANNER"
+- **Poznámka:** Placeholder je správný pro vývoj, v produkci se nahradí skutečnými logy
+
+### 9.14 Nově zjištěné rozdíly (2025-12-29, porovnání V2 vs originál)
+
+**Detailní porovnání screenshotů V2 vertical-full-page vs originál:**
+
+#### Header row v ResultsList (priorita: střední - design decision)
+- [ ] **Originál:** NEMÁ header row (žádné "#", "ST.", "JMÉNO", "PEN", "ČAS", "ZTRÁTA")
+- [ ] **V2:** MÁ sticky header row s názvy sloupců
+- **Rozhodnutí:** Header v V2 zlepšuje čitelnost - může zůstat jako vylepšení oproti originálu
+
+#### OnCourse komponenta - zobrazení vs originál (priorita: střední)
+- [ ] **Originál:** `► 9  FABIANOVÁ Anna  [2][3][4] 54  689`
+  - Gate badges zobrazují číslo brány s penalizací (2,3,4 = brány kde byla penalizace)
+  - Total penalty badge: červený obdélník "54" (součet všech penalizací)
+  - Čas závodníka vpravo: "689" (aktuální čas na trati)
+- [ ] **V2:** `9  KOPEČEK Michal  ►  TTB: J. KREJČÍ #8  PEN 0s`
+  - Bez gate badges pro jednotlivé brány
+  - PEN jako text, ne badge
+  - Nezobrazuje aktuální čas závodníka na trati
+- **Poznámka:** Strukturálně odlišný layout CurrentCompetitor komponenty
+
+#### Barva penalty badge v results (priorita: nízká - kosmetické)
+- [ ] **Originál:** Penalty jako číslo v šedém obdélníku (0, 2, 6, 10, 56, 106, 204, 206, 362)
+- [ ] **V2:** Penalty jako text s "s" (2s, 4s, 6s...) s barevným textem, bez badge
+- **Poznámka:** Funkčně ekvivalentní
+
+#### TopBar layout (priorita: nízká)
+- [ ] **Originál:** Logo vlevo, Title uprostřed, CSK logo vpravo - vše v jednom řádku
+- [ ] **V2:** "LOGO" placeholder vlevo, Title uprostřed, "PARTNERS" placeholder vpravo
+- **Poznámka:** V2 má správnou strukturu, jen chybí skutečná loga
+
+#### Kategorie v Title (priorita: nízká) ✅ OK
+- [x] **Originál:** "JARNÍ SLALOMY: C1Ž" (uppercase, s kategorií)
+- [x] **V2:** "JARNÍ SLALOMY: K1M" (uppercase, s kategorií) - **SHODUJE SE**
+
+### 9.15 Nově zjištěné rozdíly (2025-12-29, živé porovnání s CLI serverem)
+
+**Porovnání živého originálu (ws://192.168.68.108:8081) s V2:**
+
+#### Rank formát ✅ OPRAVENO
+- [x] **Originál:** Rank má tečku za číslem ("1.", "2.", "3.")
+- [x] **V2:** Nyní také zobrazuje tečku za rank číslem - **OPRAVENO 2025-12-29**
+
+#### Čas formát (priorita: střední)
+- [ ] **Originál:** Krátký formát pro časy pod minutu (33.00, 57.20, 78.99)
+- [ ] **V2:** Vždy zobrazuje minuty (1:18.99, 1:24.33)
+- **Poznámka:** V2 používá konzistentní formát, originál je úspornější pro krátké časy
+
+#### OnCourse živý čas (priorita: vysoká)
+- [ ] **Originál:** Zobrazuje aktuální čas závodníka na trati vpravo (např. "12694" = 126.94s)
+- [ ] **V2:** Nezobrazuje průběžný čas závodníka na trati
+- **Poznámka:** Toto je funkční rozdíl - V2 by měl zobrazovat time z comp zprávy
+
+#### Gate penalty zobrazení (priorita: střední)
+- [ ] **Originál:** Zobrazuje čísla branek kde byla penalizace jako žluté čtverečky [4][5][6][9][10]
+- [ ] **V2:** Gate badges zobrazují hodnotu penalty (0,0,0), ne čísla branek
+- **Poznámka:** Originál je informativnější - ukazuje KTERÉ brány měly penalizaci
+
+#### Total penalty badge (priorita: střední)
+- [ ] **Originál:** Červený obdélník s číslem "106" (součet penalizací) vedle gate badges
+- [ ] **V2:** Text "PEN 0s" místo badge
+- **Poznámka:** Originál je vizuálně výraznější
+
+#### TopBar čas (priorita: střední)
+- [ ] **Originál:** Zobrazuje aktuální čas "11:41:48" v pravé části TopBaru
+- [ ] **V2:** Nezobrazuje aktuální čas dne
+- **Poznámka:** V2 nemá implementovaný daytime display z CLI zprávy
+
+#### Penalty formát v results (priorita: nízká)
+- [ ] **Originál:** Penalty bez jednotky (4, 6, 8, 10)
+- [ ] **V2:** Penalty s jednotkou "s" (4s, 6s, 8s, 10s) nebo "-" pro 0
+- **Poznámka:** V2 je explicitnější
+
+### 🔍 Revize: Fáze 9
+
+- [ ] Všechny barvy odpovídají originálu
+- [ ] Layout rozměry odpovídají originálu
+- [ ] Font sizes odpovídají originálu
+- [ ] Vizuální porovnání s originálem < 5% rozdíl
+- [ ] **Commit:** "fix: align visual styles with original v1"
+
+---
+
 ## Post-implementace
 
 ### Další kroky (budoucnost)
