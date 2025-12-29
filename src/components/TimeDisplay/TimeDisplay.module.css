@@ -20,11 +20,11 @@
 
 /* Ledwall layout - position in header, right side before partner logo */
 .ledwall {
-  font-size: 48px;  /* Match title font size */
-  font-weight: 600;  /* Match title weight */
-  top: 12px;  /* Position in header/title area */
-  right: 90px;  /* Position before partner logo */
+  font-size: 32px;  /* Matches original v1 ledwall */
+  font-weight: 500;  /* Matches original v1 */
+  top: 16px;  /* Position in header/title area - matches original v1 */
+  right: 80px;  /* Position before partner logo - matches original v1 */
   left: auto;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  color: var(--color-text-primary);  /* Same color as title */
+  color: var(--color-accent-yellow);  /* Yellow accent - matches original v1 */
 }
