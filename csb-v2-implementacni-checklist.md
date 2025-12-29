@@ -445,11 +445,11 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 
 ### 9.7 Oprava OnCourse/CurrentCompetitor
 
-- [ ] OnCourse row height: 45px (vertical), 60px (ledwall)
-- [ ] Background: `rgba(51, 102, 153, 0.2)` (teal/cyan)
-- [ ] Border-left: 3px solid yellow (pouze OnCourse, ne results!)
-- [ ] Gate penalty badges: 28×28px, border-radius 4px
-- [ ] Total penalty badge: obdélník (border-radius 0!), background `#cc3333`
+- [x] OnCourse row height: 45px (vertical), 60px (ledwall) - **OPRAVENO 2025-12-29**
+- [x] Background: `rgba(51, 102, 153, 0.2)` (teal/cyan) - již bylo správně
+- [x] Border-left: 3px solid yellow (pouze OnCourse, ne results!) - již bylo správně
+- [x] Gate penalty badges: 28×28px, border-radius 4px - **OPRAVENO 2025-12-29**
+- [x] Total penalty badge: obdélník (border-radius 0!), background `#cc3333` - **OPRAVENO 2025-12-29**
 
 ### 9.8 Oprava Footer
 
@@ -482,7 +482,7 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 #### CurrentCompetitor/OnCourse layout (priorita: střední)
 - [x] Originál má gate penalty badges jako barevné čtverečky (zelená=0, žlutá=2, červená=50) - **V2 má gate badges implementované**
 - [x] Originál zobrazuje jednotlivé gate penalties jako čtverečky - **V2 zobrazuje gate badges**
-- [ ] Total penalty v originálu je obdélník s červeným pozadím (#cc3333) - V2 má pouze PEN text
+- [x] Total penalty v originálu je obdélník s červeným pozadím (#cc3333) - **OPRAVENO 2025-12-29**
 - [x] V2 má pulzující zelený triangle ►, originál má podobnou indikaci - **ODPOVÍDÁ**
 - **Poznámka:** Gate badges fungují, ale originál zobrazuje čísla branek (2,3,4), V2 zobrazuje hodnoty (0,0,0)
 
