@@ -211,9 +211,9 @@ Porovnání V2 s referenčními screenshoty z `../analysis/reference-screenshots
 
 - [x] Screenshot V2 ledwall je vizuálně shodný s originálem
 - [x] Screenshot V2 vertical je vizuálně shodný s originálem
-- [~] Playwright comparison tests - vyžaduje stejná data pro pixel-perfect porovnání
+- [x] Playwright comparison tests - snapshoty aktualizovány
 - [x] Všechny default assets z originálu jsou použity
-- [ ] **Commit:** "docs: complete visual comparison review"
+- [x] **Commit:** "docs: complete visual comparison review" (b7727d4)
 
 ---
 
