@@ -366,9 +366,10 @@ export class ReplayProvider implements DataProvider {
         this.messages.push(msg)
       } catch (err) {
         // Skip invalid JSON lines but emit error
-        console.warn('Skipping invalid JSONL line:', line.substring(0, 50))
+        const truncatedLine = line.substring(0, 100)
+        console.warn('Skipping invalid JSONL line:', truncatedLine)
         this.emitError('PARSE_ERROR', 'Invalid JSONL line in recording', {
-          line: line.substring(0, 100),
+          line: truncatedLine,
           error: err,
         })
       }
