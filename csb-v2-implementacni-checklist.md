@@ -535,20 +535,20 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
 
 **Porovnání V2 vertical screenshotu s originálem:**
 
-#### ResultsList border-bottom (priorita: nízká - kosmetické)
-- [ ] **Originál:** Řádky NEMAJÍ border-bottom mezi sebou (spojité řádky)
-- [ ] **V2:** Řádky mají `border-bottom: 1px solid var(--color-bg-tertiary)`
-- **Poznámka:** Kosmetický rozdíl, V2 verze může být čitelnější
+#### ResultsList border-bottom (priorita: nízká - kosmetické) ✅ OK
+- [x] **Originál:** Řádky NEMAJÍ border-bottom mezi sebou (spojité řádky)
+- [x] **V2:** Řádky NEMAJÍ border-bottom - **SHODUJE SE S ORIGINÁLEM**
+- **Poznámka:** Verifikováno 2025-12-29 - v CSS není žádný border-bottom
 
-#### Penalty formát v ResultsList (priorita: nízká)
-- [ ] **Originál:** Penalty jako číslo bez jednotky (např. "0", "2", "6", "10", "56")
-- [ ] **V2:** Penalty jako číslo s "s" (např. "2s", "4s", "10s") nebo "-" pro 0
-- **Poznámka:** V2 je explicitnější, originál úspornější
+#### Penalty formát v ResultsList (priorita: nízká) ✅ OK
+- [x] **Originál:** Penalty jako číslo bez jednotky (např. "0", "2", "6", "10", "56")
+- [x] **V2:** Penalty jako číslo bez jednotky - **SHODUJE SE S ORIGINÁLEM**
+- **Poznámka:** Verifikováno 2025-12-29 - `ResultRow.tsx` zobrazuje `{result.pen}` bez suffixu
 
-#### Font-weight rank (priorita: nízká)
-- [ ] **Originál:** Rank má font-weight 700 (bold)
-- [ ] **V2:** Rank má font-weight 600 (semi-bold)
-- **Poznámka:** Mírný rozdíl, lze sjednotit
+#### Font-weight rank (priorita: nízká) ✅ OK
+- [x] **Originál:** Rank má font-weight 700 (bold)
+- [x] **V2:** Rank má font-weight 700 - **SHODUJE SE S ORIGINÁLEM**
+- **Poznámka:** Verifikováno 2025-12-29 - `ResultsList.module.css:75` má `font-weight: 700`
 
 #### Time formát (priorita: střední) ✅ OPRAVENO
 - [x] **Originál:** Čas ve formátu "43.08", "78.99", "324.24" (raw sekundy bez převodu na minuty)
@@ -574,16 +574,16 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
   - Gate badges zobrazují číslo brány s penalizací (2,3,4 = brány kde byla penalizace)
   - Total penalty badge: červený obdélník "54" (součet všech penalizací)
   - Čas závodníka vpravo: "689" (aktuální čas na trati)
-- [ ] **V2:** `9  KOPEČEK Michal  ►  TTB: J. KREJČÍ #8  PEN 0s`
-  - Bez gate badges pro jednotlivé brány
-  - PEN jako text, ne badge
-  - Nezobrazuje aktuální čas závodníka na trati
-- **Poznámka:** Strukturálně odlišný layout CurrentCompetitor komponenty
+- [ ] **V2:** `9  KOPEČEK Michal  ►  TTB: J. KREJČÍ #8  PEN 0`
+  - Má gate badges zobrazující hodnotu penalty (0,2,50)
+  - PEN jako text bez "s" suffixu - **OPRAVENO 2025-12-29**
+  - Zobrazuje čas závodníka (formattedTime)
+- **Poznámka:** Strukturálně odlišný layout, ale hlavní informace jsou zobrazeny
 
 #### Barva penalty badge v results (priorita: nízká - kosmetické)
 - [ ] **Originál:** Penalty jako číslo v šedém obdélníku (0, 2, 6, 10, 56, 106, 204, 206, 362)
-- [ ] **V2:** Penalty jako text s "s" (2s, 4s, 6s...) s barevným textem, bez badge
-- **Poznámka:** Funkčně ekvivalentní
+- [x] **V2:** Penalty jako číslo bez "s" suffixu - **OPRAVENO 2025-12-29**
+- **Poznámka:** Číslo shodné s originálem, jen bez badge pozadí (kosmetický rozdíl)
 
 #### TopBar layout (priorita: nízká)
 - [ ] **Originál:** Logo vlevo, Title uprostřed, CSK logo vpravo - vše v jednom řádku
@@ -619,18 +619,18 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
 
 #### Total penalty badge (priorita: střední)
 - [ ] **Originál:** Červený obdélník s číslem "106" (součet penalizací) vedle gate badges
-- [ ] **V2:** Text "PEN 0s" místo badge
-- **Poznámka:** Originál je vizuálně výraznější
+- [x] **V2:** Text "PEN 0" bez "s" suffixu - **OPRAVENO 2025-12-29**
+- **Poznámka:** Originál je vizuálně výraznější (badge vs text)
 
 #### TopBar čas (priorita: střední)
 - [ ] **Originál:** Zobrazuje aktuální čas "11:41:48" v pravé části TopBaru
 - [ ] **V2:** Nezobrazuje aktuální čas dne
 - **Poznámka:** V2 nemá implementovaný daytime display z CLI zprávy
 
-#### Penalty formát v results (priorita: nízká)
-- [ ] **Originál:** Penalty bez jednotky (4, 6, 8, 10)
-- [ ] **V2:** Penalty s jednotkou "s" (4s, 6s, 8s, 10s) nebo "-" pro 0
-- **Poznámka:** V2 je explicitnější
+#### Penalty formát v results (priorita: nízká) ✅ OPRAVENO
+- [x] **Originál:** Penalty bez jednotky (4, 6, 8, 10)
+- [x] **V2:** Penalty bez jednotky - **SHODUJE SE S ORIGINÁLEM**
+- **Poznámka:** Verifikováno 2025-12-29 - ResultRow i CurrentCompetitor bez "s" suffixu
 
 ### 🔍 Revize: Fáze 9
 
