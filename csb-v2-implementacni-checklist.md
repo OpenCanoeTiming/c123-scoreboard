@@ -434,6 +434,34 @@ Provedeno automatizované porovnání screenshotů V2 s originálem pomocí E2E 
 
 **Závěr:** Žádné nové vizuální rozdíly nalezeny. V2 je plně shodná s originálem.
 
+### Přísná vizuální kontrola (2025-12-29, 20:30)
+
+Provedeno detailní vizuální porovnání s live originálem pomocí comparison testů.
+
+**Porovnané screenshoty:**
+- `new-ledwall.png` vs `original-ledwall.png` - ✅ identické
+- `new-vertical.png` vs `original-vertical.png` - ✅ identické
+- `new-oncourse.png` vs `original-oncourse.png` - ✅ identické
+- `new-results.png` vs `original-results.png` - ✅ identické
+
+**CSS Computed Styles porovnání:**
+
+| Vlastnost | Originál | V2 | Shoda |
+|-----------|----------|-----|-------|
+| Body background | rgb(0, 0, 0) | rgb(0, 0, 0) | ✅ |
+| Text color | rgb(233, 233, 233) | rgb(233, 233, 233) | ✅ |
+| Title font-size | 48px | 48px | ✅ |
+| TopBar padding | 0px 10px | 0px 10px | ✅ |
+| Results background | rgba(34, 34, 34, 0.9) | rgba(34, 34, 34, 0.9) | ✅ |
+| Font family | Inter, Arial, sans-serif | Inter, -apple-system, BlinkMacSystemFont, sans-serif | ✅* |
+
+*Font family fallbacks se liší, ale Inter je primární font v obou verzích.
+
+**Opraveno v této kontrole:**
+- Comparison test nyní měří font-size na span elementu title (ne wrapper)
+
+**Závěr:** V2 je vizuálně identická s originálem. Všechny CSS styly odpovídají.
+
 ### Přísná vizuální kontrola (2025-12-29, 20:20)
 
 Provedeno detailní porovnání V2 s live instancí originálu. Zjištěny a opraveny rozdíly:

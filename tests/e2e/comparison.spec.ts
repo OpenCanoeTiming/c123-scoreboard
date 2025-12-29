@@ -335,7 +335,8 @@ test.describe('Metrics Comparison', () => {
         resultsList: getStyles('[data-testid="results-list"]'),
         oncourse: getStyles('[data-testid="oncourse"]'),
         topbar: getStyles('[data-testid="topbar"]'),
-        title: getStyles('[data-testid="title"]'),
+        // Use span inside title to get actual text styles (not wrapper)
+        title: getStyles('[data-testid="title"] span'),
       }
     })
 

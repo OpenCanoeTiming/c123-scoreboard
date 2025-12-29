@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-29T19:22:08.716Z",
+  "timestamp": "2025-12-29T19:30:44.615Z",
   "original": {
     "body": {
       "fontSize": "16px",
@@ -62,7 +62,7 @@
       "margin": "0px"
     },
     "title": {
-      "fontSize": "16px",
+      "fontSize": "48px",
       "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
       "color": "rgb(233, 233, 233)",
       "backgroundColor": "rgba(0, 0, 0, 0)",
