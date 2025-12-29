@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import styles from './OnCourseDisplay.module.css'
 import type { OnCourseCompetitor } from '@/types'
 import { formatName } from '@/utils/formatName'
-import { parseGates, type GatePenalty } from '@/providers/utils/parseGates'
+import { createGateClassGetter } from '@/utils/getGateClass'
+import { parseGates } from '@/providers/utils/parseGates'
 import { useLayout } from '@/hooks'
 
 /**
@@ -17,15 +18,7 @@ interface OnCourseDisplayProps {
   excludeBib?: string
 }
 
-/**
- * Get CSS class for gate penalty
- */
-function getGateClass(penalty: GatePenalty): string {
-  if (penalty === null) return ''
-  if (penalty === 0) return ''
-  if (penalty === 2) return styles.penalty2
-  return styles.penalty50 // 50
-}
+const getGateClass = createGateClassGetter(styles)
 
 /**
  * Filter out competitors with zero/invalid time
