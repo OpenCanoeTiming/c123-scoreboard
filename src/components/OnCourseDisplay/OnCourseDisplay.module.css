@@ -1,0 +1,214 @@
+/* OnCourseDisplay - Compact display of competitors on course */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+/* Single competitor row */
+.row {
+  display: grid;
+  align-items: center;
+  background-color: rgba(51, 102, 153, 0.2);
+  border-left: 3px solid var(--color-accent-yellow);
+  border-right: 1px solid var(--color-accent-yellow);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  height: 45px;
+  padding: 0;
+  margin: 0;
+}
+
+/* Running indicator - pulsing arrow */
+.runningIndicator {
+  position: absolute;
+  left: 5px;
+  color: var(--color-accent-yellow);
+  font-size: 14px;
+  text-shadow: 0 0 5px rgba(255, 196, 0, 0.7);
+  animation: pulseGlyph 1.5s infinite;
+  z-index: 1;
+}
+
+@keyframes pulseGlyph {
+  0% {
+    opacity: 0.7;
+    text-shadow: 0 0 3px rgba(255, 196, 0, 0.5);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(255, 196, 0, 0.8), 0 0 12px rgba(255, 196, 0, 0.4);
+  }
+  100% {
+    opacity: 0.7;
+    text-shadow: 0 0 3px rgba(255, 196, 0, 0.5);
+  }
+}
+
+/* Bib number */
+.bib {
+  text-align: center;
+  white-space: nowrap;
+  font-weight: bold;
+  font-family: var(--font-family-mono);
+}
+
+/* Competitor name */
+.name {
+  text-align: left;
+  padding-left: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-family: var(--font-family-primary);
+}
+
+/* Gates container */
+.gatesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+/* Gate penalty badge - shows gate number with penalty color */
+.gatePenalty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: 800;
+  margin-right: 2px;
+  border-radius: 4px;
+  opacity: 0.9;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.penalty2 {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 164, 0, 0.8);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.penalty50 {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 69, 99, 0.8);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Total penalty display */
+.pen {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 500;
+  padding: 0 10px;
+  margin-left: 5px;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  border-radius: var(--border-radius-sm);
+}
+
+.hasPenalty {
+  background-color: var(--color-error);
+}
+
+.noPenalty {
+  background-color: rgba(51, 153, 102, 0.8);
+  color: var(--color-text-secondary);
+}
+
+/* Time display */
+.total {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--color-accent-yellow);
+  padding: 0 15px;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* === VERTICAL LAYOUT === */
+.row.vertical {
+  grid-template-columns: 80px minmax(200px, 1fr) minmax(100px, auto) 160px;
+  height: 40px;
+}
+
+.row.vertical > div {
+  font-size: 32px;
+  padding: 0 10px;
+}
+
+.row.vertical .gatePenalty {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+}
+
+/* === LEDWALL LAYOUT === */
+.row.ledwall {
+  grid-template-columns: 80px minmax(200px, 1fr) minmax(100px, auto) 100px 45px;
+  height: 60px;
+  background-color: rgba(51, 102, 153, 0.2);
+}
+
+.row.ledwall .runningIndicator {
+  font-size: 14px;
+  left: 5px;
+  line-height: normal;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.row.ledwall > div {
+  font-size: 36px;
+  padding: 0 7px;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.row.ledwall .total {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-accent-yellow);
+}
+
+.row.ledwall .pen {
+  font-weight: 500;
+}
+
+.row.ledwall .name {
+  font-weight: 700;
+}
+
+.row.ledwall .gatePenalty {
+  width: 28px;
+  height: 28px;
+  font-size: 24px;
+  margin: 2px;
+}
+
+.row.ledwall .gatesContainer {
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 5px;
+  gap: 2px;
+}
+
+/* Reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+  .runningIndicator {
+    animation: none;
+    opacity: 1;
+  }
+}

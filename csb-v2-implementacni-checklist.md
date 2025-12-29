@@ -228,7 +228,11 @@
 ## Fáze 6: Rozšíření (volitelné)
 
 ### OnCourseDisplay
-- [ ] ❓ Rozhodnutí: Implementovat teď?
+- [x] ❓ Rozhodnutí: Implementovat teď? → **ANO**
+- [x] `src/components/OnCourseDisplay/OnCourseDisplay.tsx`
+- [x] `src/components/OnCourseDisplay/OnCourseDisplay.module.css`
+- [x] Integrace do App.tsx s ErrorBoundary
+- [x] Unit testy (31 testů)
 
 ### InfoText (Marquee)
 - [X] ❓ Rozhodnutí: Teď se nebude implementovat
@@ -390,8 +394,8 @@ Vertical: http://192.168.68.108:3000/?type=vertical&server=ws%3A%2F%2F192.168.68
 ### Build & testy
 
 ```
-Build:      ✅ Úspěšný (438 kB JS, 14 kB CSS)
-Unit testy: ✅ 551 testů (24 test suites)
+Build:      ✅ Úspěšný (442 kB JS, 18 kB CSS)
+Unit testy: ✅ 582 testů (25 test suites)
 E2E testy:  ✅ 67 testů (24 visual + 14 dynamic + 6 comparison + 9 performance + 14 CLI functional)
 Benchmarks: ✅ 29 performance benchmarků
 ESLint:     ✅ 0 errors
@@ -406,7 +410,7 @@ TypeScript: ✅ Strict mode
 | Providers (CLI, Replay) | 55 |
 | Provider utils (parseGates, detectFinish, validation) | 78 |
 | Hooks (useAutoScroll, useLayout, useHighlight) | 61 |
-| Components (ResultsList, CurrentCompetitor) | 65 |
+| Components (ResultsList, CurrentCompetitor, OnCourseDisplay) | 96 |
 | Context (ScoreboardContext) | 45 |
 | Contract tests | 35 |
 | Fuzz tests | 22 |

@@ -8,6 +8,7 @@ import {
   TopBar,
   Title,
   CurrentCompetitor,
+  OnCourseDisplay,
   ResultsList,
   TimeDisplay,
   Footer,
@@ -60,6 +61,7 @@ function ScoreboardContent() {
     dayTime,
     currentCompetitor,
     departingCompetitor,
+    onCourse,
     results,
     visibility,
     reconnect,
@@ -90,6 +92,15 @@ function ScoreboardContent() {
             competitor={currentCompetitor ?? departingCompetitor}
             visible={visibility.displayCurrent}
             isDeparting={!currentCompetitor && !!departingCompetitor}
+          />
+        </ErrorBoundary>
+
+        {/* On-course competitors (excluding current) */}
+        <ErrorBoundary componentName="OnCourseDisplay">
+          <OnCourseDisplay
+            competitors={onCourse}
+            visible={visibility.displayOnCourse}
+            excludeBib={currentCompetitor?.bib}
           />
         </ErrorBoundary>
 
