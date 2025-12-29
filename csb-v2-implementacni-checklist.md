@@ -1612,3 +1612,169 @@ npx playwright test --update-snapshots
 
 ---
 
+## Review v1.5 (2025-12-29) - Tag: `review-ready-v1.5`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 428 testů prochází (17 test suites)
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Závěr automatizované práce
+
+Všechny kroky, které lze provést automaticky (bez prohlížeče, bez přístupu k live serveru, bez fyzického hardware), byly dokončeny.
+
+**Statistika implementace:**
+- 17 test suites
+- 428 jednotkových testů
+- 77 TypeScript modulů
+- Build: 437 kB JS + 14 kB CSS (gzip: ~131 kB)
+
+### Zbývající kroky - vyžadují manuální práci
+
+| Kategorie | Počet | Důvod |
+|-----------|-------|-------|
+| Vizuální testování | ~25 | Prohlížeč + lidské oči |
+| Live server test | ~5 | CLI server 192.168.68.108 není přístupný |
+| Playwright E2E | ~4 | Chybí systémové závislosti (chromium) |
+| C123Provider | 3 | TCP socket nelze v prohlížeči |
+| Hardware test | ~4 | Fyzická zařízení (RPi, TV) |
+| Architekturální rozhodnutí | ~5 | Vyžaduje rozhodnutí uživatele |
+
+---
+
+## Další kroky pro vyladění funkčnosti (rozšířené testování)
+
+### A. Integrovaý testovací skript
+
+Vytvořit `scripts/run-all-tests.sh` který spustí všechny automatické testy:
+
+```bash
+#!/bin/bash
+echo "=== Canoe Scoreboard v2 - Test Suite ==="
+echo ""
+
+# 1. TypeScript check
+echo "1. TypeScript..."
+npx tsc --noEmit && echo "✅ TypeScript OK" || echo "❌ TypeScript FAILED"
+
+# 2. ESLint
+echo "2. ESLint..."
+npm run lint && echo "✅ ESLint OK" || echo "❌ ESLint FAILED"
+
+# 3. Unit testy
+echo "3. Unit testy..."
+npm test -- --reporter=dot && echo "✅ Unit testy OK" || echo "❌ Unit testy FAILED"
+
+# 4. Build
+echo "4. Build..."
+npm run build && echo "✅ Build OK" || echo "❌ Build FAILED"
+
+echo ""
+echo "=== Test Suite dokončen ==="
+```
+
+### B. Performance benchmark testy
+
+- [ ] `src/__tests__/performance/ResultsList.bench.ts`
+  - Měřit render time pro 10, 50, 100, 200 položek
+  - Cíl: < 16ms pro 60fps
+
+- [ ] `src/__tests__/performance/ReplayProvider.bench.ts`
+  - Měřit throughput zpracování zpráv
+  - Cíl: > 1000 zpráv/s
+
+### C. Snapshot regression testy
+
+- [ ] Přidat React Testing Library snapshot testy pro stabilní komponenty
+- [ ] `src/components/__tests__/snapshots/*.test.tsx`
+  - ResultRow snapshot
+  - CurrentCompetitor snapshot (různé stavy)
+  - Footer snapshot
+
+### D. Contract testy pro WebSocket zprávy
+
+- [ ] `src/providers/__tests__/contracts/`
+  - Definovat JSON schema pro každý typ zprávy
+  - Validovat vzorové zprávy z recordings
+  - Detekovat regrese v message formátu
+
+### E. Chaos engineering testy
+
+- [ ] `src/providers/__tests__/chaos/`
+  - Test: náhodné disconnecty během playbacku
+  - Test: zprávy přicházejí v nesprávném pořadí
+  - Test: duplicitní zprávy
+  - Test: velmi velké payloady (10MB)
+  - Test: prázdné payloady
+
+### F. Accessibility audit
+
+- [ ] Implementovat axe-core do testů
+- [ ] `npm install -D @axe-core/react`
+- [ ] Přidat accessibility testy pro hlavní komponenty
+- [ ] Zkontrolovat WCAG 2.1 AA compliance
+
+### G. Browser compatibility matrix
+
+Otestovat manuálně v:
+- [ ] Chrome 120+ (primární cíl)
+- [ ] Firefox 120+
+- [ ] Safari 17+ (pokud dostupný)
+- [ ] Edge 120+
+- [ ] Chromium na Raspberry Pi OS
+
+### H. Stress test scénáře (manuální)
+
+1. **Dlouhodobý běh**
+   - Nechat aplikaci běžet 24h s replay na loop
+   - Sledovat memory usage (DevTools Memory tab)
+   - Cíl: žádný memory leak > 10MB/h
+
+2. **Rychlé přepínání**
+   - Přepínat mezi vertical/ledwall 100x
+   - Žádné vizuální artefakty
+   - Layout se správně přepočítá
+
+3. **Network conditions**
+   - DevTools → Network → Slow 3G
+   - Replay stále plynulý
+   - Reconnect funguje
+
+---
+
+## Doporučení pro produkční nasazení
+
+### Před nasazením
+
+1. **Vizuální QA checklist:**
+   - [ ] Porovnat všechny komponenty s reference screenshoty
+   - [ ] Ověřit čitelnost na skutečném TV/LED panelu
+   - [ ] Zkontrolovat barvy na kalibrovaném monitoru
+
+2. **Performance checklist:**
+   - [ ] Ověřit 60fps na Raspberry Pi
+   - [ ] Změřit memory usage po 1h běhu
+   - [ ] Ověřit CPU usage < 50% při idle
+
+3. **Reliability checklist:**
+   - [ ] Otestovat 100 reconnectů
+   - [ ] Ověřit graceful degradation při network issues
+   - [ ] Zkontrolovat error boundary funguje
+
+### Po nasazení
+
+1. **Monitoring:**
+   - [ ] Nastavit health check endpoint
+   - [ ] Logovat connection events
+   - [ ] Sledovat error rate
+
+2. **Rollback plán:**
+   - [ ] Mít připravenou předchozí verzi
+   - [ ] Dokumentovat rollback postup
+
+---
+
