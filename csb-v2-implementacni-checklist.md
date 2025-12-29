@@ -430,7 +430,7 @@ Tohle je seznam k dalšímu postupnému opravování a zapracování:
  - [x] na ledwall vytékají třímístné bibs (trochu už i dvoumístné) z toho podbarveného boxu v rsults a desetinná místa výsledného času většího než 100s (třímístné vteřiny) doprava z obrazovky, na vertical je oboje v pohodě, formátování bib box (proporčně) by šlo převzít z vertical do ledwall. **OPRAVENO** - bib font zmenšen na 22px (jako originál), time sloupec rozšířen na 130px
  - [x] běžící čas závodníka oncourse je na ledwall nějak disproporčně malý - **OPRAVENO** (font-size zvýšen z 24px na 32px v CurrentCompetitor a OnCourseDisplay)
  - [x] scrollování (autoscorll) jde hroozně pomalu na vertical i ledwall, úplně chybí takový ten švih, který měla originální verze. Striktně zreplikovat autoscroll chování původní verze!! **OPRAVENO** - přepsáno na page-based scrollování jako originál: ledwall pageInterval=3s, vertical=12s, smooth scroll animace
- - [ ] autoscroll na ledwall se nepotlačí, když jede závodník
+ - [x] autoscroll na ledwall se nepotlačí, když jede závodník **OPRAVENO** - přidána kontrola na currentCompetitor a onCourse, autoscroll se na ledwallu zastaví když je někdo na trati
  - [ ] vůbec jsem nezaznamenal higlight závodníka ve výsledcích po jeho dojezdu, ani na jednom layoutu
  - [ ] řádky results jsou na ledwall i vertical nešikovně vertikálně zarovnané, nebo spíš to pruhování na pozadí results není ideálně zarovnané s obsahem results, který je jakoby trochu níž
  - [ ] záhlaví vertical je moc vysoké, název akce je jakoby odsazený dolu. Myslím že kdyby title prostě překrýval topbar nebo byl jeho součástí, tak je to správně. Na ledwall je to v pohodě.

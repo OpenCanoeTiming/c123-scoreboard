@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { useHighlight } from './useHighlight'
 import { useLayout } from './useLayout'
+import { useScoreboard } from '@/context/ScoreboardContext'
 
 /**
  * Auto-scroll phases (matching original v1)
@@ -106,6 +107,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Get layout for config
   const { layoutMode, rowHeight } = useLayout()
 
+  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is on course
+  const { currentCompetitor, onCourse } = useScoreboard()
+  const hasActiveCompetitor = layoutMode === 'ledwall' && (currentCompetitor !== null || onCourse.length > 0)
+
   // Get layout-specific scroll config
   const scrollConfig = SCROLL_CONFIG[layoutMode]
 
@@ -208,8 +213,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
   /**
    * Determine if scrolling should be active
+   * Original v1: on ledwall, scroll pauses when competitor is on course
    */
-  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion
+  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActiveCompetitor
 
   /**
    * Handle highlight - scroll to highlighted row

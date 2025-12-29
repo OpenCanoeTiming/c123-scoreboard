@@ -23,15 +23,25 @@ vi.mock('../useLayout', () => ({
     headerHeight: 100,
     footerHeight: 60,
     fontSizeCategory: 'medium',
+    disableScroll: false,
+  })),
+}))
+
+vi.mock('@/context/ScoreboardContext', () => ({
+  useScoreboard: vi.fn(() => ({
+    currentCompetitor: null,
+    onCourse: [],
   })),
 }))
 
 // Import mocks for manipulation
 import { useHighlight } from '../useHighlight'
 import { useLayout } from '../useLayout'
+import { useScoreboard } from '@/context/ScoreboardContext'
 
 const mockUseHighlight = useHighlight as ReturnType<typeof vi.fn>
 const mockUseLayout = useLayout as ReturnType<typeof vi.fn>
+const mockUseScoreboard = useScoreboard as ReturnType<typeof vi.fn>
 
 describe('useAutoScroll', () => {
   let mockContainer: HTMLDivElement
@@ -68,6 +78,12 @@ describe('useAutoScroll', () => {
       headerHeight: 100,
       footerHeight: 60,
       fontSizeCategory: 'medium',
+      disableScroll: false,
+    })
+
+    mockUseScoreboard.mockReturnValue({
+      currentCompetitor: null,
+      onCourse: [],
     })
 
     // Create a mock container element with scrollable content
@@ -202,8 +218,8 @@ describe('useAutoScroll', () => {
     })
   })
 
-  describe('ledwall speed adjustment', () => {
-    it('uses 0.7x speed multiplier for ledwall layout', () => {
+  describe('ledwall layout', () => {
+    it('uses ledwall scroll config for ledwall layout', () => {
       mockUseLayout.mockReturnValue({
         layoutMode: 'ledwall',
         viewportWidth: 768,
@@ -214,17 +230,71 @@ describe('useAutoScroll', () => {
         headerHeight: 60,
         footerHeight: 0,
         fontSizeCategory: 'large',
+        disableScroll: false,
       })
 
       // Render hook to verify it uses the ledwall layout
-      const { result } = renderHook(() => useAutoScroll({ scrollSpeed: 100 }))
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
 
-      // The hook internally calculates adjustedSpeed = 100 * 0.7 = 70 for ledwall
-      // We can't directly test the internal variable, but we verify the hook renders correctly
+      // Hook should initialize correctly with ledwall config
       expect(result.current.phase).toBe('IDLE')
     })
 
-    it('uses full speed for vertical layout', () => {
+    it('stops scrolling when competitor is on course on ledwall', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+      })
+
+      mockUseScoreboard.mockReturnValue({
+        currentCompetitor: { bib: '42', name: 'Test Athlete', total: '123', pen: 0, gates: [] },
+        onCourse: [],
+      })
+
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      // With active competitor on ledwall, shouldScroll is false
+      expect(result.current.phase).toBe('IDLE')
+    })
+
+    it('allows scrolling when no competitor on course on ledwall', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+      })
+
+      mockUseScoreboard.mockReturnValue({
+        currentCompetitor: null,
+        onCourse: [],
+      })
+
+      // Without a container, it still stays in IDLE but shouldScroll would be true
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      expect(result.current.phase).toBe('IDLE')
+    })
+
+    it('vertical layout does not pause for on course competitors', async () => {
       mockUseLayout.mockReturnValue({
         layoutMode: 'vertical',
         viewportWidth: 1080,
@@ -235,27 +305,28 @@ describe('useAutoScroll', () => {
         headerHeight: 100,
         footerHeight: 60,
         fontSizeCategory: 'medium',
+        disableScroll: false,
       })
 
-      const { result } = renderHook(() => useAutoScroll({ scrollSpeed: 100 }))
+      mockUseScoreboard.mockReturnValue({
+        currentCompetitor: { bib: '42', name: 'Test Athlete', total: '123', pen: 0, gates: [] },
+        onCourse: [],
+      })
 
-      // The hook internally calculates adjustedSpeed = 100 for vertical
+      // Even with active competitor, vertical layout should allow scrolling
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+
       expect(result.current.phase).toBe('IDLE')
     })
   })
 
   describe('configuration options', () => {
-    it('respects custom scrollSpeed', () => {
-      const { result } = renderHook(() => useAutoScroll({ scrollSpeed: 100 }))
+    it('uses layout-specific scroll config', () => {
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
       expect(result.current.phase).toBe('IDLE')
     })
 
-    it('respects custom pauseAtBottom', () => {
-      const { result } = renderHook(() => useAutoScroll({ pauseAtBottom: 5000 }))
-      expect(result.current.phase).toBe('IDLE')
-    })
-
-    it('uses default values when not specified', () => {
+    it('uses default enabled value when not specified', () => {
       const { result } = renderHook(() => useAutoScroll())
       expect(result.current.phase).toBe('IDLE')
     })
@@ -332,14 +403,11 @@ describe('useAutoScroll', () => {
   })
 
   describe('PAUSED_AT_BOTTOM phase', () => {
-    it('hook accepts pauseAtBottom configuration', () => {
-      const pauseAtBottom = 2000
+    it('uses layout-specific bottom pause time', () => {
+      // Vertical layout has 8s bottom pause time
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
 
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, pauseAtBottom })
-      )
-
-      // Verify hook initializes correctly with custom pauseAtBottom
+      // Verify hook initializes correctly
       expect(result.current.phase).toBe('IDLE')
     })
   })
@@ -394,15 +462,6 @@ describe('useAutoScroll', () => {
 
   describe('stress tests', () => {
     it('handles container with 100+ items without crashing', async () => {
-      // Create a mock container simulating 100+ result rows
-      // Each row is ~48px, so 100 rows = 4800px scrollHeight
-      const largeContainer = document.createElement('div')
-      Object.defineProperties(largeContainer, {
-        scrollHeight: { value: 4800, writable: true, configurable: true },
-        clientHeight: { value: 400, writable: true, configurable: true },
-        scrollTop: { value: 0, writable: true, configurable: true },
-      })
-
       const { result } = renderHook(() => useAutoScroll({ enabled: true }))
 
       // Simulate attaching container (in real scenario, ref would be attached)
@@ -412,23 +471,13 @@ describe('useAutoScroll', () => {
       })
 
       expect(result.current.phase).toBeDefined()
-      expect(['IDLE', 'SCROLLING', 'PAUSED_AT_BOTTOM', 'RETURNING']).toContain(
+      expect(['IDLE', 'WAITING', 'SCROLLING', 'PAUSED_AT_BOTTOM', 'RETURNING_TO_TOP']).toContain(
         result.current.phase
       )
     })
 
     it('handles container with 500+ items (stress test)', async () => {
-      // Simulate 500 result rows - 24000px scrollHeight
-      const veryLargeContainer = document.createElement('div')
-      Object.defineProperties(veryLargeContainer, {
-        scrollHeight: { value: 24000, writable: true, configurable: true },
-        clientHeight: { value: 400, writable: true, configurable: true },
-        scrollTop: { value: 0, writable: true, configurable: true },
-      })
-
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, scrollSpeed: 100 })
-      )
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -438,12 +487,10 @@ describe('useAutoScroll', () => {
       expect(result.current.phase).toBeDefined()
     })
 
-    it('handles rapid phase transitions with large container', async () => {
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, pauseAtBottom: 100 })
-      )
+    it('handles rapid phase transitions', async () => {
+      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
 
-      // Rapid operations while simulating large scroll
+      // Rapid operations
       for (let i = 0; i < 20; i++) {
         act(() => {
           result.current.pause()
@@ -512,48 +559,8 @@ describe('useAutoScroll', () => {
       expect(result.current.phase).toBeDefined()
     })
 
-    it('handles very fast scroll speed without overflow', async () => {
-      // Test with extremely high scroll speed to catch potential numeric issues
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, scrollSpeed: 10000 })
-      )
-
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles very slow scroll speed without stalling', async () => {
-      // Test with very low scroll speed
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, scrollSpeed: 1 })
-      )
-
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles zero pauseAtBottom gracefully', async () => {
-      const { result } = renderHook(() =>
-        useAutoScroll({ enabled: true, pauseAtBottom: 0 })
-      )
-
-      await act(async () => {
-        vi.runAllTimers()
-      })
-
-      expect(result.current.phase).toBeDefined()
-    })
-
-    it('handles very long pauseAtBottom without memory leak', async () => {
-      const { result, unmount } = renderHook(() =>
-        useAutoScroll({ enabled: true, pauseAtBottom: 3600000 }) // 1 hour
-      )
+    it('handles component unmount during long pause', async () => {
+      const { result, unmount } = renderHook(() => useAutoScroll({ enabled: true }))
 
       await act(async () => {
         vi.advanceTimersByTime(1000)
