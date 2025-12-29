@@ -2009,6 +2009,53 @@ Všechny kroky v checklistu, které lze provést automaticky bez prohlížeče, 
 
 ---
 
+## Review v2.0 (2025-12-29) - Tag: `review-ready-v2.0`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Unit testy: ✅ 463 testů prochází (18 test suites)
+Benchmarks: ✅ 29 performance benchmarků
+ESLint:     ✅ 0 errors, 5 warnings
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Oprava ESLint chyb**
+   - Opraveny `prefer-const` chyby v `ResultsList.bench.ts`
+   - ESLint nyní hlásí 0 chyb (pouze 5 varování o fast refresh)
+
+### Analýza zbývajících nesplněných kroků
+
+Po důkladné analýze checklistu - **všechny zbývající nesplněné kroky vyžadují manuální práci člověka**:
+
+| Kategorie | Počet | Proč nelze automatizovat |
+|-----------|-------|--------------------------|
+| **Vizuální testování** | ~45 | Vyžaduje prohlížeč + lidské oči pro porovnání s reference screenshoty |
+| **Live server test** | ~10 | CLI server 192.168.68.108 není přístupný z tohoto prostředí |
+| **Playwright E2E** | ~5 | Chybí systémové závislosti (chromium, fonty) |
+| **C123Provider** | 3 | TCP socket nelze v browser JS - technicky nemožné |
+| **Hardware test** | ~5 | Fyzická zařízení (Raspberry Pi, TV/LED panel) |
+| **Architekturální rozhodnutí** | ~5 | Rozdělení Context, schema validace - vyžaduje rozhodnutí uživatele |
+
+### Poznámka k implementovaným ale neoznačeným položkám
+
+Některé položky v checklistu jsou technicky splněné ale neoznačené kvůli chybějícímu vizuálnímu ověření:
+
+- **@keyframes pulseGlyph** - ✅ Implementováno v `CurrentCompetitor.module.css:91-98`
+- **@keyframes subtlePulse** - ✅ Implementováno v `ResultsList.module.css:68-75`
+- **CSS transitions** - ✅ Implementováno (opacity, transform transitions)
+- **Scroll k highlight** - ✅ Implementováno v `ResultsList.tsx` (scrollIntoView)
+- **Auto-scroll** - ✅ Implementováno s 25 testy v useAutoScroll hook
+
+### Závěr
+
+Codebase je připravena na manuální vizuální review a testování v prohlížeči. Všechny automatizovatelné kroky byly dokončeny.
+
+---
+
 ## Review v1.9 (2025-12-29) - Tag: `review-ready-v1.9`
 
 ### Stav projektu

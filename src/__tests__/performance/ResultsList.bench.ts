@@ -13,8 +13,8 @@ import React from 'react'
 import type { Result } from '@/types'
 
 // Mock hooks to isolate component rendering performance
-let mockUseHighlight = { highlightBib: null as string | null, isActive: false, timeRemaining: 0 }
-let mockUseLayout = {
+const mockUseHighlight = { highlightBib: null as string | null, isActive: false, timeRemaining: 0 }
+const mockUseLayout = {
   layoutMode: 'vertical' as 'vertical' | 'ledwall',
   visibleRows: 10,
   rowHeight: 48,
