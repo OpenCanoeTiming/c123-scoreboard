@@ -146,10 +146,23 @@
   scroll-margin-bottom: calc(var(--row-height) * 2);
 }
 
-/* Ledwall layout - adjust grid for hidden columns */
-/* Ledwall grid: 80px 40px 1fr 100px (4 columns - pen/behind hidden) per analysis/06-styly.md */
-@container (max-width: 600px) {
-  .row {
-    grid-template-columns: 80px 40px 1fr 100px;
-  }
+/* Ledwall layout - adjust grid for hidden behind column */
+/* Ledwall grid: 80px 40px 1fr 40px 100px (5 columns - behind hidden) per original v1 */
+.row.ledwall {
+  grid-template-columns: 80px 40px 1fr 40px 100px;
+  gap: var(--spacing-md);  /* Larger gap for ledwall visibility */
+  height: 56px;
+}
+
+/* Ledwall font sizes - larger for visibility */
+.row.ledwall .rank,
+.row.ledwall .bib,
+.row.ledwall .name,
+.row.ledwall .time {
+  font-size: 36px;
+}
+
+.row.ledwall .penalty {
+  font-size: 22px;
+  padding: 2px 4px;
 }

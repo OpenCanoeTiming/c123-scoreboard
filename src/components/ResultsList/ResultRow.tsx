@@ -11,10 +11,12 @@ interface ResultRowProps {
   result: Result
   /** Whether this row is highlighted (recently finished competitor) */
   isHighlighted?: boolean
-  /** Whether to show the penalty column (hidden on ledwall) */
+  /** Whether to show the penalty column */
   showPenalty?: boolean
   /** Whether to show the behind column (hidden on ledwall) */
   showBehind?: boolean
+  /** Layout mode for CSS grid adjustment */
+  layoutMode?: 'vertical' | 'ledwall'
 }
 
 /**
@@ -57,10 +59,14 @@ function formatBehind(behind: string): string {
  */
 export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
   function ResultRow(
-    { result, isHighlighted = false, showPenalty = true, showBehind = true },
+    { result, isHighlighted = false, showPenalty = true, showBehind = true, layoutMode = 'vertical' },
     ref
   ) {
-    const rowClasses = [styles.row, isHighlighted && styles.highlighted]
+    const rowClasses = [
+      styles.row,
+      isHighlighted && styles.highlighted,
+      layoutMode === 'ledwall' && styles.ledwall,
+    ]
       .filter(Boolean)
       .join(' ')
 

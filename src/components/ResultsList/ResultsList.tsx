@@ -27,7 +27,7 @@ interface ResultsListProps {
  *
  * Responsive behavior:
  * - Vertical layout: all columns visible
- * - Ledwall layout: penalty and behind columns hidden
+ * - Ledwall layout: behind column hidden (matches original v1)
  *
  * @example
  * ```tsx
@@ -41,7 +41,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const highlightedRowRef = useRef<HTMLDivElement>(null)
 
   const { highlightBib, isActive } = useHighlight()
-  const { disableScroll } = useLayout()
+  const { disableScroll, layoutMode } = useLayout()
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
@@ -52,9 +52,9 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   })
 
   // Whether to show optional columns based on layout
-  // Original v1 shows penalty and behind columns on BOTH vertical and ledwall
+  // Original v1 shows penalty column on both layouts, but hides behind in ledwall
   const showPenalty = true
-  const showBehind = true
+  const showBehind = layoutMode !== 'ledwall'
 
   // Container classes
   const containerClasses = [styles.container, !visible && styles.hidden]
@@ -112,6 +112,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
             isHighlighted={isHighlighted}
             showPenalty={showPenalty}
             showBehind={showBehind}
+            layoutMode={layoutMode}
           />
         )
       })}

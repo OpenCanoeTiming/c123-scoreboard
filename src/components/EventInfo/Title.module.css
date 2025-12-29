@@ -30,6 +30,9 @@
 
 .ledwall {
   padding: var(--spacing-xs) var(--spacing-md);
+  /* In ledwall, title is left-aligned with space for time on right */
+  justify-content: flex-start;
+  padding-left: 80px;  /* Space for left logo */
 }
 
 .ledwall .text {
