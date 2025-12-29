@@ -138,13 +138,13 @@ Zdrojové soubory: `../canoe-scoreboard-original/default-assets/`
 - [x] Aktualizovat Footer - načítat `/assets/footer.png`
 - [x] Placeholder texty zobrazeny jen když není imageUrl
 
-### 9.11 Penalty badge styling v results
+### 9.11 Penalty badge styling v results ✅
 
 **Originál má penalty v šedém obdélníku**
 
-- [ ] Přidat background pro penalty cell v ResultsList
-- [ ] Barva: `rgba(34, 34, 34, 0.9)`
-- [ ] Border-radius: 4px
+- [x] Přidat background pro penalty cell v ResultsList
+- [x] Barva: `rgba(34, 34, 34, 0.9)`
+- [x] Border-radius: 4px
 
 ### 9.12 Total penalty badge vedle gate badges
 
