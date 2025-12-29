@@ -370,6 +370,43 @@ Provedeno detailní porovnání aktuálních V2 screenshotů s referenčními sc
 
 **Závěr:** Žádné nové vizuální rozdíly nebyly nalezeny. V2 je vizuálně identická s originálem.
 
+### Přísná vizuální kontrola (2025-12-29, 19:45)
+
+Provedeno detailní porovnání V2 s referenčními screenshoty a live instancí originálu.
+
+**Porovnané soubory:**
+- `tests/e2e/comparison-screenshots/new-*.png` vs `original-*.png`
+- `analysis/reference-screenshots/original-live-*.png`
+
+**Results List - detailní porovnání:**
+| Aspekt | V2 | Originál | Shoda |
+|--------|-----|----------|-------|
+| Rank formát | "1." "2." | "1." "2." | ✅ |
+| Bib číslo | 13, 9, 1... | 13, 9, 1... | ✅ |
+| Jméno formát | GALUŠKA Zdeněk | GALUŠKA Zdeněk | ✅ |
+| Penalty badge | Zelená 0, červená jinak | Zelená 0, červená jinak | ✅ |
+| Čas formát | 33.00, 57.20 | 33.00, 57.20 | ✅ |
+| Behind formát | +24.20 | +24.20 | ✅ |
+| Alternující barvy | #1d1d1d / #111111 | #1d1d1d / #111111 | ✅ |
+
+**OnCourse/CurrentCompetitor - detailní porovnání:**
+| Aspekt | V2 | Originál | Shoda |
+|--------|-----|----------|-------|
+| Žlutý trojúhelník | ✅ | ✅ | ✅ |
+| Bib pozice | Vlevo | Vlevo | ✅ |
+| Gate badges | Čísla branek, žlutá/červená | Čísla branek, žlutá/červená | ✅ |
+| Total penalty | Červený obdélník | Červený obdélník | ✅ |
+| Živý čas | Vpravo, žlutá | Vpravo, žlutá | ✅ |
+
+**CSS Computed Styles:**
+- Body background: rgb(0, 0, 0) ✅
+- Text color: rgb(233, 233, 233) ✅
+- Results background: rgba(34, 34, 34, 0.9) ✅
+- OnCourse background: rgba(18, 18, 18, 0.7) ✅
+- Title font-size: 48px ✅
+
+**Závěr:** V2 je vizuálně identická s originálem. Všechny komponenty, barvy a rozměry odpovídají.
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
