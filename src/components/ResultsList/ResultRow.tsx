@@ -71,7 +71,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
       .join(' ')
 
     return (
-      <div ref={ref} className={rowClasses}>
+      <div ref={ref} className={rowClasses} data-bib={result.bib}>
         <div className={styles.rank}>{result.rank}.</div>
         <div className={styles.bib}>{result.bib}</div>
         <div className={styles.name}>{formatName(result.name)}</div>

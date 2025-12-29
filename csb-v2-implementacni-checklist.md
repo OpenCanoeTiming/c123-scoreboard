@@ -429,7 +429,7 @@ Tohle je seznam k dalšímu postupnému opravování a zapracování:
  - [x] Connection status předělat na drobnou tečku vpravo nahoře jako v originálu - jen mění barvy nebo poblikává
  - [x] na ledwall vytékají třímístné bibs (trochu už i dvoumístné) z toho podbarveného boxu v rsults a desetinná místa výsledného času většího než 100s (třímístné vteřiny) doprava z obrazovky, na vertical je oboje v pohodě, formátování bib box (proporčně) by šlo převzít z vertical do ledwall. **OPRAVENO** - bib font zmenšen na 22px (jako originál), time sloupec rozšířen na 130px
  - [x] běžící čas závodníka oncourse je na ledwall nějak disproporčně malý - **OPRAVENO** (font-size zvýšen z 24px na 32px v CurrentCompetitor a OnCourseDisplay)
- - [ ] scrollování (autoscorll) jde hroozně pomalu na vertical i ledwall, úplně chybí takový ten švih, který měla originální verze. Striktně zreplikovat autoscroll chování původní verze!!
+ - [x] scrollování (autoscorll) jde hroozně pomalu na vertical i ledwall, úplně chybí takový ten švih, který měla originální verze. Striktně zreplikovat autoscroll chování původní verze!! **OPRAVENO** - přepsáno na page-based scrollování jako originál: ledwall pageInterval=3s, vertical=12s, smooth scroll animace
  - [ ] autoscroll na ledwall se nepotlačí, když jede závodník
  - [ ] vůbec jsem nezaznamenal higlight závodníka ve výsledcích po jeho dojezdu, ani na jednom layoutu
  - [ ] řádky results jsou na ledwall i vertical nešikovně vertikálně zarovnané, nebo spíš to pruhování na pozadí results není ideálně zarovnané s obsahem results, který je jakoby trochu níž

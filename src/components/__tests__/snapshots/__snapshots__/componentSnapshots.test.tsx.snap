@@ -25,6 +25,7 @@ exports[`Component Snapshots > ResultRow > renders basic result row 1`] = `
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -63,6 +64,7 @@ exports[`Component Snapshots > ResultRow > renders highlighted result row 1`] = 
 <div>
   <div
     class="_row_ec9a59 _highlighted_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -101,6 +103,7 @@ exports[`Component Snapshots > ResultRow > renders result with 2s penalty (touch
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -139,6 +142,7 @@ exports[`Component Snapshots > ResultRow > renders result with 50s penalty (miss
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -177,6 +181,7 @@ exports[`Component Snapshots > ResultRow > renders result with behind time 1`] =
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -217,6 +222,7 @@ exports[`Component Snapshots > ResultRow > renders result with high time (over 1
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -255,6 +261,7 @@ exports[`Component Snapshots > ResultRow > renders result with long name (trunca
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -293,6 +300,7 @@ exports[`Component Snapshots > ResultRow > renders result with zero penalty 1`] 
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -331,6 +339,7 @@ exports[`Component Snapshots > ResultRow > renders result without behind column 
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -366,6 +375,7 @@ exports[`Component Snapshots > ResultRow > renders result without penalty column
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"

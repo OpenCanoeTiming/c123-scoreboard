@@ -4,6 +4,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - highlighte
 <div>
   <div
     class="_row_ec9a59 _highlighted_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -42,6 +43,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - leader (no
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -80,6 +82,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - with behin
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="15"
   >
     <div
       class="_rank_ec9a59"
@@ -120,6 +123,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - behin
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -155,6 +159,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - both 
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -185,6 +190,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - penal
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -218,6 +224,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - long na
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -256,6 +263,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - short n
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -294,6 +302,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 2s touch
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -332,6 +341,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 4s doubl
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -370,6 +380,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 50s miss
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -408,6 +419,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 52s comb
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -446,6 +458,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 100s mul
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
@@ -484,6 +497,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - zero pen
 <div>
   <div
     class="_row_ec9a59"
+    data-bib="42"
   >
     <div
       class="_rank_ec9a59"
