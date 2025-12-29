@@ -22,8 +22,8 @@
 .ledwall {
   font-size: 32px;  /* Matches original v1 ledwall */
   font-weight: 500;  /* Matches original v1 */
-  top: 16px;  /* Position in header/title area - matches original v1 */
-  right: 80px;  /* Position before partner logo - matches original v1 */
+  top: 20px;  /* Position in header/title area - matches original v1 */
+  right: 100px;  /* Position before partner logo - matches original v1 */
   left: auto;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   color: var(--color-accent-yellow);  /* Yellow accent - matches original v1 */

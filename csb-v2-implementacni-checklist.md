@@ -217,7 +217,7 @@ Porovnání V2 s referenčními screenshoty z `../analysis/reference-screenshots
 - [x] **Commit:** "fix: improve ledwall layout styling" (1a255a2)
 
 **Známé rozdíly (nízká priorita):**
-- [x] TimeDisplay pozicování v ledwall - opraveno (font-size 32px, yellow, right 80px)
+- [x] TimeDisplay pozicování v ledwall - opraveno (font-size 32px, yellow, right 100px, top 20px)
 - [ ] CurrentCompetitor/OnCourse vizuální sladění s originálem (závisí na datech)
 
 ---
@@ -247,7 +247,7 @@ Reference: Live originál na `http://192.168.68.108:3000` - je k dispozici pro p
 **Zjištěné rozdíly k opravě:**
 - [x] Ledwall: Chybí behind column v results - **OPRAVENO** (behind skryt v ledwall, shodné s originálem)
 - [x] Ledwall: Větší gap mezi sloupci - **OPRAVENO** (gap: --spacing-md)
-- [ ] Ledwall: TimeDisplay překrývá část titulku (pozicování vyžaduje další ladění)
+- [x] Ledwall: TimeDisplay překrývá část titulku - **OPRAVENO** (right: 100px, top: 20px dle originálu)
 - [~] Ledwall: Title nezobrazuje kategorii (":K1M") - částečně, závisí na načasování dat
 
 ### 10.2 Funkční testování s CLI serverem
