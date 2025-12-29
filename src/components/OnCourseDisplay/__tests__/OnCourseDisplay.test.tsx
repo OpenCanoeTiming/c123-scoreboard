@@ -130,6 +130,33 @@ describe('OnCourseDisplay', () => {
       expect(screen.getByText('103')).toBeInTheDocument()
     })
 
+    it('renders nothing when single competitor is excluded', () => {
+      // This verifies behavior: when there's only 1 competitor on course
+      // and they are the currentCompetitor (shown in CurrentCompetitor component),
+      // OnCourseDisplay should render nothing
+      const competitors = [createCompetitor({ bib: '42' })]
+      const { container } = render(
+        <OnCourseDisplay competitors={competitors} excludeBib="42" />
+      )
+
+      expect(container.firstChild).toBeNull()
+    })
+
+    it('renders remaining competitors when current is excluded from multiple', () => {
+      // When there are 2+ competitors and one is the current (excluded),
+      // OnCourseDisplay should show the remaining competitors
+      const competitors = [
+        createCompetitor({ bib: '101', name: 'FIRST Competitor', pen: 0, gates: '' }),
+        createCompetitor({ bib: '102', name: 'SECOND Competitor', pen: 0, gates: '' }),
+      ]
+      render(<OnCourseDisplay competitors={competitors} excludeBib="101" />)
+
+      const rows = screen.getAllByTestId('oncourse-row')
+      expect(rows.length).toBe(1)
+      expect(screen.queryByText('101')).not.toBeInTheDocument()
+      expect(screen.getByText('102')).toBeInTheDocument()
+    })
+
     it('filters out competitors with zero time', () => {
       const competitors = [
         createCompetitor({ bib: '1', total: '95.50' }),

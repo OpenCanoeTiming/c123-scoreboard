@@ -44,7 +44,7 @@
 ### Aktuální stav testů
 ```
 Build:      ✅ Úspěšný (442 kB JS, 18 kB CSS)
-Unit testy: ✅ 582 testů (25 test suites)
+Unit testy: ✅ 570 testů (25 test suites)
 E2E testy:  ✅ 67 testů
 Benchmarks: ✅ 29 performance benchmarků
 ```
@@ -167,26 +167,24 @@ Testovat na **768×384** (`?type=ledwall&ledwallExactSize=true`)
 - [x] Scrollbar skrytý (přidáno CSS pro skrytí scrollbaru)
 - [x] Minimální spacing mezi komponenty (padding: 5px 0 0, gap: 0)
 
-### 9.14 CurrentCompetitor layout - sjednocení s originálem
+### 9.14 CurrentCompetitor layout - sjednocení s originálem ✅
 
 **Originál má jednořádkový layout:** Bib | Name | Gates+Penalty | Total
 
-V2 má víceřádkový: hlavní řádek + TTB řádek + penalties řádek
+- [x] Refaktorovat CurrentCompetitor na jednořádkový layout jako originál
+- [x] Bib vlevo (se žlutým border-left jako indikátor)
+- [x] Name vedle bib
+- [x] Gate badges + total penalty badge uprostřed
+- [x] Živý čas vpravo
+- [x] Odstranit TTB řádek (originál ho nemá)
+- [x] Odstranit club zobrazení (originál ho nemá v CurrentCompetitor)
 
-- [ ] Refaktorovat CurrentCompetitor na jednořádkový layout jako originál
-- [ ] Bib vlevo (se žlutým border-left jako indikátor)
-- [ ] Name vedle bib
-- [ ] Gate badges + total penalty badge uprostřed
-- [ ] Živý čas vpravo
-- [ ] Odstranit TTB řádek (originál ho nemá)
-- [ ] Odstranit club zobrazení (originál ho nemá v CurrentCompetitor)
-
-### 9.15 OnCourseDisplay - správné použití
+### 9.15 OnCourseDisplay - správné použití ✅
 
 **Originál zobrazuje OnCourseDisplay pouze pro další závodníky na trati** (intervalový start)
 
-- [ ] OnCourseDisplay se zobrazuje pouze když jsou na trati 2+ závodníci
-- [ ] Ověřit že excludeBib správně filtruje current competitor
+- [x] OnCourseDisplay se zobrazuje pouze když jsou na trati 2+ závodníci (implementováno pomocí excludeBib)
+- [x] Ověřit že excludeBib správně filtruje current competitor (unit testy)
 
 ### 9.16 Použití skutečných assets z originálu ✅
 
