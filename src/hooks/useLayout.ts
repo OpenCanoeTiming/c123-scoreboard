@@ -36,7 +36,7 @@ export interface LayoutConfig {
  */
 const LAYOUT_CONFIG = {
   vertical: {
-    headerHeight: 100,
+    headerHeight: 142, // Matched from original v1 computed styles
     footerHeight: 60,
     minRowHeight: 44,
     maxRowHeight: 56,
@@ -119,26 +119,19 @@ interface LayoutModeConfig {
 
 /**
  * Calculate visible rows based on available height
+ * Uses fixed row height from config (48px vertical, 56px ledwall) per analysis/06-styly.md
  */
 function calculateVisibleRows(
   availableHeight: number,
   config: LayoutModeConfig
 ): { visibleRows: number; rowHeight: number } {
-  // Start with target row height
-  let rowHeight = config.targetRowHeight
+  // Use fixed row height from config (matches original v1 computed styles)
+  const rowHeight = config.targetRowHeight
+
+  // Calculate visible rows based on fixed row height
   let visibleRows = Math.floor(availableHeight / rowHeight)
 
   // Clamp visible rows
-  visibleRows = Math.max(config.minVisibleRows, Math.min(config.maxVisibleRows, visibleRows))
-
-  // Recalculate row height to fill space evenly
-  rowHeight = Math.floor(availableHeight / visibleRows)
-
-  // Clamp row height
-  rowHeight = Math.max(config.minRowHeight, Math.min(config.maxRowHeight, rowHeight))
-
-  // Final adjustment of visible rows based on clamped row height
-  visibleRows = Math.floor(availableHeight / rowHeight)
   visibleRows = Math.max(config.minVisibleRows, Math.min(config.maxVisibleRows, visibleRows))
 
   return { visibleRows, rowHeight }

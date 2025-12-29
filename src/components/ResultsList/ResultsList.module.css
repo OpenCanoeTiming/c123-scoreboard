@@ -17,20 +17,14 @@
 }
 
 /* Result row - grid layout for consistent columns */
+/* Vertical grid: 70px 50px 1fr 70px 140px 100px (6 columns) per analysis/06-styly.md */
 .row {
   display: grid;
-  grid-template-columns:
-    minmax(32px, 48px)   /* rank */
-    minmax(40px, 56px)   /* bib */
-    1fr                   /* name */
-    minmax(48px, 64px)   /* penalty (optional) */
-    minmax(80px, 100px)  /* time */
-    minmax(60px, 80px);  /* behind (optional) */
+  grid-template-columns: 70px 50px 1fr 70px 140px 100px;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   align-items: center;
-  min-height: var(--row-height);
-  border-bottom: 1px solid var(--color-bg-tertiary);
+  height: var(--row-height);
 }
 
 /* Alternating row colors */
@@ -87,8 +81,11 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-md);
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--color-text-primary);
   text-align: center;
+  background-color: rgba(51, 102, 153, 0.2);
+  padding: 2px 4px;
+  border-radius: 2px;
 }
 
 .name {
@@ -153,12 +150,9 @@
 }
 
 /* Ledwall layout - adjust grid for hidden columns */
+/* Ledwall grid: 80px 40px 1fr 100px (4 columns - pen/behind hidden) per analysis/06-styly.md */
 @container (max-width: 600px) {
   .row {
-    grid-template-columns:
-      minmax(28px, 40px)   /* rank */
-      minmax(36px, 48px)   /* bib */
-      1fr                   /* name */
-      minmax(70px, 90px);  /* time */
+    grid-template-columns: 80px 40px 1fr 100px;
   }
 }
