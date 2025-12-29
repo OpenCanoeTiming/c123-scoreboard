@@ -287,7 +287,7 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 ---
 
 ## Dokumentace
- - [ ] prehledna uzivatelska dokumentace pouziti v readme.md
+ - [x] prehledna uzivatelska dokumentace pouziti v readme.md
 
 
 ---
