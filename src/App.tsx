@@ -3,6 +3,7 @@ import { ScoreboardProvider, useScoreboard } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
 import type { DataProvider } from '@/providers/types'
+import { useLayout } from '@/hooks'
 import {
   ScoreboardLayout,
   TopBar,
@@ -51,6 +52,10 @@ function getUrlParams(): {
 
 /**
  * Main scoreboard content - uses context for data
+ *
+ * Layout-specific behavior for multiple competitors on course:
+ * - Ledwall: Shows only the primary competitor (highest time = current, or departing if just finished)
+ * - Vertical: Shows all competitors on course (CurrentCompetitor + OnCourseDisplay for others)
  */
 function ScoreboardContent() {
   const {
@@ -67,6 +72,11 @@ function ScoreboardContent() {
     visibility,
     reconnect,
   } = useScoreboard()
+
+  const { layoutMode } = useLayout()
+
+  // Ledwall shows only one competitor, vertical shows all
+  const showOnCourseDisplay = layoutMode === 'vertical'
 
   return (
     <>
@@ -101,14 +111,16 @@ function ScoreboardContent() {
           />
         </ErrorBoundary>
 
-        {/* On-course competitors (excluding current) */}
-        <ErrorBoundary componentName="OnCourseDisplay">
-          <OnCourseDisplay
-            competitors={onCourse}
-            visible={visibility.displayOnCourse}
-            excludeBib={currentCompetitor?.bib}
-          />
-        </ErrorBoundary>
+        {/* On-course competitors (excluding current) - only shown in vertical layout */}
+        {showOnCourseDisplay && (
+          <ErrorBoundary componentName="OnCourseDisplay">
+            <OnCourseDisplay
+              competitors={onCourse}
+              visible={visibility.displayOnCourse}
+              excludeBib={currentCompetitor?.bib}
+            />
+          </ErrorBoundary>
+        )}
 
         {/* Results list */}
         <ErrorBoundary componentName="ResultsList">
