@@ -74,6 +74,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Get layout for speed adjustment
   const { layoutMode } = useLayout()
 
+  // Respect prefers-reduced-motion (also used by Playwright for stable screenshots)
+  const prefersReducedMotion = typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
   // Adjust scroll speed based on layout
   const adjustedSpeed = layoutMode === 'ledwall' ? scrollSpeed * 0.7 : scrollSpeed
 
@@ -124,8 +128,13 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
   /**
    * Determine if scrolling should be active
+   * Disabled when:
+   * - explicitly disabled via config
+   * - manually paused
+   * - highlight is active
+   * - prefers-reduced-motion is set (also triggered by Playwright)
    */
-  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive
+  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion
 
   // Keep phaseRef in sync with phase state
   useEffect(() => {

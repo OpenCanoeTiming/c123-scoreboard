@@ -35,6 +35,8 @@ export interface ReplayProviderOptions {
   autoPlay?: boolean
   /** Loop playback when finished (default: false) */
   loop?: boolean
+  /** Pause playback after N messages (for testing, default: null = don't pause) */
+  pauseAfter?: number | null
 }
 
 /**
@@ -53,6 +55,8 @@ export class ReplayProvider implements DataProvider {
   private sources: string[]
   private autoPlay: boolean
   private loop: boolean
+  private pauseAfter: number | null
+  private dispatchedCount = 0
   private playbackStartTime = 0
   private playbackStartTimestamp = 0
   private timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -75,6 +79,7 @@ export class ReplayProvider implements DataProvider {
     this.sources = options.sources ?? ['ws']
     this.autoPlay = options.autoPlay ?? true
     this.loop = options.loop ?? false
+    this.pauseAfter = options.pauseAfter ?? null
   }
 
   // --- DataProvider interface ---
@@ -387,6 +392,14 @@ export class ReplayProvider implements DataProvider {
     this.timeoutId = setTimeout(() => {
       this.dispatchMessage(msg)
       this.currentIndex++
+      this.dispatchedCount++
+
+      // Check if we should pause after N messages
+      if (this.pauseAfter !== null && this.dispatchedCount >= this.pauseAfter) {
+        this.pause()
+        return
+      }
+
       this.scheduleNext()
     }, delay)
   }

@@ -42,13 +42,14 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const highlightedRowRef = useRef<HTMLDivElement>(null)
 
   const { highlightBib, isActive } = useHighlight()
-  const { layoutMode } = useLayout()
+  const { layoutMode, disableScroll } = useLayout()
 
   // Auto-scroll through results when no highlight is active
+  // Disabled via URL parameter for stable screenshots
   const { containerRef } = useAutoScroll({
     scrollSpeed: 50,
     pauseAtBottom: 2000,
-    enabled: results.length > 0,
+    enabled: results.length > 0 && !disableScroll,
   })
 
   // Whether to show optional columns based on layout

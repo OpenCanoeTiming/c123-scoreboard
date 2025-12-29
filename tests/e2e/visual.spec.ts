@@ -4,6 +4,9 @@ import { test, expect } from '@playwright/test'
  * Visual regression tests for scoreboard layouts.
  *
  * Uses ReplayProvider with high speed to quickly load data.
+ * The pauseAfter=50 parameter pauses playback after 50 messages,
+ * ensuring stable screenshots without ongoing data changes.
+ *
  * Compares screenshots against baseline images.
  */
 
@@ -11,7 +14,9 @@ test.describe('Vertical Layout', () => {
   test.beforeEach(async ({ page }) => {
     // Use replay with high speed to quickly load data
     // type=vertical forces vertical layout
-    await page.goto('/?type=vertical&speed=100')
+    // pauseAfter=50 stops playback after 50 messages for stable screenshots
+    // disableScroll=true prevents auto-scroll for stable screenshots
+    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
     // Wait for DOM to be ready
     await page.waitForLoadState('domcontentloaded')
     // Wait for results-list container to appear (always rendered)
@@ -21,8 +26,8 @@ test.describe('Vertical Layout', () => {
       const list = document.querySelector('[data-testid="results-list"]')
       return list && list.querySelectorAll('div[class*="row"]').length > 1
     }, { timeout: 30000 })
-    // Additional wait for animations to settle
-    await page.waitForTimeout(500)
+    // Wait for animations to settle after data load
+    await page.waitForTimeout(2000)
   })
 
   test('full page screenshot matches reference', async ({ page }) => {
@@ -65,7 +70,9 @@ test.describe('Vertical Layout', () => {
 test.describe('Ledwall Layout', () => {
   test.beforeEach(async ({ page }) => {
     // Use replay with high speed, type=ledwall forces ledwall layout
-    await page.goto('/?type=ledwall&speed=100')
+    // pauseAfter=50 stops playback after 50 messages for stable screenshots
+    // disableScroll=true prevents auto-scroll for stable screenshots
+    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     // Wait for DOM to be ready
     await page.waitForLoadState('domcontentloaded')
     // Wait for results-list container to appear (always rendered)
@@ -75,7 +82,8 @@ test.describe('Ledwall Layout', () => {
       const list = document.querySelector('[data-testid="results-list"]')
       return list && list.querySelectorAll('div[class*="row"]').length > 1
     }, { timeout: 30000 })
-    await page.waitForTimeout(500)
+    // Wait for animations to settle after data load
+    await page.waitForTimeout(2000)
   })
 
   test('full page screenshot matches reference', async ({ page }) => {

@@ -23,12 +23,16 @@ import {
  * - speed: number (replay speed multiplier, default: 10)
  * - host: string (CLI server address, default: '192.168.68.108:8081')
  * - loop: 'true' | 'false' (replay loop, default: 'true')
+ * - pauseAfter: number (pause playback after N messages, for testing)
+ * - disableScroll: 'true' (disable auto-scroll, for screenshots)
  */
 function getUrlParams(): {
   source: 'replay' | 'cli'
   speed: number
   host: string
   loop: boolean
+  pauseAfter: number | null
+  disableScroll: boolean
 } {
   const params = new URLSearchParams(window.location.search)
 
@@ -37,8 +41,11 @@ function getUrlParams(): {
   const speed = speedParam ? parseFloat(speedParam) : 10.0
   const host = params.get('host') ?? '192.168.68.108:8081'
   const loop = params.get('loop') !== 'false'
+  const pauseAfterParam = params.get('pauseAfter')
+  const pauseAfter = pauseAfterParam ? parseInt(pauseAfterParam, 10) : null
+  const disableScroll = params.get('disableScroll') === 'true'
 
-  return { source, speed, host, loop }
+  return { source, speed, host, loop, pauseAfter, disableScroll }
 }
 
 /**
@@ -117,6 +124,7 @@ function App() {
       sources: ['ws'],
       autoPlay: true,
       loop: urlParams.loop,
+      pauseAfter: urlParams.pauseAfter,
     })
   }, [urlParams])
 

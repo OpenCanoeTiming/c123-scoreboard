@@ -19,6 +19,11 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    // Disable CSS animations for stable screenshots
+    // This prevents "Failed to take two consecutive stable screenshots" errors
+    launchOptions: {
+      args: ['--force-prefers-reduced-motion'],
+    },
   },
 
   projects: [

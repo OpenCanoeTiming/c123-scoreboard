@@ -27,6 +27,8 @@ export interface LayoutConfig {
   footerHeight: number
   /** Base font size category for scaling */
   fontSizeCategory: 'small' | 'medium' | 'large'
+  /** Whether auto-scroll is disabled (via URL param for screenshots) */
+  disableScroll: boolean
 }
 
 /**
@@ -56,18 +58,31 @@ const LAYOUT_CONFIG = {
 } as const
 
 /**
- * Get layout mode from URL parameter or detect from viewport
+ * URL parameters for layout configuration
  */
-function getLayoutModeFromURL(): LayoutMode | null {
-  if (typeof window === 'undefined') return null
+interface LayoutURLParams {
+  /** Layout mode override from URL */
+  type: LayoutMode | null
+  /** Whether auto-scroll is disabled */
+  disableScroll: boolean
+}
+
+/**
+ * Get layout parameters from URL
+ */
+function getLayoutParamsFromURL(): LayoutURLParams {
+  if (typeof window === 'undefined') {
+    return { type: null, disableScroll: false }
+  }
 
   const params = new URLSearchParams(window.location.search)
   const type = params.get('type')
+  const disableScroll = params.get('disableScroll') === 'true'
 
-  if (type === 'vertical' || type === 'ledwall') {
-    return type
+  return {
+    type: type === 'vertical' || type === 'ledwall' ? type : null,
+    disableScroll,
   }
-  return null
 }
 
 /**
@@ -216,15 +231,17 @@ export function useLayout(): LayoutConfig {
     }
   }, [])
 
+  // Get URL parameters (memoized)
+  const urlParams = useMemo(() => getLayoutParamsFromURL(), [])
+
   // Determine layout mode
   const layoutMode = useMemo(() => {
     // Check URL parameter first
-    const urlMode = getLayoutModeFromURL()
-    if (urlMode) return urlMode
+    if (urlParams.type) return urlParams.type
 
     // Auto-detect from viewport
     return detectLayoutMode(viewport.width, viewport.height)
-  }, [viewport.width, viewport.height])
+  }, [viewport.width, viewport.height, urlParams.type])
 
   // Calculate layout configuration
   const config = useMemo((): LayoutConfig => {
@@ -254,8 +271,9 @@ export function useLayout(): LayoutConfig {
       headerHeight: modeConfig.headerHeight,
       footerHeight: layoutMode === 'ledwall' ? 0 : modeConfig.footerHeight,
       fontSizeCategory,
+      disableScroll: urlParams.disableScroll,
     }
-  }, [layoutMode, viewport.width, viewport.height])
+  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll])
 
   // Update CSS variables when config changes
   useEffect(() => {

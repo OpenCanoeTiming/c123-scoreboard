@@ -269,12 +269,19 @@
 
 **Problém:** Některé testy selhávají na "Failed to take two consecutive stable screenshots" kvůli animacím a měnícím se datům.
 
-- [ ] Zastavit ReplayProvider playback před screenshotem (`provider.pause()`)
-- [ ] Přidat delší `waitForTimeout` před screenshoty (500ms → 2000ms)
-- [ ] Zakázat animace v Playwright config (`animations: 'disabled'`)
-- [ ] Přidat `data-testid` pro všechny testované komponenty
-- [ ] Aktualizovat všechny baseline snapshoty po stabilizaci
-- [ ] Rozdělit testy na "static" (layout, komponenty) a "dynamic" (animace, scroll)
+- [x] Zastavit ReplayProvider playback před screenshotem (URL param `pauseAfter=50`)
+- [x] Přidat delší `waitForTimeout` před screenshoty (500ms → 2000ms)
+- [x] Zakázat animace v Playwright config (`--force-prefers-reduced-motion`)
+- [x] Přidat `data-testid` pro všechny testované komponenty (již existovaly)
+- [x] Aktualizovat všechny baseline snapshoty po stabilizaci (24 snapshotů)
+- [x] Rozdělit testy na "static" (visual.spec.ts) a "dynamic" (dynamic.spec.ts)
+
+**Implementované řešení:**
+- Přidán URL parametr `pauseAfter` pro ReplayProvider - zastaví playback po N zprávách
+- Přidán URL parametr `disableScroll` - vypne auto-scroll pro stabilní screenshoty
+- Hook `useAutoScroll` respektuje `prefers-reduced-motion` media query
+- Hook `useLayout` nově vrací `disableScroll` z URL parametrů
+- 24 visual testů (static) + 14 dynamic testů = 38 E2E testů celkem
 
 ### 8.2 Oprava CLI připojení v Playwright
 
@@ -385,8 +392,9 @@ test.describe('Visual Comparison with Original', () => {
 ### Build & testy
 
 ```
-Build:      ✅ Úspěšný (437 kB JS, 14 kB CSS)
+Build:      ✅ Úspěšný (438 kB JS, 14 kB CSS)
 Unit testy: ✅ 551 testů (24 test suites)
+E2E testy:  ✅ 38 testů (24 visual + 14 dynamic, 2 skipped)
 Benchmarks: ✅ 29 performance benchmarků
 ESLint:     ✅ 0 errors
 TypeScript: ✅ Strict mode
@@ -408,6 +416,8 @@ TypeScript: ✅ Strict mode
 | ErrorBoundary tests | 20 |
 | Snapshot tests | 57 |
 | Chaos engineering tests | 31 |
+| **E2E visual tests** | 24 |
+| **E2E dynamic tests** | 14 |
 
 ### Dostupné zdroje
 
@@ -429,7 +439,7 @@ TypeScript: ✅ Strict mode
 
 | Kategorie | Stav | Poznámka |
 |-----------|------|----------|
-| **Playwright E2E** | 🔧 Částečně | 6/12 testů prochází, zbytek potřebuje stabilizaci animací |
+| **Playwright E2E** | ✅ Hotovo | 38 testů prochází (24 visual + 14 dynamic) |
 | **CLI v Playwright** | 🔧 Debug | WebSocket chyba - nutné ověřit příčinu |
 | **Porovnání s originálem** | ⏳ TODO | Automatické screenshot diff |
 | **Performance testy** | ⏳ TODO | FPS, memory, Lighthouse |
