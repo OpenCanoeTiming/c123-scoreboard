@@ -465,6 +465,34 @@ Tag: `pre-review-autoscroll`
 
 ---
 
+## Code Review nálezy (2025-12-30)
+
+Tag: `pre-review-refactor`
+
+### Vysoká priorita - Code Duplication
+
+- [ ] **Duplicitní `parseResults`** - funkce je implementována 3× (CLIProvider.ts:343, ReplayProvider.ts:316-343, ReplayProvider.ts:503-520). Extrahovat do `src/providers/utils/parseResults.ts`
+- [ ] **Duplicitní `parseCompetitor`** - funkce je v CLIProvider.ts i ReplayProvider.ts:557-577. Extrahovat do `src/providers/utils/parseCompetitor.ts`
+- [ ] **Duplicitní `getGateClass`** - funkce je v CurrentCompetitor.tsx:23-28 a OnCourseDisplay.tsx:23-28. Extrahovat do `src/utils/getGateClass.ts`
+- [ ] **Duplicitní callback management** - 7× `Set` objektů v CLIProvider i ReplayProvider. Vytvořit `CallbackManager` třídu
+
+### Střední priorita - State Management
+
+- [ ] **ScoreboardContext atomicity** - highlightBib + highlightTimestamp, departingCompetitor + departedAt se mění vždy spolu. Použít `useReducer` pro atomické aktualizace
+- [ ] **useAutoScroll unstable functions** - pause/resume/reset jsou vytvářeny každý render a předávány ven. Vrátit useCallback
+- [ ] **useAutoScroll scrollToTop v deps** - funkce není memoizovaná ale je v dependency array efektu
+
+### Nízká priorita - Minor issues
+
+- [ ] **useTimestamp Date.now() redundance** - calculateIsActive/calculateTimeRemaining/calculateProgress volají Date.now() nezávisle. Vypočítat jednou a reusovat
+- [ ] **CLIProvider.ts:343 behind replace** - `.replace('&nbsp;', '')` nahradí jen první výskyt. Použít `.replaceAll()`
+- [ ] **ReplayProvider error truncation** - line.substring(0, 100) vs line.substring(0, 50) nekonzistence
+- [ ] **OnCourseDisplay defensive check** - Line 73-82 kontroluje `!competitors || !Array.isArray(competitors)` ale TypeScript to garantuje
+- [ ] **ResultRow forwardRef** - ref se používá jen pro data-bib lookup, forwardRef může být zbytečný overhead
+- [ ] **types.ts:92 onConfig** - callback je v interface ale nikde není implementován
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
