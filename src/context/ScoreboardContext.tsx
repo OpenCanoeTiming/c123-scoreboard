@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import type {
@@ -120,6 +121,11 @@ export function ScoreboardProvider({
     useState<OnCourseCompetitor | null>(null)
   const [onCourse, setOnCourse] = useState<OnCourseCompetitor[]>([])
 
+  // Ref for onCourse to avoid stale closure in handleResults
+  // This prevents the useEffect from re-running when onCourse changes
+  const onCourseRef = useRef<OnCourseCompetitor[]>(onCourse)
+  onCourseRef.current = onCourse
+
   // Departing competitor state
   const [departingCompetitor, setDepartingCompetitor] =
     useState<OnCourseCompetitor | null>(null)
@@ -160,49 +166,49 @@ export function ScoreboardProvider({
    * - This prevents double-display of competitors still on course
    *
    * Also clears departing competitor when highlight arrives for them.
+   *
+   * Note: Uses onCourseRef to access current onCourse without causing
+   * useEffect re-runs when onCourse changes.
    */
-  const handleResults = useCallback(
-    (data: ResultsData) => {
-      setResults(data.results)
-      setRaceName(data.raceName)
-      setRaceStatus(data.raceStatus)
+  const handleResults = useCallback((data: ResultsData) => {
+    setResults(data.results)
+    setRaceName(data.raceName)
+    setRaceStatus(data.raceStatus)
 
-      // Highlight activation with deduplication
-      const newHighlightBib = data.highlightBib
-      if (newHighlightBib) {
-        // Check if the highlighted competitor is NOT in onCourse
-        const isOnCourse = onCourse.some((c) => c.bib === newHighlightBib)
-        if (!isOnCourse) {
-          // Only activate if this is a new highlight
-          setHighlightBib((prevBib) => {
-            if (prevBib !== newHighlightBib) {
-              // New highlight - set timestamp
-              setHighlightTimestamp(Date.now())
-              return newHighlightBib
-            }
-            return prevBib
-          })
+    // Highlight activation with deduplication
+    const newHighlightBib = data.highlightBib
+    if (newHighlightBib) {
+      // Check if the highlighted competitor is NOT in onCourse (using ref for current value)
+      const isOnCourse = onCourseRef.current.some(
+        (c) => c.bib === newHighlightBib
+      )
+      if (!isOnCourse) {
+        // Only activate if this is a new highlight
+        setHighlightBib((prevBib) => {
+          if (prevBib !== newHighlightBib) {
+            // New highlight - set timestamp
+            setHighlightTimestamp(Date.now())
+            return newHighlightBib
+          }
+          return prevBib
+        })
 
-          // Clear departing if this is the departing competitor's highlight
-          setDepartingCompetitor((prev) => {
-            if (prev && prev.bib === newHighlightBib) {
-              setDepartedAt(null)
-              return null
-            }
-            return prev
-          })
-        }
-      } else {
-        // highlightBib is null/empty from server - clear immediately
-        // Note: We use timestamp-based expiration, so we don't clear here
-        // The highlight will expire naturally via useHighlight hook
+        // Clear departing if this is the departing competitor's highlight
+        setDepartingCompetitor((prev) => {
+          if (prev && prev.bib === newHighlightBib) {
+            setDepartedAt(null)
+            return null
+          }
+          return prev
+        })
       }
+    }
+    // Note: We use timestamp-based expiration, so we don't clear highlight here
+    // The highlight will expire naturally via useHighlight hook
 
-      // First top message means we have data
-      setInitialDataReceived(true)
-    },
-    [onCourse]
-  )
+    // First top message means we have data
+    setInitialDataReceived(true)
+  }, []) // No dependencies - uses ref for onCourse
 
   /**
    * Handle on-course data (from comp/oncourse messages)
@@ -299,6 +305,10 @@ export function ScoreboardProvider({
 
   /**
    * Subscribe to provider callbacks on mount
+   *
+   * Note: We intentionally only depend on `provider` to prevent
+   * re-subscribing when handlers change. All handlers are stable
+   * (no dependencies or use refs) so this is safe.
    */
   useEffect(() => {
     // Subscribe to all data streams
@@ -324,15 +334,8 @@ export function ScoreboardProvider({
       unsubError()
       provider.disconnect()
     }
-  }, [
-    provider,
-    handleResults,
-    handleOnCourse,
-    handleVisibility,
-    handleEventInfo,
-    handleConnectionChange,
-    handleProviderError,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [provider])
 
   /**
    * Departing competitor timeout effect
