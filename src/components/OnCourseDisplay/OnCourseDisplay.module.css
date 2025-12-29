@@ -105,20 +105,21 @@
 
 /* Total penalty display */
 .pen {
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
-  font-weight: 500;
-  padding: 0 10px;
+  font-weight: 700;
+  padding: 2px 8px;
   margin-left: 5px;
   color: var(--color-text-primary);
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  border-radius: var(--border-radius-sm);
+  border-radius: 0;  /* Rectangle, not rounded */
+  min-width: 36px;
 }
 
 .hasPenalty {
-  background-color: var(--color-error);
+  background-color: #cc3333;  /* Red background for penalties */
 }
 
 .noPenalty {
@@ -141,7 +142,7 @@
 /* === VERTICAL LAYOUT === */
 .row.vertical {
   grid-template-columns: 80px minmax(200px, 1fr) minmax(100px, auto) 160px;
-  height: 40px;
+  height: 45px;
 }
 
 .row.vertical > div {
@@ -152,7 +153,8 @@
 .row.vertical .gatePenalty {
   width: 28px;
   height: 28px;
-  font-size: 18px;
+  font-size: 16px;
+  border-radius: 4px;
 }
 
 /* === LEDWALL LAYOUT === */
