@@ -550,10 +550,10 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
 - [ ] **V2:** Rank má font-weight 600 (semi-bold)
 - **Poznámka:** Mírný rozdíl, lze sjednotit
 
-#### Time formát (priorita: střední)
-- [ ] **Originál:** Čas ve formátu "43.08" (bez minut pro časy pod 1 minutu)
-- [ ] **V2:** Čas ve formátu "1:18.99" (vždy s minutami)
-- **Poznámka:** V2 používá konzistentní formát, originál úspornější pro krátké časy
+#### Time formát (priorita: střední) ✅ OPRAVENO
+- [x] **Originál:** Čas ve formátu "43.08", "78.99", "324.24" (raw sekundy bez převodu na minuty)
+- [x] **V2:** Nyní zobrazuje raw sekundy shodně s originálem - **OPRAVENO 2025-12-29**
+- **Implementace:** `ResultRow.tsx` - zobrazuje `result.total` přímo bez `formatTime()` konverze
 
 #### Footer sponzorů (priorita: nízká)
 - [ ] **Originál:** Footer obsahuje skutečné loga sponzorů
@@ -602,10 +602,10 @@ Tyto rozdíly jsou záměrné design decisions nebo vyžadují větší refaktor
 - [x] **Originál:** Rank má tečku za číslem ("1.", "2.", "3.")
 - [x] **V2:** Nyní také zobrazuje tečku za rank číslem - **OPRAVENO 2025-12-29**
 
-#### Čas formát (priorita: střední)
-- [ ] **Originál:** Krátký formát pro časy pod minutu (33.00, 57.20, 78.99)
-- [ ] **V2:** Vždy zobrazuje minuty (1:18.99, 1:24.33)
-- **Poznámka:** V2 používá konzistentní formát, originál je úspornější pro krátké časy
+#### Čas formát (priorita: střední) ✅ OPRAVENO
+- [x] **Originál:** Raw sekundy (33.00, 57.20, 78.99, 324.24) bez převodu na formát s minutami
+- [x] **V2:** Nyní také zobrazuje raw sekundy - **OPRAVENO 2025-12-29**
+- **Implementace:** Viz 9.13 výše
 
 #### OnCourse živý čas (priorita: vysoká)
 - [ ] **Originál:** Zobrazuje aktuální čas závodníka na trati vpravo (např. "12694" = 126.94s)

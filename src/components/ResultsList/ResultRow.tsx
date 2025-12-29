@@ -2,7 +2,6 @@ import { forwardRef } from 'react'
 import styles from './ResultsList.module.css'
 import type { Result } from '@/types'
 import { formatName } from '@/utils/formatName'
-import { formatTime } from '@/utils/formatTime'
 
 /**
  * Props for ResultRow component
@@ -67,15 +66,15 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
 
     return (
       <div ref={ref} className={rowClasses}>
-        <div className={styles.rank}>{result.rank}</div>
+        <div className={styles.rank}>{result.rank}.</div>
         <div className={styles.bib}>{result.bib}</div>
         <div className={styles.name}>{formatName(result.name)}</div>
         {showPenalty && (
           <div className={`${styles.penalty} ${getPenaltyClass(result.pen)}`}>
-            {result.pen > 0 ? `${result.pen}s` : '-'}
+            {result.pen}
           </div>
         )}
-        <div className={styles.time}>{formatTime(result.total)}</div>
+        <div className={styles.time}>{result.total}</div>
         {showBehind && (
           <div className={styles.behind}>{formatBehind(result.behind)}</div>
         )}

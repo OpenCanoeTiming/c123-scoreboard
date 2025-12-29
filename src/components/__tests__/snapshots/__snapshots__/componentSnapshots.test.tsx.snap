@@ -30,6 +30,7 @@ exports[`Component Snapshots > ResultRow > renders basic result row 1`] = `
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -44,12 +45,12 @@ exports[`Component Snapshots > ResultRow > renders basic result row 1`] = `
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -67,6 +68,7 @@ exports[`Component Snapshots > ResultRow > renders highlighted result row 1`] = 
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -81,12 +83,12 @@ exports[`Component Snapshots > ResultRow > renders highlighted result row 1`] = 
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -104,6 +106,7 @@ exports[`Component Snapshots > ResultRow > renders result with 2s penalty (touch
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -118,12 +121,12 @@ exports[`Component Snapshots > ResultRow > renders result with 2s penalty (touch
     <div
       class="_penalty_ec9a59 _penaltyTouch_ec9a59"
     >
-      2s
+      2
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -141,6 +144,7 @@ exports[`Component Snapshots > ResultRow > renders result with 50s penalty (miss
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -155,12 +159,12 @@ exports[`Component Snapshots > ResultRow > renders result with 50s penalty (miss
     <div
       class="_penalty_ec9a59 _penaltyMiss_ec9a59"
     >
-      50s
+      50
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -178,6 +182,7 @@ exports[`Component Snapshots > ResultRow > renders result with behind time 1`] =
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -192,12 +197,12 @@ exports[`Component Snapshots > ResultRow > renders result with behind time 1`] =
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -217,6 +222,7 @@ exports[`Component Snapshots > ResultRow > renders result with high time (over 1
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -231,12 +237,12 @@ exports[`Component Snapshots > ResultRow > renders result with high time (over 1
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      2:05.75
+      125.75
     </div>
     <div
       class="_behind_ec9a59"
@@ -254,6 +260,7 @@ exports[`Component Snapshots > ResultRow > renders result with long name (trunca
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -268,12 +275,12 @@ exports[`Component Snapshots > ResultRow > renders result with long name (trunca
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -291,6 +298,7 @@ exports[`Component Snapshots > ResultRow > renders result with zero penalty 1`] 
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -305,12 +313,12 @@ exports[`Component Snapshots > ResultRow > renders result with zero penalty 1`] 
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"
@@ -328,6 +336,7 @@ exports[`Component Snapshots > ResultRow > renders result without behind column 
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -342,12 +351,12 @@ exports[`Component Snapshots > ResultRow > renders result without behind column 
     <div
       class="_penalty_ec9a59 _penaltyClear_ec9a59"
     >
-      -
+      0
     </div>
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
   </div>
 </div>
@@ -362,6 +371,7 @@ exports[`Component Snapshots > ResultRow > renders result without penalty column
       class="_rank_ec9a59"
     >
       1
+      .
     </div>
     <div
       class="_bib_ec9a59"
@@ -376,7 +386,7 @@ exports[`Component Snapshots > ResultRow > renders result without penalty column
     <div
       class="_time_ec9a59"
     >
-      1:30.50
+      90.50
     </div>
     <div
       class="_behind_ec9a59"

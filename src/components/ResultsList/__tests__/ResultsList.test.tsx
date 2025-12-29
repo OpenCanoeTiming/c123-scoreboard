@@ -289,7 +289,7 @@ describe('ResultRow', () => {
       expect(screen.getByText('42')).toBeInTheDocument()
       expect(screen.getByText('NOVAK Jiri')).toBeInTheDocument()
       expect(screen.getByText('2')).toBeInTheDocument() // Penalty as number without 's' suffix
-      expect(screen.getByText('1:30.50')).toBeInTheDocument() // formatTime converts 90.50
+      expect(screen.getByText('90.50')).toBeInTheDocument() // Raw seconds (original v1 style)
       expect(screen.getByText('+0.50')).toBeInTheDocument()
     })
 
