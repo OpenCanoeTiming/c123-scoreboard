@@ -1,4 +1,4 @@
-import type { ConnectionStatus, OnCourseCompetitor, RaceConfig, VisibilityState } from '@/types'
+import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
 import type {
   DataProvider,
   Unsubscribe,
@@ -7,6 +7,7 @@ import type {
   EventInfoData,
   ProviderError,
 } from './types'
+import { parseResults, parseCompetitor } from './utils/parseMessages'
 
 /**
  * Recorded message structure from JSONL file
@@ -489,35 +490,15 @@ export class ReplayProvider implements DataProvider {
     }
     const payload = wrapper.data
 
-    // Transform to ResultsData
+    // Transform to ResultsData - skip validation for replay (data is pre-validated)
     const results: ResultsData = {
-      results: this.parseResults(payload),
+      results: parseResults(payload, true),
       raceName: (payload.RaceName as string) || '',
       raceStatus: (payload.RaceStatus as string) || '',
       highlightBib: payload.HighlightBib ? String(payload.HighlightBib) : null,
     }
 
     this.safeCallCallbacks(this.resultsCallbacks, results)
-  }
-
-  private parseResults(payload: Record<string, unknown>): ResultsData['results'] {
-    const list = payload.list as Array<Record<string, unknown>> | undefined
-    if (!list || !Array.isArray(list)) {
-      return []
-    }
-
-    return list.map((row) => ({
-      rank: Number(row.Rank) || 0,
-      bib: String(row.Bib || '').trim(),
-      name: String(row.Name || ''),
-      familyName: String(row.FamilyName || ''),
-      givenName: String(row.GivenName || ''),
-      club: String(row.Club || ''),
-      nat: String(row.Nat || ''),
-      total: String(row.Total || ''),
-      pen: Number(row.Pen) || 0,
-      behind: String(row.Behind || '').replace('&nbsp;', ''),
-    }))
   }
 
   private handleCompMessage(data: unknown): void {
@@ -529,7 +510,7 @@ export class ReplayProvider implements DataProvider {
     }
     const payload = wrapper.data
 
-    const current = this.parseCompetitor(payload)
+    const current = parseCompetitor(payload)
 
     const onCourseData: OnCourseData = {
       current,
@@ -544,7 +525,7 @@ export class ReplayProvider implements DataProvider {
     const wrapper = data as { msg: string; data: Record<string, unknown>[] }
     const competitors = wrapper.data || []
 
-    const parsed = competitors.map((c) => this.parseCompetitor(c)).filter((c): c is OnCourseCompetitor => c !== null)
+    const parsed = competitors.map((c) => parseCompetitor(c)).filter((c) => c !== null)
 
     const onCourseData: OnCourseData = {
       current: parsed[0] || null,
@@ -552,29 +533,6 @@ export class ReplayProvider implements DataProvider {
     }
 
     this.safeCallCallbacks(this.onCourseCallbacks, onCourseData)
-  }
-
-  private parseCompetitor(data: Record<string, unknown>): OnCourseCompetitor | null {
-    if (!data || !data.Bib || data.Bib === '') {
-      return null
-    }
-
-    return {
-      bib: String(data.Bib || ''),
-      name: String(data.Name || ''),
-      club: String(data.Club || ''),
-      nat: String(data.Nat || ''),
-      raceId: String(data.RaceId || ''),
-      time: String(data.Time || ''),
-      total: String(data.Total || ''),
-      pen: Number(data.Pen) || 0,
-      gates: String(data.Gates || ''),
-      dtStart: data.dtStart ? String(data.dtStart) : null,
-      dtFinish: data.dtFinish ? String(data.dtFinish) : null,
-      ttbDiff: String(data.TTBDiff || ''),
-      ttbName: String(data.TTBName || ''),
-      rank: Number(data.Rank) || 0,
-    }
   }
 
   private handleControlMessage(data: unknown): void {

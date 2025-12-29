@@ -1,4 +1,4 @@
-import type { ConnectionStatus, OnCourseCompetitor, RaceConfig, VisibilityState } from '@/types'
+import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
 import type {
   DataProvider,
   Unsubscribe,
@@ -9,16 +9,14 @@ import type {
 } from './types'
 import {
   isObject,
-  isArray,
   safeString,
-  safeNumber,
   validateTopMessage,
   validateCompMessage,
   validateOnCourseMessage,
   validateControlMessage,
   validateTextMessage,
-  validateResultRow,
 } from './utils/validation'
+import { parseResults, parseCompetitor } from './utils/parseMessages'
 
 /**
  * CLIProvider options
@@ -304,45 +302,13 @@ export class CLIProvider implements DataProvider {
     const payload = message.data as Record<string, unknown>
 
     const results: ResultsData = {
-      results: this.parseResults(payload),
+      results: parseResults(payload),
       raceName: safeString(payload.RaceName),
       raceStatus: safeString(payload.RaceStatus),
       highlightBib: payload.HighlightBib ? safeString(payload.HighlightBib) : null,
     }
 
     this.resultsCallbacks.forEach((cb) => cb(results))
-  }
-
-  private parseResults(payload: Record<string, unknown>): ResultsData['results'] {
-    const list = payload.list
-    if (!isArray(list)) {
-      return []
-    }
-
-    return list
-      .filter((row) => {
-        const validation = validateResultRow(row)
-        if (!validation.valid) {
-          console.warn('Skipping invalid result row:', validation.error)
-          return false
-        }
-        return true
-      })
-      .map((row) => {
-        const r = row as Record<string, unknown>
-        return {
-          rank: safeNumber(r.Rank, 0),
-          bib: safeString(r.Bib).trim(),
-          name: safeString(r.Name),
-          familyName: safeString(r.FamilyName),
-          givenName: safeString(r.GivenName),
-          club: safeString(r.Club),
-          nat: safeString(r.Nat),
-          total: safeString(r.Total),
-          pen: safeNumber(r.Pen, 0),
-          behind: safeString(r.Behind).replace('&nbsp;', ''),
-        }
-      })
   }
 
   private handleCompMessage(message: Record<string, unknown>): void {
@@ -353,7 +319,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-    const current = this.parseCompetitor(payload)
+    const current = parseCompetitor(payload)
 
     const onCourseData: OnCourseData = {
       current,
@@ -374,8 +340,8 @@ export class CLIProvider implements DataProvider {
 
     const parsed = competitors
       .filter((c) => isObject(c))
-      .map((c) => this.parseCompetitor(c as Record<string, unknown>))
-      .filter((c): c is OnCourseCompetitor => c !== null)
+      .map((c) => parseCompetitor(c as Record<string, unknown>))
+      .filter((c) => c !== null)
 
     const onCourseData: OnCourseData = {
       current: parsed[0] || null,
@@ -383,29 +349,6 @@ export class CLIProvider implements DataProvider {
     }
 
     this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
-  }
-
-  private parseCompetitor(data: Record<string, unknown>): OnCourseCompetitor | null {
-    if (!data || !data.Bib || data.Bib === '') {
-      return null
-    }
-
-    return {
-      bib: safeString(data.Bib),
-      name: safeString(data.Name),
-      club: safeString(data.Club),
-      nat: safeString(data.Nat),
-      raceId: safeString(data.RaceId),
-      time: safeString(data.Time),
-      total: safeString(data.Total),
-      pen: safeNumber(data.Pen, 0),
-      gates: safeString(data.Gates),
-      dtStart: data.dtStart ? safeString(data.dtStart) : null,
-      dtFinish: data.dtFinish ? safeString(data.dtFinish) : null,
-      ttbDiff: safeString(data.TTBDiff),
-      ttbName: safeString(data.TTBName),
-      rank: safeNumber(data.Rank, 0),
-    }
   }
 
   private handleControlMessage(message: Record<string, unknown>): void {
