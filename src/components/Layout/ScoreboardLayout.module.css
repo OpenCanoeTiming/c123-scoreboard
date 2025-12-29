@@ -36,6 +36,12 @@
   gap: var(--spacing-sm);
 }
 
+/* Ledwall mode - minimal spacing between components */
+.layout[data-layout-mode='ledwall'] .main {
+  padding: 5px 0 0;
+  gap: 0;
+}
+
 .footer {
   display: flex;
   align-items: center;

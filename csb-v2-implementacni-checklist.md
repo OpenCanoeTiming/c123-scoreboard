@@ -165,7 +165,7 @@ Testovat na **768×384** (`?type=ledwall&ledwallExactSize=true`)
 - [x] Footer skrytý (již implementováno)
 - [x] Penalty a behind columns VIDITELNÉ (opraveno - originál je zobrazuje)
 - [x] Scrollbar skrytý (přidáno CSS pro skrytí scrollbaru)
-- [ ] Minimální spacing mezi komponenty
+- [x] Minimální spacing mezi komponenty (padding: 5px 0 0, gap: 0)
 
 ### 🔍 Revize: Fáze 9
 
