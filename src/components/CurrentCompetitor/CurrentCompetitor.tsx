@@ -37,11 +37,10 @@ function getGateClass(penalty: GatePenalty): string {
 }
 
 /**
- * Get gate display value
+ * Get gate display value - shows gate NUMBER, not penalty value
  */
-function getGateDisplay(penalty: GatePenalty): string {
-  if (penalty === null) return '-'
-  return penalty.toString()
+function getGateDisplay(gateNumber: number): string {
+  return gateNumber.toString()
 }
 
 /**
@@ -105,10 +104,15 @@ export function CurrentCompetitor({
   visible = true,
   isDeparting = false,
 }: CurrentCompetitorProps) {
-  // Parse gates into penalty array
-  const gates = useMemo(() => {
+  // Parse gates into penalty array and filter only gates with penalties
+  const penaltyGates = useMemo(() => {
     if (!competitor) return []
-    return parseGates(competitor.gates)
+    const gates = parseGates(competitor.gates)
+    return gates
+      .map((penalty, index) => ({ gateNumber: index + 1, penalty }))
+      .filter(
+        (g) => g.penalty !== null && g.penalty !== 0
+      ) as { gateNumber: number; penalty: 2 | 50 }[]
   }, [competitor])
 
   // Container classes
@@ -172,7 +176,7 @@ export function CurrentCompetitor({
         </div>
       )}
 
-      {/* Penalties row */}
+      {/* Penalties row - only show gates with penalties, display gate numbers */}
       <div className={styles.penaltiesRow}>
         <div className={styles.penaltyTotal}>
           <span className={styles.penaltyLabel}>Pen</span>
@@ -183,23 +187,19 @@ export function CurrentCompetitor({
           </span>
         </div>
 
-        {/* Gate penalties visualization */}
+        {/* Gate penalties visualization - shows only gates WITH penalties */}
         <div className={styles.gatesContainer} role="list" aria-label="Penalizace na branách">
-          {gates.map((penalty, index) => {
-            // Use stable gate number as key - gates have fixed positions
-            const gateNumber = index + 1
-            return (
-              <div
-                key={`gate-${gateNumber}`}
-                className={`${styles.gate} ${getGateClass(penalty)}`}
-                role="listitem"
-                aria-label={getGateAriaLabel(penalty, gateNumber)}
-                title={`Brána ${gateNumber}`}
-              >
-                {getGateDisplay(penalty)}
-              </div>
-            )
-          })}
+          {penaltyGates.map(({ gateNumber, penalty }) => (
+            <div
+              key={`gate-${gateNumber}`}
+              className={`${styles.gate} ${getGateClass(penalty)}`}
+              role="listitem"
+              aria-label={getGateAriaLabel(penalty, gateNumber)}
+              title={`Brána ${gateNumber}`}
+            >
+              {getGateDisplay(gateNumber)}
+            </div>
+          ))}
         </div>
       </div>
     </div>

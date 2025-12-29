@@ -269,32 +269,32 @@ describe('CurrentCompetitor', () => {
   })
 
   describe('gate penalties visualization', () => {
-    it('renders gate penalties from gates string', () => {
+    it('renders only gates with penalties (not all gates)', () => {
+      // Gates: 0=clear, 2=touch at gate 2, 50=miss at gate 3, 0=clear, 0=clear
       const competitor = createCompetitor({ gates: '0,2,50,0,0' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      // Use more specific selector to get only gate elements
+      // Should only render 2 badges (gates 2 and 3 with penalties)
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       const gates = gatesContainer?.querySelectorAll('[class*="gate"]') ?? []
-      expect(gates.length).toBe(5)
+      expect(gates.length).toBe(2)
     })
 
-    it('applies clear class to gates with 0 penalty', () => {
-      const competitor = createCompetitor({ gates: '0' })
+    it('does not render any gates when all penalties are 0 (clear)', () => {
+      const competitor = createCompetitor({ gates: '0,0,0,0,0' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
-      const gate = gatesContainer?.querySelector('[class*="gate"]')
-      expect(gate).not.toBeNull()
-      expect(hasClassContaining(gate!, 'clear')).toBe(true)
-      expect(gate?.textContent).toBe('0')
+      const gates = gatesContainer?.querySelectorAll('[class*="gate"]') ?? []
+      expect(gates.length).toBe(0)
     })
 
-    it('applies touch class to gates with 2s penalty', () => {
+    it('displays gate NUMBER (not penalty value) with touch class for 2s penalty', () => {
+      // Gate 1 has 2s penalty
       const competitor = createCompetitor({ gates: '2' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -304,10 +304,12 @@ describe('CurrentCompetitor', () => {
       const gate = gatesContainer?.querySelector('[class*="gate"]')
       expect(gate).not.toBeNull()
       expect(hasClassContaining(gate!, 'touch')).toBe(true)
-      expect(gate?.textContent).toBe('2')
+      // Should show gate NUMBER (1), not penalty value (2)
+      expect(gate?.textContent).toBe('1')
     })
 
-    it('applies miss class to gates with 50s penalty', () => {
+    it('displays gate NUMBER (not penalty value) with miss class for 50s penalty', () => {
+      // Gate 1 has 50s penalty
       const competitor = createCompetitor({ gates: '50' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -317,7 +319,8 @@ describe('CurrentCompetitor', () => {
       const gate = gatesContainer?.querySelector('[class*="gate"]')
       expect(gate).not.toBeNull()
       expect(hasClassContaining(gate!, 'miss')).toBe(true)
-      expect(gate?.textContent).toBe('50')
+      // Should show gate NUMBER (1), not penalty value (50)
+      expect(gate?.textContent).toBe('1')
     })
 
     it('renders empty gates container when gates string is empty', () => {
@@ -333,7 +336,8 @@ describe('CurrentCompetitor', () => {
       expect(gates?.length).toBe(0)
     })
 
-    it('renders gate title attribute with gate number', () => {
+    it('renders gate badges with correct gate numbers and titles', () => {
+      // Gates 2 and 3 have penalties
       const competitor = createCompetitor({ gates: '0,2,50' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -342,13 +346,17 @@ describe('CurrentCompetitor', () => {
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
       expect(gates).not.toBeNull()
-      expect(gates?.length).toBe(3)
-      expect(gates?.[0]).toHaveAttribute('title', 'Brána 1')
-      expect(gates?.[1]).toHaveAttribute('title', 'Brána 2')
-      expect(gates?.[2]).toHaveAttribute('title', 'Brána 3')
+      expect(gates?.length).toBe(2)
+      // Gate 2 (touch)
+      expect(gates?.[0]?.textContent).toBe('2')
+      expect(gates?.[0]).toHaveAttribute('title', 'Brána 2')
+      // Gate 3 (miss)
+      expect(gates?.[1]?.textContent).toBe('3')
+      expect(gates?.[1]).toHaveAttribute('title', 'Brána 3')
     })
 
     it('handles space-separated gates format', () => {
+      // Gates: 0=clear, 2=touch at gate 2, 50=miss at gate 3, 0=clear
       const competitor = createCompetitor({ gates: '0 2 50 0' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -356,7 +364,23 @@ describe('CurrentCompetitor', () => {
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
-      expect(gates?.length).toBe(4)
+      // Only gates with penalties: gate 2 (touch) and gate 3 (miss)
+      expect(gates?.length).toBe(2)
+    })
+
+    it('shows multiple penalty gates in correct order', () => {
+      // Penalties at gates 2, 4, 7 (indices 1, 3, 6)
+      const competitor = createCompetitor({ gates: '0,2,0,50,0,0,2' })
+      const { container } = render(
+        <CurrentCompetitor competitor={competitor} />
+      )
+
+      const gatesContainer = container.querySelector('[class*="gatesContainer"]')
+      const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
+      expect(gates?.length).toBe(3)
+      expect(gates?.[0]?.textContent).toBe('2') // Gate 2
+      expect(gates?.[1]?.textContent).toBe('4') // Gate 4
+      expect(gates?.[2]?.textContent).toBe('7') // Gate 7
     })
   })
 
@@ -413,7 +437,8 @@ describe('CurrentCompetitor', () => {
       expect(gatesContainer).toHaveAttribute('aria-label', 'Penalizace na branách')
     })
 
-    it('renders each gate with role="listitem" and aria-label', () => {
+    it('renders each gate badge with role="listitem" and aria-label', () => {
+      // Only gates with penalties are rendered: gate 2 (touch) and gate 3 (miss)
       const competitor = createCompetitor({ gates: '0,2,50' })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
@@ -422,10 +447,10 @@ describe('CurrentCompetitor', () => {
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
 
+      expect(gates?.length).toBe(2)
       expect(gates?.[0]).toHaveAttribute('role', 'listitem')
-      expect(gates?.[0]).toHaveAttribute('aria-label', 'Brána 1: čistě')
-      expect(gates?.[1]).toHaveAttribute('aria-label', 'Brána 2: dotyk, 2 sekundy')
-      expect(gates?.[2]).toHaveAttribute('aria-label', 'Brána 3: neprojetí, 50 sekund')
+      expect(gates?.[0]).toHaveAttribute('aria-label', 'Brána 2: dotyk, 2 sekundy')
+      expect(gates?.[1]).toHaveAttribute('aria-label', 'Brána 3: neprojetí, 50 sekund')
     })
 
     it('renders TTB diff with aria-label for ahead (negative diff)', () => {
@@ -502,17 +527,26 @@ describe('CurrentCompetitor', () => {
       expect(gates?.length).toBe(0)
     })
 
-    it('handles competitor with many gates', () => {
-      // 25 gates (typical for slalom)
-      const gatesStr = Array(25).fill('0').join(',')
-      const competitor = createCompetitor({ gates: gatesStr })
+    it('handles competitor with many gates with penalties', () => {
+      // 25 gates (typical for slalom), penalties at gates 5, 10, 15, 20
+      const gatesArr = Array(25).fill('0')
+      gatesArr[4] = '2'  // Gate 5 - touch
+      gatesArr[9] = '50' // Gate 10 - miss
+      gatesArr[14] = '2' // Gate 15 - touch
+      gatesArr[19] = '2' // Gate 20 - touch
+      const competitor = createCompetitor({ gates: gatesArr.join(',') })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
       const gatesContainer = container.querySelector('[class*="gatesContainer"]')
       const gates = gatesContainer?.querySelectorAll('[class*="gate"]:not([class*="gatesContainer"])')
-      expect(gates?.length).toBe(25)
+      // Only 4 gates have penalties
+      expect(gates?.length).toBe(4)
+      expect(gates?.[0]?.textContent).toBe('5')
+      expect(gates?.[1]?.textContent).toBe('10')
+      expect(gates?.[2]?.textContent).toBe('15')
+      expect(gates?.[3]?.textContent).toBe('20')
     })
   })
 })

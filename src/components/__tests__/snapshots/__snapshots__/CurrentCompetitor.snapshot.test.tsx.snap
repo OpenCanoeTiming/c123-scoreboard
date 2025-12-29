@@ -90,48 +90,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -227,48 +186,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -364,48 +282,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -475,48 +352,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -591,48 +427,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - de
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -697,48 +492,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - fi
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -808,48 +562,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hi
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -927,48 +640,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - ru
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -1038,88 +710,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 6: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 6"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 7: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 7"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 8: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 8"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 9: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 9"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 10: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 10"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -1191,14 +782,6 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
         role="list"
       >
         <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
           aria-label="Brána 2: dotyk, 2 sekundy"
           class="_gate_610b2e _touch_610b2e"
           role="listitem"
@@ -1207,20 +790,12 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           2
         </div>
         <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
           aria-label="Brána 4: neprojetí, 50 sekund"
           class="_gate_610b2e _miss_610b2e"
           role="listitem"
           title="Brána 4"
         >
-          50
+          4
         </div>
         <div
           aria-label="Brána 5: dotyk, 2 sekundy"
@@ -1228,47 +803,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           role="listitem"
           title="Brána 5"
         >
-          2
-        </div>
-        <div
-          aria-label="Brána 6: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 6"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 7: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 7"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 8: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 8"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 9: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 9"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 10: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 10"
-        >
-          0
+          5
         </div>
       </div>
     </div>
@@ -1412,28 +947,12 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
         role="list"
       >
         <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
           aria-label="Brána 3: dotyk, 2 sekundy"
           class="_gate_610b2e _touch_610b2e"
           role="listitem"
           title="Brána 3"
         >
-          2
+          3
         </div>
       </div>
     </div>
@@ -1507,84 +1026,12 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
         role="list"
       >
         <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
           aria-label="Brána 3: neprojetí, 50 sekund"
           class="_gate_610b2e _miss_610b2e"
           role="listitem"
           title="Brána 3"
         >
-          50
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 6: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 6"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 7: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 7"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 8: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 8"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 9: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 9"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 10: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 10"
-        >
-          0
+          3
         </div>
       </div>
     </div>
@@ -1658,84 +1105,12 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
         role="list"
       >
         <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
           aria-label="Brána 2: dotyk, 2 sekundy"
           class="_gate_610b2e _touch_610b2e"
           role="listitem"
           title="Brána 2"
         >
           2
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 6: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 6"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 7: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 7"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 8: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 8"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 9: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 9"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 10: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 10"
-        >
-          0
         </div>
       </div>
     </div>
@@ -1807,48 +1182,7 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -1918,48 +1252,7 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
@@ -2029,48 +1322,7 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      >
-        <div
-          aria-label="Brána 1: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 1"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 2: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 2"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 3: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 3"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 4: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 4"
-        >
-          0
-        </div>
-        <div
-          aria-label="Brána 5: čistě"
-          class="_gate_610b2e _clear_610b2e"
-          role="listitem"
-          title="Brána 5"
-        >
-          0
-        </div>
-      </div>
+      />
     </div>
   </div>
 </div>
