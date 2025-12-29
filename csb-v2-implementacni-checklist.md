@@ -280,7 +280,7 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 ### 🔍 Revize: Fáze 10
 
 - [x] V2 je vizuálně nerozeznatelný od originálu (ověřeno porovnáním screenshotů 2025-12-29)
-- [x] Všechny funkční testy prochází (570 unit, 82 E2E passed)
+- [x] Všechny funkční testy prochází (570 unit, 87 E2E passed)
 - [x] Performance srovnatelná nebo lepší (FPS ~44, memory stable, load <1s)
 - [ ] **Tag:** `v2.0.0` (čeká na hardware testování)
 
@@ -321,7 +321,7 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 ```
 Build:      ✅ OK (437 kB JS, 19 kB CSS)
 Unit testy: ✅ 570 testů (25 test suites)
-E2E testy:  ✅ 82 passed, 44 skipped (CLI server tests)
+E2E testy:  ✅ 87 passed, 39 skipped (CLI server tests)
 Performance: ✅ FPS ~44, memory stable, load <1s
 ```
 
@@ -348,6 +348,27 @@ Uloženy v `tests/e2e/comparison-screenshots/`:
 - `original-oncourse.png` vs `new-oncourse.png`
 - `original-results.png` vs `new-results.png`
 - `styles-comparison.json` - porovnání CSS stylů
+
+### Přísná vizuální kontrola (2025-12-29, večer)
+
+Provedeno detailní porovnání aktuálních V2 screenshotů s referenčními screenshoty originálu:
+
+| Layout | Originál | V2 | Výsledek |
+|--------|----------|-----|----------|
+| Vertical 1080×1920 | original-live-vertical.png | v2-vertical-current.png | ✅ Shodné |
+| Ledwall 768×384 | original-ledwall.png | v2-ledwall-current.png | ✅ Shodné |
+
+**Kontrolované aspekty:**
+- ✅ TopBar (logo, partners positioning)
+- ✅ Title (font 48px, uppercase, kategorie)
+- ✅ CurrentCompetitor (žlutý trojúhelník, bib, name, gate badges, total penalty, live time)
+- ✅ ResultsList (6 sloupců vertical, 5 ledwall, alternující barvy #1d1d1d/#111111)
+- ✅ Footer (partners logo, skrytý v ledwall)
+- ✅ Gate badges (žluté 2s touch, červené 50s miss, čísla branek)
+- ✅ Penalty badge formát (bez "s" suffixu)
+- ✅ Time formát (raw sekundy jako 78.99, 324.24)
+
+**Závěr:** Žádné nové vizuální rozdíly nebyly nalezeny. V2 je vizuálně identická s originálem.
 
 ### Commity
 - `02adce2` fix: align visual styles with original v1
