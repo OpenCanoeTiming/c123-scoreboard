@@ -73,24 +73,16 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -169,24 +161,16 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -265,24 +249,16 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -335,24 +311,16 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -410,24 +378,16 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - de
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -475,24 +435,16 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - fi
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -545,24 +497,16 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hi
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -623,24 +567,16 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - ru
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -693,24 +629,16 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -763,20 +691,6 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _miss_610b2e"
-        >
-          54
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
@@ -804,6 +718,11 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           title="Brána 5"
         >
           5
+        </div>
+        <div
+          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+        >
+          54
         </div>
       </div>
     </div>
@@ -858,24 +777,16 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -928,20 +839,6 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _touch_610b2e"
-        >
-          2
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
@@ -953,6 +850,11 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           title="Brána 3"
         >
           3
+        </div>
+        <div
+          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+        >
+          2
         </div>
       </div>
     </div>
@@ -1007,20 +909,6 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _miss_610b2e"
-        >
-          50
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
@@ -1032,6 +920,11 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           title="Brána 3"
         >
           3
+        </div>
+        <div
+          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
+        >
+          50
         </div>
       </div>
     </div>
@@ -1086,20 +979,6 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _touch_610b2e"
-        >
-          2
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
@@ -1109,6 +988,11 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
           class="_gate_610b2e _touch_610b2e"
           role="listitem"
           title="Brána 2"
+        >
+          2
+        </div>
+        <div
+          class="_totalPenaltyBadge_610b2e _hasPenalty_610b2e"
         >
           2
         </div>
@@ -1165,24 +1049,16 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1235,24 +1111,16 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1305,24 +1173,16 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
       class="_penaltiesRow_610b2e"
     >
       <div
-        class="_penaltyTotal_610b2e"
-      >
-        <span
-          class="_penaltyLabel_610b2e"
-        >
-          Pen
-        </span>
-        <span
-          class="_penaltyValue_610b2e _clear_610b2e"
-        >
-          0
-        </span>
-      </div>
-      <div
         aria-label="Penalizace na branách"
         class="_gatesContainer_610b2e"
         role="list"
-      />
+      >
+        <div
+          class="_totalPenaltyBadge_610b2e _noPenalty_610b2e"
+        >
+          0
+        </div>
+      </div>
     </div>
   </div>
 </div>

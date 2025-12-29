@@ -18,15 +18,6 @@ interface CurrentCompetitorProps {
 }
 
 /**
- * Get CSS class for penalty value
- */
-function getPenaltyClass(penalty: number): string {
-  if (penalty === 0) return styles.clear
-  if (penalty <= 4) return styles.touch // 2s or 4s (double touch)
-  return styles.miss // 50s
-}
-
-/**
  * Get CSS class for gate penalty
  */
 function getGateClass(penalty: GatePenalty): string {
@@ -178,17 +169,8 @@ export function CurrentCompetitor({
         </div>
       )}
 
-      {/* Penalties row - only show gates with penalties, display gate numbers */}
+      {/* Penalties row - gate badges followed by total penalty badge */}
       <div className={styles.penaltiesRow}>
-        <div className={styles.penaltyTotal}>
-          <span className={styles.penaltyLabel}>Pen</span>
-          <span
-            className={`${styles.penaltyValue} ${getPenaltyClass(competitor.pen)}`}
-          >
-            {competitor.pen}
-          </span>
-        </div>
-
         {/* Gate penalties visualization - shows only gates WITH penalties */}
         <div className={styles.gatesContainer} role="list" aria-label="Penalizace na branách">
           {penaltyGates.map(({ gateNumber, penalty }) => (
@@ -202,6 +184,13 @@ export function CurrentCompetitor({
               {getGateDisplay(gateNumber)}
             </div>
           ))}
+
+          {/* Total penalty badge - positioned after gate badges */}
+          <div
+            className={`${styles.totalPenaltyBadge} ${competitor.pen > 0 ? styles.hasPenalty : styles.noPenalty}`}
+          >
+            {competitor.pen}
+          </div>
         </div>
       </div>
     </div>

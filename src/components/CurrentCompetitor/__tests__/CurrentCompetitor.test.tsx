@@ -205,67 +205,68 @@ describe('CurrentCompetitor', () => {
   })
 
   describe('penalty display', () => {
-    it('renders total penalty', () => {
+    it('renders total penalty badge', () => {
       const competitor = createCompetitor({ pen: 4 })
-      render(<CurrentCompetitor competitor={competitor} />)
+      const { container } = render(<CurrentCompetitor competitor={competitor} />)
 
-      expect(screen.getByText('Pen')).toBeInTheDocument()
-      expect(screen.getByText('4')).toBeInTheDocument()
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(penaltyBadge?.textContent).toBe('4')
     })
 
-    it('applies clear class for zero penalty', () => {
+    it('applies noPenalty class for zero penalty', () => {
       const competitor = createCompetitor({ pen: 0 })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyValue = container.querySelector('[class*="penaltyValue"]')
-      expect(penaltyValue).not.toBeNull()
-      expect(hasClassContaining(penaltyValue!, 'clear')).toBe(true)
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(hasClassContaining(penaltyBadge!, 'noPenalty')).toBe(true)
     })
 
-    it('applies touch class for 2s penalty', () => {
+    it('applies hasPenalty class for 2s penalty', () => {
       const competitor = createCompetitor({ pen: 2 })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyValue = container.querySelector('[class*="penaltyValue"]')
-      expect(penaltyValue).not.toBeNull()
-      expect(hasClassContaining(penaltyValue!, 'touch')).toBe(true)
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
 
-    it('applies touch class for 4s penalty (double touch)', () => {
+    it('applies hasPenalty class for 4s penalty (double touch)', () => {
       const competitor = createCompetitor({ pen: 4 })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyValue = container.querySelector('[class*="penaltyValue"]')
-      expect(penaltyValue).not.toBeNull()
-      expect(hasClassContaining(penaltyValue!, 'touch')).toBe(true)
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
 
-    it('applies miss class for 50s penalty', () => {
+    it('applies hasPenalty class for 50s penalty', () => {
       const competitor = createCompetitor({ pen: 50 })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyValue = container.querySelector('[class*="penaltyValue"]')
-      expect(penaltyValue).not.toBeNull()
-      expect(hasClassContaining(penaltyValue!, 'miss')).toBe(true)
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
 
-    it('applies miss class for 100s penalty (double miss)', () => {
+    it('applies hasPenalty class for 100s penalty (double miss)', () => {
       const competitor = createCompetitor({ pen: 100 })
       const { container } = render(
         <CurrentCompetitor competitor={competitor} />
       )
 
-      const penaltyValue = container.querySelector('[class*="penaltyValue"]')
-      expect(penaltyValue).not.toBeNull()
-      expect(hasClassContaining(penaltyValue!, 'miss')).toBe(true)
+      const penaltyBadge = container.querySelector('[class*="totalPenaltyBadge"]')
+      expect(penaltyBadge).not.toBeNull()
+      expect(hasClassContaining(penaltyBadge!, 'hasPenalty')).toBe(true)
     })
   })
 

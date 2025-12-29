@@ -152,38 +152,6 @@
   gap: var(--spacing-md);
 }
 
-.penaltyTotal {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.penaltyLabel {
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.penaltyValue {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-}
-
-.penaltyValue.clear {
-  color: var(--color-penalty-clear);
-}
-
-.penaltyValue.touch {
-  color: var(--color-penalty-touch);
-}
-
-.penaltyValue.miss {
-  color: var(--color-penalty-miss);
-}
-
 /* Gate penalties display */
 .gatesContainer {
   display: flex;
@@ -222,6 +190,32 @@
 .gate.pending {
   background-color: rgba(102, 102, 102, 0.2);
   color: var(--color-text-muted);
+}
+
+/* Total penalty badge - red rectangle next to gate badges */
+.totalPenaltyBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 2px 8px;
+  margin-left: 5px;
+  font-family: var(--font-family-mono);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 0; /* Rectangle, not rounded - matches original */
+  color: var(--color-text-primary);
+}
+
+.totalPenaltyBadge.hasPenalty {
+  background-color: #cc3333; /* Red background for penalties */
+}
+
+.totalPenaltyBadge.noPenalty {
+  background-color: rgba(51, 153, 102, 0.8);
+  color: var(--color-text-secondary);
 }
 
 /* Rank display */

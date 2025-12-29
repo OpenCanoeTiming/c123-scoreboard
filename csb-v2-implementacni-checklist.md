@@ -146,16 +146,16 @@ Zdrojové soubory: `../canoe-scoreboard-original/default-assets/`
 - [x] Barva: `rgba(34, 34, 34, 0.9)`
 - [x] Border-radius: 4px
 
-### 9.12 Total penalty badge vedle gate badges
+### 9.12 Total penalty badge vedle gate badges ✅
 
 **Originál má total penalty jako červený obdélník VEDLE gate badges**
 
 Příklad: `[2][3][4] 54` (gate badges + total)
 
-- [ ] Přidat total penalty badge do OnCourse/CurrentCompetitor
-- [ ] Pozice: za gate badges, před časem
-- [ ] Styl: červený obdélník (#cc3333), border-radius 0
-- [ ] Font size: 32px (vertical), 36px (ledwall)
+- [x] Přidat total penalty badge do OnCourse/CurrentCompetitor
+- [x] Pozice: za gate badges, před časem
+- [x] Styl: červený obdélník (#cc3333), border-radius 0
+- [x] Font size: 18px v CurrentCompetitor (badge formát)
 
 ### 9.13 Ledwall-specific adjustments
 
