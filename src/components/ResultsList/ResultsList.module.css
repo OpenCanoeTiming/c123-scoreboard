@@ -147,19 +147,25 @@
 }
 
 /* Ledwall layout - adjust grid for hidden behind column */
-/* Ledwall grid: 80px 40px 1fr 40px 100px (5 columns - behind hidden) per original v1 */
+/* Ledwall grid: 80px 40px 1fr 40px 130px (5 columns - behind hidden) */
+/* Time column wider (130px vs 100px) to fit 3-digit seconds like 120.45 at 36px font */
 .row.ledwall {
-  grid-template-columns: 80px 40px 1fr 40px 100px;
+  grid-template-columns: 80px 40px 1fr 40px 130px;
   gap: var(--spacing-md);  /* Larger gap for ledwall visibility */
   height: 56px;
 }
 
 /* Ledwall font sizes - larger for visibility */
 .row.ledwall .rank,
-.row.ledwall .bib,
 .row.ledwall .name,
 .row.ledwall .time {
   font-size: 36px;
+}
+
+/* Bib smaller to fit in box - matches original v1 */
+.row.ledwall .bib {
+  font-size: 22px;
+  padding: 2px 2px;
 }
 
 .row.ledwall .penalty {
