@@ -1800,14 +1800,15 @@ Všechny zbývající nesplněné kroky v checklistu vyžadují **manuální pr�
 
 ### Další kroky k vyladění funkčnosti (rozšířené testování)
 
-#### 1. Performance benchmark (priorita: střední)
+#### 1. Performance benchmark (priorita: střední) - ✅ HOTOVO
 ```bash
-# Vytvořit Vitest bench testy
-src/__tests__/performance/ResultsList.bench.ts
-src/__tests__/performance/ReplayProvider.bench.ts
+# Spustit benchmark testy
+npx vitest bench
 ```
-- Měřit render time pro různé počty položek
-- Cíl: < 16ms pro 60fps
+- [x] `src/__tests__/performance/ResultsList.bench.ts` - 17 benchmarků
+- [x] `src/__tests__/performance/ReplayProvider.bench.ts` - 12 benchmarků
+- Výsledky: render 10 položek ~28x rychlejší než 500 položek
+- Parsing 100 zpráv ~70x rychlejší než 5000 zpráv
 
 #### 2. Snapshot regression testy (priorita: nízká)
 ```bash
@@ -1870,6 +1871,67 @@ http://localhost:5173/?source=replay&speed=10
    - [ ] `?source=cli&host=192.168.68.108:8081`
    - [ ] Odpojit/připojit server → reconnect overlay
    - [ ] Real-time data flow
+
+---
+
+## Review v1.7 (2025-12-29) - Tag: `review-ready-v1.7`
+
+### Stav projektu
+
+```
+Build:      ✅ Úspěšný (440 kB JS, 14 kB CSS)
+Unit testy: ✅ 428 testů prochází (17 test suites)
+Benchmarks: ✅ 29 performance benchmarků
+ESLint:     ✅ 0 errors
+TypeScript: ✅ Strict mode
+```
+
+### Provedeno v této iteraci
+
+1. **Performance benchmark testy**
+   - `src/__tests__/performance/ResultsList.bench.ts` - 17 benchmarků
+     - Initial render (10, 50, 100, 200, 500 položek)
+     - Re-render performance (update, reorder)
+     - Highlight activation/deactivation
+     - Visibility toggle, Layout mode switch
+     - Empty state transitions
+   - `src/__tests__/performance/ReplayProvider.bench.ts` - 12 benchmarků
+     - JSONL parsing (100, 500, 1000, 5000 zpráv)
+     - Message dispatch throughput
+     - Callback subscription/unsubscription
+     - Seek, speed change, connect/disconnect cycles
+
+### Výsledky benchmarků
+
+| Test | Výsledek | Poznámka |
+|------|----------|----------|
+| Render 10 položek | ~366 ops/s | Baseline |
+| Render 500 položek | ~13 ops/s | 28x pomalejší |
+| Parse 100 zpráv | ~379 ops/s | Baseline |
+| Parse 5000 zpráv | ~5.3 ops/s | 70x pomalejší |
+| Callback sub/unsub | ~21k ops/s | Velmi rychlé |
+
+### Závěr - všechny automatizovatelné kroky dokončeny
+
+Všechny kroky, které lze provést automaticky (bez prohlížeče, bez přístupu k live serveru, bez fyzického hardware), byly dokončeny.
+
+**Statistika implementace:**
+- 17 test suites
+- 428 jednotkových testů
+- 29 performance benchmarků
+- 77 TypeScript modulů
+- Build: 440 kB JS + 14 kB CSS (gzip: ~132 kB)
+
+### Zbývající kroky - vyžadují manuální práci
+
+| Kategorie | Počet | Důvod nelze automatizovat |
+|-----------|-------|---------------------------|
+| Vizuální testování | ~25 | Prohlížeč + lidské oči |
+| Live server test | ~5 | CLI server není přístupný |
+| Playwright E2E | ~4 | Chybí systémové závislosti |
+| C123Provider | 3 | TCP socket nelze v prohlížeči |
+| Hardware test | ~4 | Fyzická zařízení |
+| Architekturální rozhodnutí | ~5 | Vyžaduje rozhodnutí uživatele |
 
 ---
 
