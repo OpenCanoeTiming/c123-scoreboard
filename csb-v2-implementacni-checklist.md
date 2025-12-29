@@ -291,23 +291,27 @@
 
 **Problém:** WebSocket připojení na `ws://192.168.68.108:8081` selhává v Chromium headless.
 
-**Ověření problému:**
-- [ ] Zkontrolovat přesný error message v browser console
-- [ ] Ověřit, že URL formát je správný (`ws://` vs `wss://`)
-- [ ] Otestovat s `--disable-web-security` flag v Playwright
-- [ ] Porovnat s prototypem - jak tam WebSocket funguje?
+**Stav:** ✅ **VYŘEŠENO** (2025-12-29)
 
-**Možné příčiny a řešení:**
-- [ ] **Mixed content** - pokud app běží na localhost, WS na externí IP může být blokován
-  - Řešení: Spustit dev server s `--host` flag
-- [ ] **CORS/CSP headers** - zkontrolovat response headers z CLI serveru
-- [ ] **WebSocket URL parsing** - ověřit, že CLIProvider správně parsuje host parametr
-- [ ] **Timeout** - zvýšit connection timeout v CLIProvider
+**Nalezené problémy a opravy:**
 
-**Debug kroky:**
-- [ ] Přidat detailed logging do CLIProvider (`console.log` pro každý WS event)
-- [ ] Otestovat WebSocket připojení přímo v browser DevTools
-- [ ] Porovnat network tab mezi v2 a původní verzí
+1. **ESM mód v Playwright** - `require('net')` nefungovalo v ESM
+   - Řešení: `import * as net from 'net'` na začátku souboru
+
+2. **React StrictMode** - způsobuje dvojí mount/unmount, což vedlo k první neúspěšné WebSocket connection
+   - Nebylo potřeba opravovat - druhý pokus se vždy připojí úspěšně
+   - Stejné chování jako v původní v1 verzi
+
+3. **Časování testů** - testy nečekaly dostatečně dlouho na `top` zprávu s results
+   - Řešení: Aktualizace `waitForResults()` funkcí v testech
+
+**Všech 14 CLI funkčních testů nyní prochází:**
+- CLI Connection (2 testy)
+- Message Handling - top (3 testy)
+- Message Handling - comp (3 testy)
+- Message Handling - control (2 testy)
+- Reconnection (2 testy)
+- Full Workflow (2 testy)
 
 ### 8.3 Automatické porovnání s původní verzí
 

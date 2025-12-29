@@ -1,4 +1,23 @@
 import { test, expect, Page } from '@playwright/test'
+import * as net from 'net'
+
+/**
+ * Get layout type based on viewport dimensions
+ */
+function getLayoutType(viewport: { width: number; height: number } | null): 'vertical' | 'ledwall' {
+  if (!viewport) return 'vertical'
+  // Ledwall is typically 768×384 or similar wide format
+  return viewport.width > viewport.height ? 'ledwall' : 'vertical'
+}
+
+/**
+ * Build CLI URL with correct layout type for current viewport
+ */
+function buildCLIUrl(page: Page, extraParams = ''): string {
+  const layoutType = getLayoutType(page.viewportSize())
+  const base = `/?type=${layoutType}&source=cli&host=${CLI_HOST}`
+  return extraParams ? `${base}&${extraParams}` : base
+}
 
 /**
  * CLI Functional E2E Tests
@@ -22,9 +41,8 @@ const CLI_WS_URL = `ws://${CLI_HOST}`
 async function isCLIServerAvailable(): Promise<boolean> {
   return new Promise((resolve) => {
     try {
-      const net = require('net')
       const socket = new net.Socket()
-      socket.setTimeout(3000)
+      socket.setTimeout(5000)
 
       socket.on('connect', () => {
         socket.destroy()
@@ -104,7 +122,7 @@ test.describe('CLI Connection', () => {
 
   test('connects to CLI WebSocket server', async ({ page }) => {
     // Navigate to app with CLI source
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for connection to be established
@@ -121,7 +139,7 @@ test.describe('CLI Connection', () => {
 
   test('shows connecting/reconnecting status', async ({ page }) => {
     // Use a slow approach to catch the connecting state
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
 
     // The connection status component should briefly show connecting
     // Since this is fast, we mainly verify the page loads without errors
@@ -152,7 +170,7 @@ test.describe('CLI Message Handling - top (results)', () => {
   })
 
   test('displays results from top message', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}&disableScroll=true`)
+    await page.goto(buildCLIUrl(page, "disableScroll=true"))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for results to appear
@@ -169,7 +187,7 @@ test.describe('CLI Message Handling - top (results)', () => {
   })
 
   test('shows correct result row data (rank, bib, name, time)', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}&disableScroll=true`)
+    await page.goto(buildCLIUrl(page, "disableScroll=true"))
     await page.waitForLoadState('domcontentloaded')
 
     await waitForResults(page)
@@ -198,7 +216,7 @@ test.describe('CLI Message Handling - top (results)', () => {
   })
 
   test('updates results when new top message arrives', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}&disableScroll=true`)
+    await page.goto(buildCLIUrl(page, "disableScroll=true"))
     await page.waitForLoadState('domcontentloaded')
 
     await waitForResults(page)
@@ -226,7 +244,7 @@ test.describe('CLI Message Handling - comp (current competitor)', () => {
   })
 
   test('displays current competitor from comp message', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for either oncourse to appear or results (in case no competitor is running)
@@ -250,7 +268,7 @@ test.describe('CLI Message Handling - comp (current competitor)', () => {
   })
 
   test('shows competitor bib and name', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     const hasOncourse = await page
@@ -273,7 +291,7 @@ test.describe('CLI Message Handling - comp (current competitor)', () => {
   })
 
   test('shows running time and gates', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     const hasOncourse = await page
@@ -299,23 +317,14 @@ test.describe('CLI Message Handling - control (visibility)', () => {
   })
 
   test('respects visibility control for results', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
-    // Wait for initial connection
-    await page.waitForFunction(
-      () => {
-        return (
-          document.querySelector('[data-testid="results-list"]') ||
-          document.querySelector('[data-testid="connection-status"]')
-        )
-      },
-      { timeout: 15000 }
-    )
+    // Wait for results to appear with data
+    await waitForResults(page)
 
     // The visibility is controlled by CLI server
-    // We can only verify the component responds to current visibility state
-    // If results are visible, they should be properly rendered
+    // Verify the component renders properly when visible
     const resultsList = page.locator('[data-testid="results-list"]')
     const isVisible = await resultsList.isVisible().catch(() => false)
 
@@ -328,7 +337,7 @@ test.describe('CLI Message Handling - control (visibility)', () => {
   })
 
   test('respects visibility control for current competitor', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     await page.waitForTimeout(3000) // Allow time for initial data
@@ -352,7 +361,7 @@ test.describe('CLI Reconnection', () => {
   })
 
   test('maintains connection over time', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}&disableScroll=true`)
+    await page.goto(buildCLIUrl(page, "disableScroll=true"))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for initial connection
@@ -372,7 +381,7 @@ test.describe('CLI Reconnection', () => {
   })
 
   test('handles rapid data updates without crashing', async ({ page }) => {
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for connection
@@ -402,7 +411,7 @@ test.describe('CLI Integration - Full Workflow', () => {
 
   test('vertical layout displays all components with live data', async ({ page }) => {
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto(`/?type=vertical&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for data
@@ -425,7 +434,7 @@ test.describe('CLI Integration - Full Workflow', () => {
 
   test('ledwall layout displays correctly with live data', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto(`/?type=ledwall&source=cli&host=${CLI_HOST}`)
+    await page.goto(buildCLIUrl(page))
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for data
