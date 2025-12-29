@@ -29,13 +29,22 @@
    ============================================ */
 
 .ledwall {
-  padding: var(--spacing-xs) var(--spacing-md);
-  /* In ledwall, title is left-aligned with space for time on right */
+  /* In ledwall, title is absolutely positioned over TopBar */
+  position: absolute;
+  top: 8px;
+  left: 85px;
+  width: 70%;  /* Leave space for time display on right */
+  padding: 0;
+  z-index: 15;
   justify-content: flex-start;
-  padding-left: 80px;  /* Space for left logo */
 }
 
 .ledwall .text {
   /* Same 48px font size as vertical - per original v1 styles */
   font-size: var(--font-size-3xl);
+  /* Handle long titles in ledwall */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 580px;
 }

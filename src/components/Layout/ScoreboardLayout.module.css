@@ -19,13 +19,21 @@
 }
 
 .header {
+  position: relative;  /* For absolutely positioned Title and TimeDisplay */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
   background-color: var(--color-bg-secondary);
   padding: 0 var(--spacing-md);
-  overflow: hidden;
+  overflow: visible;  /* Allow absolutely positioned elements to overflow */
+}
+
+/* Ledwall mode - header contains TopBar with overlaid Title and TimeDisplay */
+.layout[data-layout-mode='ledwall'] .header {
+  background-color: transparent;
+  padding: 0;
+  overflow: visible;
 }
 
 .main {
