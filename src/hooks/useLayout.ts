@@ -194,7 +194,6 @@ function updateCSSVariables(config: LayoutConfig): void {
   root.style.setProperty('--header-height', `${config.headerHeight}px`)
   root.style.setProperty('--footer-height', `${config.footerHeight}px`)
   root.style.setProperty('--layout-mode', config.layoutMode)
-  root.style.setProperty('--scale-factor', String(config.scaleFactor))
 
   // Set result row font sizes based on layout mode (from analysis/06-styly.md)
   if (config.layoutMode === 'ledwall') {
@@ -307,8 +306,8 @@ export function useLayout(): LayoutConfig {
         modeConfig.currentCompetitorHeight +
         urlParams.displayRows * rowHeight
 
-      // Scale to fill viewport height
-      scaleFactor = viewport.height / unscaledContentHeight
+      // Scale to fill viewport height (guard against division by zero)
+      scaleFactor = unscaledContentHeight > 0 ? viewport.height / unscaledContentHeight : 1.0
     } else {
       // Auto-calculate based on available height
       const calculated = calculateVisibleRows(Math.max(availableHeight, 200), modeConfig)

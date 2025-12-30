@@ -1,4 +1,4 @@
-import type { ReactNode, CSSProperties } from 'react'
+import { useMemo, type ReactNode, type CSSProperties } from 'react'
 import { useLayout } from '@/hooks'
 import styles from './ScoreboardLayout.module.css'
 
@@ -49,16 +49,17 @@ export function ScoreboardLayout({
 
   // Apply scaling when displayRows is set
   const isScaled = displayRows !== null && scaleFactor !== 1.0
-  const layoutStyle: CSSProperties = isScaled
-    ? {
-        transform: `scale(${scaleFactor})`,
-        transformOrigin: 'top left',
-        width: `${viewportWidth / scaleFactor}px`,
-        height: 'auto',
-        minHeight: 'auto',
-        maxHeight: 'none',
-      }
-    : {}
+
+  // Memoize layout style to avoid object recreation on every render
+  // Only transform/transformOrigin/width needed - height constraints handled by CSS .scaled class
+  const layoutStyle = useMemo((): CSSProperties => {
+    if (!isScaled) return {}
+    return {
+      transform: `scale(${scaleFactor})`,
+      transformOrigin: 'top left',
+      width: `${viewportWidth / scaleFactor}px`,
+    }
+  }, [isScaled, scaleFactor, viewportWidth])
 
   return (
     <div

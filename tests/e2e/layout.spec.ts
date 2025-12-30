@@ -315,20 +315,27 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
     expect(layoutRect!.width).toBeGreaterThanOrEqual(1800) // Close to 1920
   })
 
-  test('displayRows=3 shows larger elements', async ({ page }) => {
+  test('displayRows=3 applies scale transform', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
     await page.goto('/?type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
-    // Get scale factor
-    const transform = await page.evaluate(() => {
+    // Get scale factor from transform matrix
+    const scaleInfo = await page.evaluate(() => {
       const layout = document.querySelector('[data-layout-mode]')
       if (!layout) return null
-      return window.getComputedStyle(layout).transform
+      const transform = window.getComputedStyle(layout).transform
+      // Parse scale from matrix(a, b, c, d, tx, ty) - 'a' is scaleX
+      const match = transform.match(/matrix\(([^,]+),/)
+      const scale = match ? parseFloat(match[1]) : null
+      return { transform, scale }
     })
 
-    // Transform should be applied (scale > 1 for fewer rows)
-    expect(transform).not.toBe('none')
+    // Transform should be applied with scale factor
+    expect(scaleInfo).not.toBeNull()
+    expect(scaleInfo!.transform).not.toBe('none')
+    // With displayRows=3 on 384px viewport, scale should be > 1 (content is scaled up)
+    expect(scaleInfo!.scale).toBeGreaterThan(1)
   })
 
   test('no scaling when displayRows is not set', async ({ page }) => {

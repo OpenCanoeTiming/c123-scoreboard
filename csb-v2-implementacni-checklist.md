@@ -600,15 +600,15 @@ Tag: `pre-review-phase11`
 
 ### Střední priorita - Kód
 
-- [ ] **useLayout.ts:311 - potenciální division by zero** - `scaleFactor = viewport.height / unscaledContentHeight` - přidat guard `unscaledContentHeight > 0 ? ... : 1.0`
-- [ ] **layout.spec.ts:318-332 - zavádějící test name** - "displayRows=3 shows larger elements" testuje jen existenci transformu, ne že prvky jsou větší. Buď odstranit, nebo ověřit že scale > 1
+- [x] **useLayout.ts:311 - potenciální division by zero** - `scaleFactor = viewport.height / unscaledContentHeight` - přidat guard `unscaledContentHeight > 0 ? ... : 1.0` **OPRAVENO**
+- [x] **layout.spec.ts:318-332 - zavádějící test name** - "displayRows=3 shows larger elements" testuje jen existenci transformu, ne že prvky jsou větší. Buď odstranit, nebo ověřit že scale > 1 **OPRAVENO** - test přejmenován a rozšířen o ověření scale > 1
 
 ### Nízká priorita - Čistota kódu
 
-- [ ] **ScoreboardLayout.tsx:57-59 - redundantní inline styly** - `height: 'auto'` je nadbytečné když máme `minHeight: 'auto'`
-- [ ] **ScoreboardLayout.tsx:52-61 - missing useMemo** - layoutStyle object se vytváří každý render
-- [ ] **ScoreboardLayout.module.css:65-67 + tsx:57-59 - duplicitní style override** - CSS třída `.scaled` i inline styly nastavují stejné vlastnosti
-- [ ] **useLayout.ts:197 - nepoužitá CSS proměnná** - `--scale-factor` je nastavena ale nikde nepoužita v CSS
+- [x] **ScoreboardLayout.tsx:57-59 - redundantní inline styly** - `height: 'auto'` je nadbytečné když máme `minHeight: 'auto'` **OPRAVENO** - odstraněny redundantní height/minHeight/maxHeight, ponecháno pouze transform/transformOrigin/width
+- [x] **ScoreboardLayout.tsx:52-61 - missing useMemo** - layoutStyle object se vytváří každý render **OPRAVENO** - přidáno useMemo
+- [x] **ScoreboardLayout.module.css:65-67 + tsx:57-59 - duplicitní style override** - CSS třída `.scaled` i inline styly nastavují stejné vlastnosti **OPRAVENO** - inline styly zredukovány, CSS třída zachována
+- [x] **useLayout.ts:197 - nepoužitá CSS proměnná** - `--scale-factor` je nastavena ale nikde nepoužita v CSS **OPRAVENO** - odstraněna
 
 ### Nízká priorita - Testy
 
