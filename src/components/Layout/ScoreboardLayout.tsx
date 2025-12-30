@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
 import { useLayout } from '@/hooks'
 import styles from './ScoreboardLayout.module.css'
 
@@ -25,6 +25,10 @@ interface ScoreboardLayoutProps {
  * - Main: CurrentCompetitor and ResultsList (fills remaining space)
  * - Footer: Sponsors (hidden on ledwall)
  *
+ * When displayRows URL parameter is used, the layout is scaled using
+ * CSS transform to fill the viewport height with the specified number
+ * of result rows.
+ *
  * @example
  * ```tsx
  * <ScoreboardLayout
@@ -41,12 +45,26 @@ export function ScoreboardLayout({
   children,
   footer,
 }: ScoreboardLayoutProps) {
-  const { layoutMode, showFooter } = useLayout()
+  const { layoutMode, showFooter, scaleFactor, displayRows, viewportWidth } = useLayout()
+
+  // Apply scaling when displayRows is set
+  const isScaled = displayRows !== null && scaleFactor !== 1.0
+  const layoutStyle: CSSProperties = isScaled
+    ? {
+        transform: `scale(${scaleFactor})`,
+        transformOrigin: 'top left',
+        width: `${viewportWidth / scaleFactor}px`,
+        height: 'auto',
+        minHeight: 'auto',
+        maxHeight: 'none',
+      }
+    : {}
 
   return (
     <div
-      className={styles.layout}
+      className={`${styles.layout} ${isScaled ? styles.scaled : ''}`}
       data-layout-mode={layoutMode}
+      style={layoutStyle}
     >
       {header && (
         <header className={styles.header}>

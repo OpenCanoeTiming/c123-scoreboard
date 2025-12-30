@@ -31,6 +31,8 @@ export interface LayoutConfig {
   disableScroll: boolean
   /** Fixed number of display rows from URL param (null = auto-calculated) */
   displayRows: number | null
+  /** Scale factor for ledwall scaling (1.0 = no scaling, only set when displayRows is used) */
+  scaleFactor: number
 }
 
 /**
@@ -192,6 +194,7 @@ function updateCSSVariables(config: LayoutConfig): void {
   root.style.setProperty('--header-height', `${config.headerHeight}px`)
   root.style.setProperty('--footer-height', `${config.footerHeight}px`)
   root.style.setProperty('--layout-mode', config.layoutMode)
+  root.style.setProperty('--scale-factor', String(config.scaleFactor))
 
   // Set result row font sizes based on layout mode (from analysis/06-styly.md)
   if (config.layoutMode === 'ledwall') {
@@ -290,10 +293,22 @@ export function useLayout(): LayoutConfig {
     // Use displayRows from URL param if specified, otherwise auto-calculate
     let visibleRows: number
     let rowHeight: number
+    let scaleFactor = 1.0
+
     if (urlParams.displayRows !== null) {
       // Fixed row count from URL - use for ledwall scaling
       visibleRows = urlParams.displayRows
       rowHeight = modeConfig.targetRowHeight
+
+      // Calculate scale factor to fill viewport height
+      // Content height = header + currentCompetitor + (displayRows * rowHeight)
+      const unscaledContentHeight =
+        modeConfig.headerHeight +
+        modeConfig.currentCompetitorHeight +
+        urlParams.displayRows * rowHeight
+
+      // Scale to fill viewport height
+      scaleFactor = viewport.height / unscaledContentHeight
     } else {
       // Auto-calculate based on available height
       const calculated = calculateVisibleRows(Math.max(availableHeight, 200), modeConfig)
@@ -315,6 +330,7 @@ export function useLayout(): LayoutConfig {
       fontSizeCategory,
       disableScroll: urlParams.disableScroll,
       displayRows: urlParams.displayRows,
+      scaleFactor,
     }
   }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows])
 

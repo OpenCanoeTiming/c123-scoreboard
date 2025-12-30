@@ -312,15 +312,15 @@ Nový URL parametr pro ledwall mód, který určuje počet viditelných řádků
 ?type=ledwall&displayRows=8   // 8 řádků výsledků
 ```
 
-### 11.2 Výpočet škálování
+### 11.2 Výpočet škálování ✅
 
 Layout se škáluje tak, aby na výšku vyplnil disponibilní viewport s přesně zadaným počtem řádků.
 
-- [ ] Upravit `useLayout.ts` - přidat podporu pro `displayRows` parametr
-- [ ] Vypočítat `scaleFactor` = viewport_height / (header + oncourse + displayRows * rowHeight)
-- [ ] Aplikovat `transform: scale(scaleFactor)` na root kontejner
-- [ ] Nastavit `transform-origin: top left`
-- [ ] Kompenzovat šířku: `width: calc(100% / scaleFactor)`
+- [x] Upravit `useLayout.ts` - přidat podporu pro `displayRows` parametr
+- [x] Vypočítat `scaleFactor` = viewport_height / (header + oncourse + displayRows * rowHeight)
+- [x] Aplikovat `transform: scale(scaleFactor)` na root kontejner
+- [x] Nastavit `transform-origin: top left`
+- [x] Kompenzovat šířku: `width: calc(100% / scaleFactor)`
 
 ### 11.3 CSS transformace
 
