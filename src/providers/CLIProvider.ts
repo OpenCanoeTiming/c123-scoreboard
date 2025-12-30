@@ -1,23 +1,29 @@
-import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
+import type { ConnectionStatus, RaceConfig } from '@/types'
 import type {
   DataProvider,
   Unsubscribe,
   ResultsData,
   OnCourseData,
-  EventInfoData,
   ProviderError,
 } from './types'
 import {
   isObject,
-  safeString,
   validateTopMessage,
   validateCompMessage,
   validateOnCourseMessage,
   validateControlMessage,
   validateTextMessage,
 } from './utils/validation'
-import { parseResults, parseCompetitor } from './utils/parseMessages'
 import { CallbackManager } from './utils/CallbackManager'
+import {
+  transformTopMessage,
+  transformCompMessage,
+  transformOnCourseMessage,
+  transformControlMessage,
+  transformTitleMessage,
+  transformInfoTextMessage,
+  transformDayTimeMessage,
+} from './utils/messageHandlers'
 
 /**
  * CLIProvider options
@@ -288,14 +294,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-
-    const results: ResultsData = {
-      results: parseResults(payload),
-      raceName: safeString(payload.RaceName),
-      raceStatus: safeString(payload.RaceStatus),
-      highlightBib: payload.HighlightBib ? safeString(payload.HighlightBib) : null,
-    }
-
+    const results = transformTopMessage(payload)
     this.callbacks.emitResults(results)
   }
 
@@ -307,13 +306,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-    const current = parseCompetitor(payload)
-
-    const onCourseData: OnCourseData = {
-      current,
-      onCourse: current ? [current] : [],
-    }
-
+    const onCourseData = transformCompMessage(payload)
     this.callbacks.emitOnCourse(onCourseData)
   }
 
@@ -325,17 +318,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const competitors = message.data as unknown[]
-
-    const parsed = competitors
-      .filter((c) => isObject(c))
-      .map((c) => parseCompetitor(c as Record<string, unknown>))
-      .filter((c) => c !== null)
-
-    const onCourseData: OnCourseData = {
-      current: parsed[0] || null,
-      onCourse: parsed,
-    }
-
+    const onCourseData = transformOnCourseMessage(competitors)
     this.callbacks.emitOnCourse(onCourseData)
   }
 
@@ -347,17 +330,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-
-    const visibility: VisibilityState = {
-      displayCurrent: safeString(payload.displayCurrent) === '1',
-      displayTop: safeString(payload.displayTop) === '1',
-      displayTitle: safeString(payload.displayTitle) === '1',
-      displayTopBar: safeString(payload.displayTopBar) === '1',
-      displayFooter: safeString(payload.displayFooter) === '1',
-      displayDayTime: safeString(payload.displayDayTime) === '1',
-      displayOnCourse: safeString(payload.displayOnCourse) === '1',
-    }
-
+    const visibility = transformControlMessage(payload)
     this.callbacks.emitVisibility(visibility)
   }
 
@@ -369,12 +342,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-    const info: EventInfoData = {
-      title: safeString(payload.text),
-      infoText: '',
-      dayTime: '',
-    }
-
+    const info = transformTitleMessage(payload)
     this.callbacks.emitEventInfo(info)
   }
 
@@ -386,12 +354,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-    const info: EventInfoData = {
-      title: '',
-      infoText: safeString(payload.text),
-      dayTime: '',
-    }
-
+    const info = transformInfoTextMessage(payload)
     this.callbacks.emitEventInfo(info)
   }
 
@@ -403,12 +366,7 @@ export class CLIProvider implements DataProvider {
     }
 
     const payload = message.data as Record<string, unknown>
-    const info: EventInfoData = {
-      title: '',
-      infoText: '',
-      dayTime: safeString(payload.time),
-    }
-
+    const info = transformDayTimeMessage(payload)
     this.callbacks.emitEventInfo(info)
   }
 }

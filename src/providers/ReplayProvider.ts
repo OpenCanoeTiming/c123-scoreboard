@@ -1,14 +1,21 @@
-import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
+import type { ConnectionStatus, RaceConfig } from '@/types'
 import type {
   DataProvider,
   Unsubscribe,
   ResultsData,
   OnCourseData,
-  EventInfoData,
   ProviderError,
 } from './types'
-import { parseResults, parseCompetitor } from './utils/parseMessages'
 import { CallbackManager } from './utils/CallbackManager'
+import {
+  transformTopMessage,
+  transformCompMessage,
+  transformOnCourseMessage,
+  transformControlMessage,
+  transformTitleMessage,
+  transformInfoTextMessage,
+  transformDayTimeMessage,
+} from './utils/messageHandlers'
 
 /**
  * Recorded message structure from JSONL file
@@ -457,16 +464,9 @@ export class ReplayProvider implements DataProvider {
     if (!wrapper || !wrapper.data) {
       return
     }
-    const payload = wrapper.data
 
     // Transform to ResultsData - skip validation for replay (data is pre-validated)
-    const results: ResultsData = {
-      results: parseResults(payload, true),
-      raceName: (payload.RaceName as string) || '',
-      raceStatus: (payload.RaceStatus as string) || '',
-      highlightBib: payload.HighlightBib ? String(payload.HighlightBib) : null,
-    }
-
+    const results = transformTopMessage(wrapper.data, { skipValidation: true })
     this.callbacks.emitResults(results)
   }
 
@@ -477,90 +477,52 @@ export class ReplayProvider implements DataProvider {
       // Skip messages with null/missing data
       return
     }
-    const payload = wrapper.data
 
-    const current = parseCompetitor(payload)
-
-    const onCourseData: OnCourseData = {
-      current,
-      onCourse: current ? [current] : [],
-    }
-
+    const onCourseData = transformCompMessage(wrapper.data)
     this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleOnCourseMessage(data: unknown): void {
     // CLI message format: { msg: 'oncourse', data: [...] }
-    const wrapper = data as { msg: string; data: Record<string, unknown>[] }
+    const wrapper = data as { msg: string; data: unknown[] }
     const competitors = wrapper.data || []
 
-    const parsed = competitors.map((c) => parseCompetitor(c)).filter((c) => c !== null)
-
-    const onCourseData: OnCourseData = {
-      current: parsed[0] || null,
-      onCourse: parsed,
-    }
-
+    const onCourseData = transformOnCourseMessage(competitors)
     this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleControlMessage(data: unknown): void {
     // CLI message format: { msg: 'control', data: { ... } }
-    const wrapper = data as { msg: string; data: Record<string, string> } | null
+    const wrapper = data as { msg: string; data: Record<string, unknown> } | null
     if (!wrapper || !wrapper.data) {
       return
     }
-    const payload = wrapper.data
 
-    const visibility: VisibilityState = {
-      displayCurrent: payload.displayCurrent === '1',
-      displayTop: payload.displayTop === '1',
-      displayTitle: payload.displayTitle === '1',
-      displayTopBar: payload.displayTopBar === '1',
-      displayFooter: payload.displayFooter === '1',
-      displayDayTime: payload.displayDayTime === '1',
-      displayOnCourse: payload.displayOnCourse === '1',
-    }
-
+    const visibility = transformControlMessage(wrapper.data)
     this.callbacks.emitVisibility(visibility)
   }
 
   private handleTitleMessage(data: unknown): void {
     // CLI message format: { msg: 'title', data: { text: '...' } }
-    const wrapper = data as { msg: string; data: { text: string } } | null
+    const wrapper = data as { msg: string; data: { text?: string } } | null
 
-    const info: EventInfoData = {
-      title: wrapper?.data?.text || '',
-      infoText: '',
-      dayTime: '',
-    }
-
+    const info = transformTitleMessage(wrapper?.data || {})
     this.callbacks.emitEventInfo(info)
   }
 
   private handleInfoTextMessage(data: unknown): void {
     // CLI message format: { msg: 'infotext', data: { text: '...' } }
-    const wrapper = data as { msg: string; data: { text: string } } | null
+    const wrapper = data as { msg: string; data: { text?: string } } | null
 
-    const info: EventInfoData = {
-      title: '',
-      infoText: wrapper?.data?.text || '',
-      dayTime: '',
-    }
-
+    const info = transformInfoTextMessage(wrapper?.data || {})
     this.callbacks.emitEventInfo(info)
   }
 
   private handleDayTimeMessage(data: unknown): void {
     // CLI message format: { msg: 'daytime', data: { time: '...' } }
-    const wrapper = data as { msg: string; data: { time: string } } | null
+    const wrapper = data as { msg: string; data: { time?: string } } | null
 
-    const info: EventInfoData = {
-      title: '',
-      infoText: '',
-      dayTime: wrapper?.data?.time || '',
-    }
-
+    const info = transformDayTimeMessage(wrapper?.data || {})
     this.callbacks.emitEventInfo(info)
   }
 }

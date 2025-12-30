@@ -148,7 +148,7 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 ### Střední priorita - Duplicitní kód
 
 - [x] **penaltyGates parsing** - Identická logika pro parsování gate penalties (`CurrentCompetitor.tsx:50-58`, `OnCourseDisplay.tsx:103-114`)
-- [ ] **Message handlers** - Podobná struktura handleXxxMessage metod (`CLIProvider.ts`, `ReplayProvider.ts`)
+- [x] **Message handlers** - Podobná struktura handleXxxMessage metod (`CLIProvider.ts`, `ReplayProvider.ts`) - extrahováno do `messageHandlers.ts`
 - [ ] **parseMessages API** - parseResults má skipValidation, parseCompetitor ne (`parseMessages.ts`)
 
 ### Střední priorita - Neefektivní konstrukce
