@@ -29,6 +29,8 @@ export interface LayoutConfig {
   fontSizeCategory: 'small' | 'medium' | 'large'
   /** Whether auto-scroll is disabled (via URL param for screenshots) */
   disableScroll: boolean
+  /** Fixed number of display rows from URL param (null = auto-calculated) */
+  displayRows: number | null
 }
 
 /**
@@ -65,23 +67,41 @@ interface LayoutURLParams {
   type: LayoutMode | null
   /** Whether auto-scroll is disabled */
   disableScroll: boolean
+  /** Fixed number of display rows (for ledwall scaling, min: 3, max: 20) */
+  displayRows: number | null
 }
+
+/** Minimum allowed value for displayRows */
+const DISPLAY_ROWS_MIN = 3
+/** Maximum allowed value for displayRows */
+const DISPLAY_ROWS_MAX = 20
 
 /**
  * Get layout parameters from URL
  */
 function getLayoutParamsFromURL(): LayoutURLParams {
   if (typeof window === 'undefined') {
-    return { type: null, disableScroll: false }
+    return { type: null, disableScroll: false, displayRows: null }
   }
 
   const params = new URLSearchParams(window.location.search)
   const type = params.get('type')
   const disableScroll = params.get('disableScroll') === 'true'
 
+  // Parse displayRows with validation (min: 3, max: 20)
+  const displayRowsParam = params.get('displayRows')
+  let displayRows: number | null = null
+  if (displayRowsParam) {
+    const parsed = parseInt(displayRowsParam, 10)
+    if (!isNaN(parsed)) {
+      displayRows = Math.max(DISPLAY_ROWS_MIN, Math.min(DISPLAY_ROWS_MAX, parsed))
+    }
+  }
+
   return {
     type: type === 'vertical' || type === 'ledwall' ? type : null,
     disableScroll,
+    displayRows,
   }
 }
 
@@ -267,10 +287,19 @@ export function useLayout(): LayoutConfig {
       modeConfig.footerHeight -
       modeConfig.currentCompetitorHeight
 
-    const { visibleRows, rowHeight } = calculateVisibleRows(
-      Math.max(availableHeight, 200),
-      modeConfig
-    )
+    // Use displayRows from URL param if specified, otherwise auto-calculate
+    let visibleRows: number
+    let rowHeight: number
+    if (urlParams.displayRows !== null) {
+      // Fixed row count from URL - use for ledwall scaling
+      visibleRows = urlParams.displayRows
+      rowHeight = modeConfig.targetRowHeight
+    } else {
+      // Auto-calculate based on available height
+      const calculated = calculateVisibleRows(Math.max(availableHeight, 200), modeConfig)
+      visibleRows = calculated.visibleRows
+      rowHeight = calculated.rowHeight
+    }
 
     const fontSizeCategory = getFontSizeCategory(layoutMode, viewport.height)
 
@@ -285,8 +314,9 @@ export function useLayout(): LayoutConfig {
       footerHeight: layoutMode === 'ledwall' ? 0 : modeConfig.footerHeight,
       fontSizeCategory,
       disableScroll: urlParams.disableScroll,
+      displayRows: urlParams.displayRows,
     }
-  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll])
+  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows])
 
   // Update CSS variables when config changes
   useEffect(() => {

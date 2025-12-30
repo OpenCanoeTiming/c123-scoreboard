@@ -298,13 +298,13 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 >
 > **Požadavek:** Ledwall potřebuje škálování, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy tabule má velké rozlišení, ale je daleko od diváků. V takovém případě potřebujeme méně řádků s většími písmeny.
 
-### 11.1 URL parametr `displayRows`
+### 11.1 URL parametr `displayRows` ✅
 
 Nový URL parametr pro ledwall mód, který určuje počet viditelných řádků výsledků.
 
-- [ ] Přidat URL parametr `displayRows` (number, default: auto-calculated)
-- [ ] Dokumentovat parametr v App.tsx komentáři
-- [ ] Přidat validaci (min: 3, max: 20)
+- [x] Přidat URL parametr `displayRows` (number, default: auto-calculated)
+- [x] Dokumentovat parametr v App.tsx komentáři
+- [x] Přidat validaci (min: 3, max: 20)
 
 **Příklady použití:**
 ```

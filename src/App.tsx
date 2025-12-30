@@ -27,6 +27,8 @@ import {
  * - loop: 'true' | 'false' (replay loop, default: 'true')
  * - pauseAfter: number (pause playback after N messages, for testing)
  * - disableScroll: 'true' (disable auto-scroll, for screenshots)
+ * - type: 'vertical' | 'ledwall' (layout mode, default: auto-detect)
+ * - displayRows: number (fixed row count for ledwall scaling, min: 3, max: 20)
  */
 function getUrlParams(): {
   source: 'replay' | 'cli'
