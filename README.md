@@ -1,72 +1,116 @@
 # Canoe Scoreboard v2
 
-Real-time scoreboard display for canoe slalom competitions. Visual replica of the original scoreboard with clean modern architecture.
+A web application for displaying canoe slalom competition scoreboards. Visual replica of the original [Canoe Scoreboard](https://github.com/jakubbican/canoe-scoreboard) with clean modern architecture. Compatible with the CanoeLiveInterface by Martin „Mako" Šlachta (STiming) over Canoe123 system by Siwidata.
 
-## Quick Start
+This application supports different display types including vertical displays (portrait TVs) and LED wall panels.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Development](#development)
+- [Building for Production](#building-for-production)
+- [Usage](#usage)
+  - [URL Parameters](#url-parameters)
+  - [Layout Modes](#layout-modes)
+  - [Data Sources](#data-sources)
+- [Deployment](#deployment)
+  - [Web Server](#web-server)
+  - [Raspberry Pi (FullpageOS)](#raspberry-pi-fullpageos)
+- [Customization](#customization)
+  - [Visual Assets](#visual-assets)
+  - [Styling](#styling)
+- [Testing](#testing)
+- [Architecture](#architecture)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
+## Features
+
+- **Real-time updates** via WebSocket connection to CLI server
+- **Multiple display layouts** - vertical (portrait TV) and ledwall (LED panel)
+- **Auto-scroll** - results scroll automatically with page-based animation
+- **Highlight animation** - competitor flashes when finishing
+- **Gate penalty badges** - visual indicators (yellow=2s touch, red=50s miss)
+- **Connection status** - overlay shows connection state with auto-reconnect
+- **Replay mode** - development/demo with recorded race sessions
+- **Error boundaries** - component failures don't crash the app
+
+## Installation
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or newer)
+- [npm](https://www.npmjs.com/) (v9 or newer)
+
+### Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone <repository-url>
+   cd canoe-scoreboard-v2
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+## Development
+
+Start the development server with demo replay data:
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server (uses recorded demo data)
 npm run dev
 ```
 
-Open `http://localhost:5173` to see the scoreboard in action.
+This starts a development server at http://localhost:5173 using recorded race data for testing.
 
-## Production Usage
+To test with live CLI server:
+```bash
+# Open in browser with CLI source
+http://localhost:5173/?source=cli&host=192.168.1.100:8081
+```
 
-### Connect to Live Timing Server
+## Building for Production
+
+Build the application for production:
 
 ```bash
-# Build for production
 npm run build
+```
 
-# Serve static files (use any static file server)
+This creates a `dist` directory with the production build.
+
+Preview the production build:
+
+```bash
 npm run preview
 ```
 
-Access with CLI server connection:
-```
-http://localhost:4173/?source=cli&host=192.168.1.100:8081
-```
+## Usage
 
-### Deployment on Raspberry Pi
-
-1. Copy the `dist/` folder to Raspberry Pi
-2. Serve with nginx or any static file server
-3. Open in fullscreen browser (kiosk mode)
-
-Example nginx config:
-```nginx
-server {
-    listen 80;
-    root /var/www/scoreboard;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-## URL Parameters
+### URL Parameters
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
 | `type` | `vertical`, `ledwall` | auto | Force layout mode |
-| `ledwallExactSize` | `true` | `false` | Use exact LED panel dimensions |
 | `source` | `replay`, `cli` | `replay` | Data source |
-| `host` | `ip:port` | `192.168.68.108:8081` | CLI server address |
+| `host` | `ip:port` | `192.168.68.108:8081` | CLI WebSocket server address |
 | `speed` | number | `10` | Replay speed multiplier |
-| `loop` | `true`, `false` | `true` | Loop replay |
+| `loop` | `true`, `false` | `true` | Loop replay playback |
+| `disableScroll` | `true` | `false` | Disable auto-scroll (for screenshots) |
 
-### Common Configurations
+#### Example URLs
 
-**LED Wall (768x384):**
+**LED Wall (768x384) with live data:**
 ```
-?type=ledwall&ledwallExactSize=true&source=cli&host=192.168.1.100:8081
+?type=ledwall&source=cli&host=192.168.1.100:8081
 ```
 
-**Vertical Display (1080x1920):**
+**Vertical Display (1080x1920) with live data:**
 ```
 ?type=vertical&source=cli&host=192.168.1.100:8081
 ```
@@ -76,27 +120,29 @@ server {
 ?source=replay&speed=1
 ```
 
-## Layouts
+### Layout Modes
 
-### Vertical (Portrait)
-- For TV displays in portrait mode (1080x1920)
+#### Vertical (Portrait)
+- For TV displays in portrait mode (1080x1920 recommended)
 - Shows full TopBar with logo and partners
 - All result columns visible: Rank, Bib, Name, Penalty, Time, Behind
 - Footer with sponsors visible
+- Supports multiple competitors on course display
 
-### Ledwall (Landscape)
-- For LED panels (768x384 or similar)
+#### Ledwall (Landscape)
+- For LED panels (768x384 or similar wide aspect ratio)
 - Compact TopBar
-- Optimized column layout
+- Optimized column layout without behind column
 - Footer hidden
+- Shows only primary competitor on course
 
-Layout is auto-detected based on aspect ratio, or forced via `type` parameter.
+Layout is auto-detected based on aspect ratio (>1.5 = ledwall), or forced via `type` parameter.
 
-## Data Sources
+### Data Sources
 
-### CLIProvider (Production)
+#### CLIProvider (Production)
 
-Connects to the CLI WebSocket server for live timing data.
+Connects to the CanoeLiveInterface WebSocket server for live timing data.
 
 ```
 ?source=cli&host=192.168.1.100:8081
@@ -108,7 +154,7 @@ Features:
 - Visibility control from timing system
 - Day time display
 
-### ReplayProvider (Development)
+#### ReplayProvider (Development)
 
 Replays recorded race sessions for development and testing.
 
@@ -118,7 +164,51 @@ Replays recorded race sessions for development and testing.
 
 Recorded sessions are stored in `public/recordings/`.
 
-## Custom Assets
+## Deployment
+
+### Web Server
+
+1. Build the application:
+   ```bash
+   npm run build
+   ```
+
+2. Deploy the contents of the `dist` directory to any web server (nginx, Apache, etc.)
+
+Example nginx configuration:
+```nginx
+server {
+    listen 80;
+    root /var/www/scoreboard;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+### Raspberry Pi (FullpageOS)
+
+[FullpageOS](https://github.com/guysoft/FullPageOS) is recommended for serving the scoreboard on Raspberry Pi. Tested with Raspberry Pi 4 and Pi 5.
+
+1. Build the application and serve `dist` from a web server
+
+2. Deploy [FullpageOS](https://github.com/guysoft/FullPageOS) on your Raspberry Pi
+
+3. Configure the URL in `/boot/firmware/fullpageos.txt`:
+   ```
+   http://[server-address]/scoreboard/?type=vertical&source=cli&host=[cli-ip]:8081
+   ```
+
+4. For vertical displays, adjust orientation in `/home/timing/scripts/start_gui`:
+   ```
+   DISPLAY_ORIENTATION=left
+   ```
+
+5. Reboot the Raspberry Pi
+
+## Customization
+
+### Visual Assets
 
 Replace these files in `public/assets/` to customize the display:
 
@@ -126,14 +216,40 @@ Replace these files in `public/assets/` to customize the display:
 |------|-------------|------------------|
 | `logo.svg` | Event/Club logo (top-left) | SVG or 200px height |
 | `partners.png` | Partner logos (top-right) | 400x100px |
-| `footer.png` | Footer banner | 1080x200px |
+| `footer.png` | Footer banner (vertical only) | 1080x200px |
+
+### Styling
+
+The application uses CSS variables for theming. Main variables are in `src/styles/variables.css`:
+
+```css
+:root {
+  --color-bg-primary: #111111;
+  --color-bg-secondary: #1d1d1d;
+  --color-text-primary: #e9e9e9;
+  --color-accent: #ffff00;
+  --color-penalty-red: #cc3333;
+  --color-oncourse-bg: rgba(51, 102, 153, 0.2);
+}
+```
 
 ## Testing
 
 ```bash
-npm test          # Unit tests (Vitest)
-npm run test:e2e  # E2E tests (Playwright)
+# Unit tests (Vitest)
+npm test
+
+# E2E tests (Playwright)
+npm run test:e2e
+
+# All tests
+npm run test:all
 ```
+
+Test coverage:
+- 559+ unit tests
+- 82+ E2E tests
+- Visual regression testing with Playwright snapshots
 
 ## Architecture
 
@@ -142,10 +258,10 @@ npm run test:e2e  # E2E tests (Playwright)
 Abstracts data sources for easy switching between live and replay modes:
 
 ```
-DataProvider
-├── CLIProvider    - WebSocket to CLI server
+DataProvider (interface)
+├── CLIProvider    - WebSocket connection to CLI server
 ├── ReplayProvider - Recorded session playback
-└── C123Provider   - Direct TCP to timing (future)
+└── C123Provider   - Direct TCP to Canoe123 (planned)
 ```
 
 ### Component Structure
@@ -158,20 +274,12 @@ App
         ├── TimeDisplay (day time)
         ├── Title (event name, category)
         ├── CurrentCompetitor (on-course with gates)
-        ├── OnCourseDisplay (other competitors on course)
+        ├── OnCourseDisplay (other competitors - vertical only)
         ├── ResultsList (scrollable results table)
-        └── Footer (sponsors)
+        └── Footer (sponsors - vertical only)
 ```
 
-### Key Features
-
-- **Highlight Animation**: Competitor flashes when finishing
-- **Auto-Scroll**: Results scroll through automatically
-- **Gate Badges**: Visual penalty indicators (yellow=2s, red=50s)
-- **Connection Status**: Overlay shows connection state
-- **Error Boundaries**: Component failures don't crash app
-
-## Project Structure
+### Project Structure
 
 ```
 src/
@@ -186,6 +294,10 @@ src/
 public/
 ├── assets/          # Images (logo, partners, footer)
 └── recordings/      # JSONL replay files
+
+tests/
+├── e2e/             # Playwright E2E tests
+└── benchmarks/      # Performance benchmarks
 ```
 
 ## Requirements
@@ -197,3 +309,11 @@ public/
 ## License
 
 Private - for canoe slalom competition use.
+
+## Acknowledgments
+
+- Original CanoeLiveInterface and scoreboard system by Martin „Mako" Šlachta (STiming)
+- Canoe123 timing system by Siwidata
+- Czech Canoe Union
+- React framework and community
+- Vite.js build tool
