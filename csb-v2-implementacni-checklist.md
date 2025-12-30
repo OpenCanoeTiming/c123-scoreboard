@@ -33,7 +33,7 @@ Performance: ✅ FPS ~44, memory stable, load <1s
 | 7-8 | Testování (unit, E2E, benchmarky) | ✅ |
 | 9 | Vizuální shoda s originálem | ✅ |
 | 10 | Finální testování a porovnání | ✅ |
-| 11 | Škálování ledwall (`displayRows`) | ⏳ Manuální testy |
+| 11 | Škálování ledwall (`displayRows`) | ✅ |
 | 12 | Code cleanup (mrtvý kód, redukce testů) | ✅ |
 
 ---
@@ -146,7 +146,9 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
   - Vite config s podporou base URL (`VITE_BASE_URL=/path/ npm run build`)
   - Vendor chunk splitting pro lepší caching
   - Dokumentace v README.md (sekce Deployment)
-- [ ] Performance optimalizace (pokud potřeba)
+- [x] Performance optimalizace (pokud potřeba)
+  - **Stav:** Není potřeba - FPS ~44, memory stable, load <1s
+  - Bundle: 437 kB JS (120 kB gzip), 19 kB CSS (4 kB gzip)
 
 ---
 
