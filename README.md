@@ -84,6 +84,14 @@ npm run build
 
 This creates a `dist` directory with the production build.
 
+### Deploying to a Subdirectory
+
+If deploying to a subdirectory (e.g., `https://example.com/scoreboard/`), set the base URL:
+
+```bash
+VITE_BASE_URL=/scoreboard/ npm run build
+```
+
 Preview the production build:
 
 ```bash

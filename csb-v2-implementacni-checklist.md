@@ -142,7 +142,10 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
   - Proxy server `scripts/c123-proxy.js` pro TCP→WebSocket bridge
   - 22 unit testů pro C123Provider
   - Dokumentace v README.md
-- [ ] Produkční nasazení
+- [x] Produkční nasazení
+  - Vite config s podporou base URL (`VITE_BASE_URL=/path/ npm run build`)
+  - Vendor chunk splitting pro lepší caching
+  - Dokumentace v README.md (sekce Deployment)
 - [ ] Performance optimalizace (pokud potřeba)
 
 ---
