@@ -731,6 +731,32 @@ Tyto testy testují triviální funkce příliš důkladně a přidávají maint
 
 ---
 
+## Code Review nálezy (2025-12-30, Session 3)
+
+Tag: `pre-review-useAutoScroll-cleanup`
+
+### Vysoká priorita
+
+- [ ] **CurrentCompetitor.tsx:61-62 - Zbytečné renderování hidden kontejneru** - Komponenta renderuje `<div className={hidden}>` když `competitor === null`. Vrátit `null` místo hidden kontejneru.
+- [ ] **useAutoScroll.ts:309-310 - Inline funkce mimo effect ale volány uvnitř** - Helper funkce (`isAtBottom`, `getRowsPerPage`, atd.) závisí na `containerRef`, `rowHeight`, ale eslint-disable skrývá problém. Refaktorovat nebo memoizovat.
+- [ ] **ScoreboardContext.tsx:303-306 - Redundantní SET_ERROR před RESET_STATE** - Při reconnecting se volá SET_ERROR(null) a pak RESET_STATE, ale RESET_STATE už resetuje error. Odstranit první akci.
+
+### Střední priorita
+
+- [ ] **Redundantní .filter(Boolean).join(' ') pro CSS classes** - V CurrentCompetitor.tsx:66-72, ResultsList.tsx:55-57, ResultRow.tsx:65-71. Přepsat na template stringy.
+- [ ] **getGateClass.ts:49-50 - Zbytečné || '' fallback** - CSS modules vždy vrací string, fallback je redundantní.
+- [ ] **CurrentCompetitor.tsx:74-75 - Nejednoznačná displayTime logika** - `(competitor.total || competitor.time || '').trim()` - trim na prázdný string je zbytečné.
+- [ ] **ReplayProvider.ts:337-338 - Nekonzistentní zkrácení chybového logu** - Zkracuje na 100 znaků pro console.warn ale emitError dostane plnou verzi.
+
+### Nízká priorita
+
+- [ ] **parseGates.ts:45-51 - Tichý failure pro neznámé penalty hodnoty** - Neznámé penalty hodnoty jsou zahozeny bez logu. Přidat warning.
+- [ ] **OnCourseDisplay.tsx:25-31 - Nejasná hasValidTime logika** - Proč je "0:00.00" považován za invalid time? Chybí dokumentace.
+- [ ] **TimeDisplay.tsx:33 - Zbytečný nullish coalescing** - `className ?? ''` je zbytečné, pak se volá `.trim()`.
+- [ ] **ResultsList.tsx:51 - showPenalty vždy true** - Proměnná je hardcoded na `true`, buď odstranit nebo vysvětlit.
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
