@@ -763,8 +763,8 @@ Tag: `pre-code-review-session-4`
 
 ### Střední priorita
 
-- [ ] **CLIProvider.ts:59-62 - neúplná URL validace** - Po normalizaci URL (přidání `ws://`) chybí validace formátu. Může vytvořit neplatné URL jako `ws://invalid..hostname`. Přidat základní validaci pomocí `URL()` konstruktoru.
-- [ ] **getGateClass.ts:49-50 - redundantní `|| ''` fallback** - CSS modules vždy vrací string (prázdný když třída neexistuje). Odstranit zbytečné `|| ''`.
+- [x] **CLIProvider.ts:59-62 - neúplná URL validace** - **HOTOVO** - přidána validace pomocí `URL()` konstruktoru s throw Error pro neplatné URL
+- [x] **getGateClass.ts:49-50 - redundantní `|| ''` fallback** - CSS modules vždy vrací string (prázdný když třída neexistuje). **HOTOVO** - změněno na `??` pro nullish coalescing, typ změněn na `Record<string, string | undefined>`
 
 ### Nízká priorita
 
