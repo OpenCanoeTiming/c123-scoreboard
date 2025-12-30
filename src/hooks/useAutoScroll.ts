@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useMemo } from 'react'
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import { useHighlight } from './useHighlight'
 import { useLayout } from './useLayout'
 import { useScoreboard } from '@/context/ScoreboardContext'
@@ -124,24 +124,24 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     []
   )
 
-  // Control functions - simple state setters don't need useCallback
-  const pause = () => {
+  // Control functions - memoized since they're returned to consumers
+  const pause = useCallback(() => {
     setManuallyPaused(true)
     setPhase('IDLE')
-  }
+  }, [])
 
-  const resume = () => {
+  const resume = useCallback(() => {
     setManuallyPaused(false)
-  }
+  }, [])
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setManuallyPaused(false)
     setPhase('IDLE')
     currentRowIndexRef.current = 0
     if (containerRef.current) {
       containerRef.current.scrollTop = 0
     }
-  }
+  }, [])
 
   // Helper functions - inline in effect to avoid unnecessary re-renders
   const isAtBottom = () => {
@@ -175,12 +175,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     })
   }
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     containerRef.current?.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
-  }
+  }, [])
 
   /**
    * Determine if scrolling should be active

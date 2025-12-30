@@ -554,8 +554,8 @@ Tag: `pre-review-refactor`
 ### Střední priorita - State Management
 
 - [x] **ScoreboardContext atomicity** - highlightBib + highlightTimestamp, departingCompetitor + departedAt se mění vždy spolu. Použít `useReducer` pro atomické aktualizace **HOTOVO** - refaktorováno na useReducer s akcemi SET_RESULTS, SET_ON_COURSE, atd.
-- [ ] **useAutoScroll unstable functions** - pause/resume/reset jsou vytvářeny každý render a předávány ven. Vrátit useCallback
-- [ ] **useAutoScroll scrollToTop v deps** - funkce není memoizovaná ale je v dependency array efektu
+- [x] **useAutoScroll unstable functions** - pause/resume/reset jsou vytvářeny každý render a předávány ven. **HOTOVO** - přidáno useCallback
+- [x] **useAutoScroll scrollToTop v deps** - funkce není memoizovaná ale je v dependency array efektu **HOTOVO** - přidáno useCallback
 
 ### Nízká priorita - Minor issues
 
