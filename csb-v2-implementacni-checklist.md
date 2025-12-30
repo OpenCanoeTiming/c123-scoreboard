@@ -669,11 +669,11 @@ Tag: `pre-final-code-review`
 
 - [x] **normalizeCompetitor.ts - celý soubor nepoužitý** - **SMAZÁNO** - soubor již neexistuje
 - [x] **detectFinish.ts - neintegrováno** - **SMAZÁNO** - soubor již neexistuje
-- [ ] **formatTTBDiff - nepoužitá funkce** - `formatTime.ts:119` exportuje `formatTTBDiff`, ale nikde se nepoužívá (jen v testech). Smazat funkci.
+- [x] **formatTTBDiff - nepoužitá funkce** - `formatTime.ts:119` exportuje `formatTTBDiff`, ale nikde se nepoužívá (jen v testech). Smazat funkci. **SMAZÁNO**
 
 ### Vysoká priorita - Duplicitní kód
 
-- [ ] **formatBehind - 2 implementace** - `formatTime.ts:70` vs `ResultRow.tsx:34` - dvě různé implementace se stejným názvem. ResultRow má vlastní lokální verzi místo importu z utils. Smazat lokální verzi a použít import.
+- [x] **formatBehind - 2 implementace** - `formatTime.ts:70` vs `ResultRow.tsx:34` - dvě různé implementace se stejným názvem. ResultRow má vlastní lokální verzi místo importu z utils. **OPRAVENO** - smazána utils verze, ponechána jednodušší lokální verze v ResultRow
 - [ ] **penaltyGates parsing** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:102-114` mají identický pattern pro parsování gate penalties. Extrahovat do `getPenaltyGates(gates: string)` utility nebo custom hook.
 - [ ] **Message handlers v providerech** - `CLIProvider:336-407` vs `ReplayProvider:507-565` mají podobné handleControlMessage, handleTitleMessage, atd. Lze zjednodušit.
 
@@ -717,8 +717,8 @@ Tyto testy testují triviální funkce příliš důkladně a přidávají maint
 
 ### Střední priorita - Unused utils exports
 
-- [ ] **formatTime.ts exports** - `formatBehind` z utils se nepoužívá (ResultRow má vlastní lokální verzi). Buď smazat z utils a ponechat lokální, nebo sjednotit.
-- [ ] **formatTTBDiff nepoužitá** - Nikde v produkčním kódu se nepoužívá. Smazat včetně testů.
+- [x] **formatTime.ts exports** - `formatBehind` z utils se nepoužívá (ResultRow má vlastní lokální verzi). Buď smazat z utils a ponechat lokální, nebo sjednotit. **SMAZÁNO z utils - lokální verze v ResultRow je jednodušší a dostatečná**
+- [x] **formatTTBDiff nepoužitá** - Nikde v produkčním kódu se nepoužívá. Smazat včetně testů. **SMAZÁNO**
 
 ### Nízká priorita - Kódová čistota
 
