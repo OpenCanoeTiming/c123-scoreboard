@@ -594,6 +594,29 @@ Tag: `pre-review-phase10`
 
 ---
 
+## Code Review nálezy (2025-12-30, Phase 11)
+
+Tag: `pre-review-phase11`
+
+### Střední priorita - Kód
+
+- [ ] **useLayout.ts:311 - potenciální division by zero** - `scaleFactor = viewport.height / unscaledContentHeight` - přidat guard `unscaledContentHeight > 0 ? ... : 1.0`
+- [ ] **layout.spec.ts:318-332 - zavádějící test name** - "displayRows=3 shows larger elements" testuje jen existenci transformu, ne že prvky jsou větší. Buď odstranit, nebo ověřit že scale > 1
+
+### Nízká priorita - Čistota kódu
+
+- [ ] **ScoreboardLayout.tsx:57-59 - redundantní inline styly** - `height: 'auto'` je nadbytečné když máme `minHeight: 'auto'`
+- [ ] **ScoreboardLayout.tsx:52-61 - missing useMemo** - layoutStyle object se vytváří každý render
+- [ ] **ScoreboardLayout.module.css:65-67 + tsx:57-59 - duplicitní style override** - CSS třída `.scaled` i inline styly nastavují stejné vlastnosti
+- [ ] **useLayout.ts:197 - nepoužitá CSS proměnná** - `--scale-factor` je nastavena ale nikde nepoužita v CSS
+
+### Nízká priorita - Testy
+
+- [ ] **layout.spec.ts:313-316 - magic numbers** - thresholds 1000, 1800 jsou arbitrary, použít procenta z viewport
+- [ ] **layout.spec.ts - chybí edge case testy** - displayRows boundary (3, 20), invalid values (2, 25, "abc")
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
