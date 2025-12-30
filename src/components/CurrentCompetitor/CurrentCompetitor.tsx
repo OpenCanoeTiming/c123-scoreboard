@@ -57,9 +57,9 @@ export function CurrentCompetitor({
       ) as { gateNumber: number; penalty: 2 | 50 }[]
   }, [competitor])
 
-  // If no competitor, render hidden container (for animation purposes)
+  // If no competitor, render nothing
   if (!competitor) {
-    return <div className={`${styles.container} ${styles.hidden}`} />
+    return null
   }
 
   // Container classes

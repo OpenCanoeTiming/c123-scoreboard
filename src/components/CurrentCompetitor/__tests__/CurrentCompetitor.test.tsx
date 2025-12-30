@@ -45,11 +45,10 @@ describe('CurrentCompetitor', () => {
       expect(screen.getByTestId('oncourse')).toBeInTheDocument()
     })
 
-    it('renders hidden container when competitor is null', () => {
+    it('renders nothing when competitor is null', () => {
       const { container } = render(<CurrentCompetitor competitor={null} />)
 
-      const element = container.firstChild as HTMLElement
-      expect(hasClassContaining(element, 'hidden')).toBe(true)
+      expect(container.firstChild).toBeNull()
     })
 
     it('renders bib number prominently', () => {

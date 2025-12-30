@@ -301,13 +301,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hi
 </div>
 `;
 
-exports[`CurrentCompetitor snapshots > basic states > should match snapshot - null competitor 1`] = `
-<div>
-  <div
-    class="_container_610b2e _hidden_610b2e"
-  />
-</div>
-`;
+exports[`CurrentCompetitor snapshots > basic states > should match snapshot - null competitor 1`] = `<div />`;
 
 exports[`CurrentCompetitor snapshots > basic states > should match snapshot - running competitor 1`] = `
 <div>

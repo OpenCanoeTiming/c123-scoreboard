@@ -737,7 +737,7 @@ Tag: `pre-review-useAutoScroll-cleanup`
 
 ### Vysoká priorita
 
-- [ ] **CurrentCompetitor.tsx:61-62 - Zbytečné renderování hidden kontejneru** - Komponenta renderuje `<div className={hidden}>` když `competitor === null`. Vrátit `null` místo hidden kontejneru.
+- [x] **CurrentCompetitor.tsx:61-62 - Zbytečné renderování hidden kontejneru** - Komponenta renderuje `<div className={hidden}>` když `competitor === null`. Vrátit `null` místo hidden kontejneru. **HOTOVO**
 - [ ] **useAutoScroll.ts:309-310 - Inline funkce mimo effect ale volány uvnitř** - Helper funkce (`isAtBottom`, `getRowsPerPage`, atd.) závisí na `containerRef`, `rowHeight`, ale eslint-disable skrývá problém. Refaktorovat nebo memoizovat.
 - [ ] **ScoreboardContext.tsx:303-306 - Redundantní SET_ERROR před RESET_STATE** - Při reconnecting se volá SET_ERROR(null) a pak RESET_STATE, ale RESET_STATE už resetuje error. Odstranit první akci.
 
