@@ -775,6 +775,37 @@ Tag: `pre-code-review-session-4`
 
 ---
 
+## Code Review nálezy (2025-12-30, Session 5)
+
+Tag: `pre-review-session-5`
+
+### Střední priorita - Duplicitní kód
+
+- [ ] **penaltyGates parsing duplicitní** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:103-114` mají identickou logiku pro parsování gate penalties. Vytvořit utility funkci `getPenaltyGates(gates: GatePenalty[]): PenaltyGate[]` v `src/providers/utils/parseGates.ts`.
+
+### Nízká priorita - Neefektivní konstrukce
+
+- [ ] **OnCourseDisplay.tsx:103-114 - dvojitá memoizace** - Dva za sebou jdoucí useMemo hooksy (gates, penaltyGates). Sloučit do jednoho useMemo.
+- [ ] **ScoreboardLayout.tsx:55-62 - zbytečný useMemo** - Vrací `{}` v 90% případů. Lze nahradit inline výrazem nebo úplně odstranit memoizaci.
+
+### Nízká priorita - Dead code
+
+- [ ] **ResultRow.tsx:34-38 - lokální formatBehind** - Helper funkce je použita pouze jednou. Buď inline, nebo přesunout do utils pokud bude opakovaně používána.
+- [ ] **OnCourseDisplay.tsx:66-73 - hasValidTime** - Lokální funkce by mohla být utility v src/utils/validation.ts pro opakované použití.
+
+### Nízká priorita - Přebujelé testy
+
+- [ ] **Snapshot testy pro triviální komponenty** - 1,793 řádků snapshot dat. Footer, ConnectionStatus, ResultRow jsou jednoduché komponenty - snapshot testy jsou zbytečně komplexní. Zvážit nahrazení unit testy.
+
+### Informační - Pozitivní nálezy
+
+- Projekt je **velmi čistý** s minimálními problémy
+- Index.ts soubory správně používají re-exporty
+- Validační funkce jsou dobře centralizované (validation.ts, parseMessages.ts, CallbackManager.ts)
+- Architektura je srozumitelná a dobře organizovaná
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
