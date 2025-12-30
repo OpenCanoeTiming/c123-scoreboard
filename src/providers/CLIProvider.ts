@@ -60,6 +60,12 @@ export class CLIProvider implements DataProvider {
     if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
       url = `ws://${url}`
     }
+    // Validate URL format
+    try {
+      new URL(url)
+    } catch {
+      throw new Error(`Invalid WebSocket URL: ${url}`)
+    }
     this.url = url
     this.autoReconnect = options.autoReconnect ?? true
     this.maxReconnectDelay = options.maxReconnectDelay ?? 30000

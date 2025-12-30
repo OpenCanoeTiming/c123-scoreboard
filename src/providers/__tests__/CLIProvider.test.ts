@@ -94,6 +94,11 @@ describe('CLIProvider', () => {
       const provider = new CLIProvider('wss://secure.example.com:8081')
       expect(provider.status).toBe('disconnected')
     })
+
+    it('should throw error for invalid URL', () => {
+      // Empty hostname after ws:// prefix causes invalid URL
+      expect(() => new CLIProvider('')).toThrow('Invalid WebSocket URL')
+    })
   })
 
   describe('connect', () => {
