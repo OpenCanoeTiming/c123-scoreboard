@@ -43,7 +43,7 @@
 
 ```
 Build:       ✅ OK (437 kB JS, 19 kB CSS)
-Unit testy:  ✅ 570 testů (25 test suites)
+Unit testy:  ✅ 518 testů (25 test suites) - reduced from 570
 E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
 Performance: ✅ FPS ~44, memory stable, load <1s
 ```
@@ -159,9 +159,9 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 ### Nízká priorita - Testy
 
 - [x] **layout.spec.ts** - Opraveny magic numbers (použití viewportWidth/Height * 0.9), přidány edge case testy pro displayRows (min/max hodnoty)
-- [ ] **validation.test.ts** - 53 testů na triviální funkce - zredukovat na ~25
-- [ ] **parseGates.test.ts** - 6 testů na Math.reduce - ponechat 2-3
-- [ ] **componentSnapshots.test.tsx** - Duplicitní snapshot testy s dedicated soubory
+- [x] **validation.test.ts** - Zredukováno z 44 na 16 testů (sloučeny testy pro triviální funkce)
+- [x] **parseGates.test.ts** - calculateTotalPenalty zredukováno z 6 na 2 testy
+- [x] **componentSnapshots.test.tsx** - Odstraněn duplicitní soubor (Footer a ResultRow jsou testovány v dedicated souborech)
 
 ---
 

@@ -57,28 +57,16 @@ describe('parseGates', () => {
 })
 
 describe('calculateTotalPenalty', () => {
-  it('should sum all penalties', () => {
+  it('should sum penalties correctly', () => {
     expect(calculateTotalPenalty([0, 0, 2, 0, 50, 0])).toBe(52)
-  })
-
-  it('should return 0 for empty array', () => {
-    expect(calculateTotalPenalty([])).toBe(0)
-  })
-
-  it('should return 0 for all zeros', () => {
-    expect(calculateTotalPenalty([0, 0, 0, 0])).toBe(0)
-  })
-
-  it('should handle null values as 0', () => {
-    expect(calculateTotalPenalty([0, null, 2, null, 50])).toBe(52)
-  })
-
-  it('should handle multiple touches', () => {
     expect(calculateTotalPenalty([2, 2, 2, 2])).toBe(8)
+    expect(calculateTotalPenalty([50, 50])).toBe(100)
   })
 
-  it('should handle multiple misses', () => {
-    expect(calculateTotalPenalty([50, 50])).toBe(100)
+  it('should handle edge cases', () => {
+    expect(calculateTotalPenalty([])).toBe(0)
+    expect(calculateTotalPenalty([0, 0, 0, 0])).toBe(0)
+    expect(calculateTotalPenalty([0, null, 2, null, 50])).toBe(52)
   })
 })
 

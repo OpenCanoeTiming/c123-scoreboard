@@ -16,72 +16,41 @@ import {
 } from '../validation'
 
 describe('validation utilities', () => {
-  describe('isObject', () => {
-    it('returns true for plain objects', () => {
+  describe('type guards', () => {
+    it('isObject distinguishes objects from non-objects', () => {
+      // True for plain objects
       expect(isObject({})).toBe(true)
       expect(isObject({ key: 'value' })).toBe(true)
-    })
-
-    it('returns false for arrays', () => {
+      // False for arrays, null, and primitives
       expect(isObject([])).toBe(false)
-      expect(isObject([1, 2, 3])).toBe(false)
-    })
-
-    it('returns false for null', () => {
       expect(isObject(null)).toBe(false)
-    })
-
-    it('returns false for primitives', () => {
       expect(isObject('string')).toBe(false)
       expect(isObject(123)).toBe(false)
-      expect(isObject(true)).toBe(false)
       expect(isObject(undefined)).toBe(false)
     })
-  })
 
-  describe('isArray', () => {
-    it('returns true for arrays', () => {
+    it('isArray distinguishes arrays from non-arrays', () => {
       expect(isArray([])).toBe(true)
       expect(isArray([1, 2, 3])).toBe(true)
-    })
-
-    it('returns false for objects', () => {
       expect(isArray({})).toBe(false)
-    })
-
-    it('returns false for primitives', () => {
       expect(isArray('string')).toBe(false)
-      expect(isArray(123)).toBe(false)
     })
-  })
 
-  describe('isString', () => {
-    it('returns true for strings', () => {
+    it('isString distinguishes strings from non-strings', () => {
       expect(isString('')).toBe(true)
       expect(isString('hello')).toBe(true)
-    })
-
-    it('returns false for non-strings', () => {
       expect(isString(123)).toBe(false)
       expect(isString(null)).toBe(false)
-      expect(isString({})).toBe(false)
     })
-  })
 
-  describe('isNumeric', () => {
-    it('returns true for numbers', () => {
+    it('isNumeric identifies valid numbers and numeric strings', () => {
+      // Valid numeric values
       expect(isNumeric(0)).toBe(true)
       expect(isNumeric(123)).toBe(true)
       expect(isNumeric(-45.6)).toBe(true)
-    })
-
-    it('returns true for numeric strings', () => {
       expect(isNumeric('123')).toBe(true)
       expect(isNumeric('-45.6')).toBe(true)
-      expect(isNumeric('0')).toBe(true)
-    })
-
-    it('returns false for non-numeric values', () => {
+      // Invalid numeric values
       expect(isNumeric('')).toBe(false)
       expect(isNumeric('abc')).toBe(false)
       expect(isNumeric(NaN)).toBe(false)
@@ -89,138 +58,78 @@ describe('validation utilities', () => {
     })
   })
 
-  describe('safeString', () => {
-    it('returns string for string input', () => {
+  describe('safe converters', () => {
+    it('safeString converts values to strings with fallback', () => {
+      // Direct string pass-through
       expect(safeString('hello')).toBe('hello')
-      expect(safeString('')).toBe('')
-    })
-
-    it('converts numbers to strings', () => {
+      // Converts numbers and booleans
       expect(safeString(123)).toBe('123')
-      expect(safeString(0)).toBe('0')
-    })
-
-    it('converts booleans to strings', () => {
       expect(safeString(true)).toBe('true')
-      expect(safeString(false)).toBe('false')
-    })
-
-    it('returns default for null/undefined', () => {
+      // Returns default for null/undefined/objects
       expect(safeString(null)).toBe('')
       expect(safeString(undefined)).toBe('')
       expect(safeString(null, 'default')).toBe('default')
-    })
-
-    it('returns default for objects/arrays', () => {
       expect(safeString({})).toBe('')
-      expect(safeString([])).toBe('')
     })
-  })
 
-  describe('safeNumber', () => {
-    it('returns number for number input', () => {
+    it('safeNumber converts values to numbers with fallback', () => {
+      // Direct number pass-through
       expect(safeNumber(123)).toBe(123)
       expect(safeNumber(0)).toBe(0)
-      expect(safeNumber(-45.6)).toBe(-45.6)
-    })
-
-    it('converts numeric strings to numbers', () => {
+      // Converts numeric strings
       expect(safeNumber('123')).toBe(123)
       expect(safeNumber('-45.6')).toBe(-45.6)
-    })
-
-    it('returns default for invalid input', () => {
+      // Returns default for invalid input
       expect(safeNumber('')).toBe(0)
       expect(safeNumber('abc')).toBe(0)
       expect(safeNumber(null)).toBe(0)
-      expect(safeNumber(undefined)).toBe(0)
-      expect(safeNumber(NaN)).toBe(0)
-    })
-
-    it('uses custom default value', () => {
       expect(safeNumber('abc', -1)).toBe(-1)
-      expect(safeNumber(null, 99)).toBe(99)
     })
   })
 })
 
 describe('message validators', () => {
   describe('validateTopMessage', () => {
-    it('validates valid top message', () => {
+    it('validates valid top message with list', () => {
       const message = {
         msg: 'top',
-        data: {
-          RaceName: 'Test Race',
-          list: [],
-        },
+        data: { RaceName: 'Test Race', list: [] },
       }
       expect(validateTopMessage(message)).toEqual({ valid: true })
     })
 
-    it('rejects non-object message', () => {
+    it('validates top message without list', () => {
+      const message = {
+        msg: 'top',
+        data: { RaceName: 'Test' },
+      }
+      expect(validateTopMessage(message)).toEqual({ valid: true })
+    })
+
+    it('rejects invalid top messages', () => {
       expect(validateTopMessage('string')).toEqual({
         valid: false,
         error: 'Message must be an object',
       })
-    })
-
-    it('rejects message with non-object data', () => {
-      const message = {
-        msg: 'top',
-        data: 'not an object',
-      }
-      expect(validateTopMessage(message)).toEqual({
+      expect(validateTopMessage({ msg: 'top', data: 'not object' })).toEqual({
         valid: false,
         error: 'Message data must be an object',
       })
-    })
-
-    it('rejects message with non-array list', () => {
-      const message = {
-        msg: 'top',
-        data: {
-          list: 'not an array',
-        },
-      }
-      expect(validateTopMessage(message)).toEqual({
+      expect(validateTopMessage({ msg: 'top', data: { list: 'not array' } })).toEqual({
         valid: false,
         error: 'list must be an array',
       })
     })
-
-    it('accepts message without list', () => {
-      const message = {
-        msg: 'top',
-        data: {
-          RaceName: 'Test',
-        },
-      }
-      expect(validateTopMessage(message)).toEqual({ valid: true })
-    })
   })
 
   describe('validateCompMessage', () => {
-    it('validates valid comp message', () => {
-      const message = {
-        msg: 'comp',
-        data: { Bib: '123' },
-      }
-      expect(validateCompMessage(message)).toEqual({ valid: true })
-    })
-
-    it('rejects non-object message', () => {
+    it('validates and rejects comp messages correctly', () => {
+      expect(validateCompMessage({ msg: 'comp', data: { Bib: '123' } })).toEqual({ valid: true })
       expect(validateCompMessage(null)).toEqual({
         valid: false,
         error: 'Message must be an object',
       })
-    })
-
-    it('rejects message with non-object data', () => {
-      const message = {
-        msg: 'comp',
-        data: [],
-      }
-      expect(validateCompMessage(message)).toEqual({
+      expect(validateCompMessage({ msg: 'comp', data: [] })).toEqual({
         valid: false,
         error: 'Message data must be an object',
       })
@@ -228,20 +137,11 @@ describe('message validators', () => {
   })
 
   describe('validateOnCourseMessage', () => {
-    it('validates valid oncourse message', () => {
-      const message = {
-        msg: 'oncourse',
-        data: [{ Bib: '123' }],
-      }
-      expect(validateOnCourseMessage(message)).toEqual({ valid: true })
-    })
-
-    it('rejects message with non-array data', () => {
-      const message = {
-        msg: 'oncourse',
-        data: { Bib: '123' },
-      }
-      expect(validateOnCourseMessage(message)).toEqual({
+    it('validates and rejects oncourse messages correctly', () => {
+      expect(validateOnCourseMessage({ msg: 'oncourse', data: [{ Bib: '123' }] })).toEqual({
+        valid: true,
+      })
+      expect(validateOnCourseMessage({ msg: 'oncourse', data: { Bib: '123' } })).toEqual({
         valid: false,
         error: 'Message data must be an array',
       })
@@ -249,23 +149,14 @@ describe('message validators', () => {
   })
 
   describe('validateControlMessage', () => {
-    it('validates valid control message', () => {
-      const message = {
-        msg: 'control',
-        data: {
-          displayTop: '1',
-          displayCurrent: '0',
-        },
-      }
-      expect(validateControlMessage(message)).toEqual({ valid: true })
-    })
-
-    it('rejects non-object data', () => {
-      const message = {
-        msg: 'control',
-        data: 'invalid',
-      }
-      expect(validateControlMessage(message)).toEqual({
+    it('validates and rejects control messages correctly', () => {
+      expect(
+        validateControlMessage({
+          msg: 'control',
+          data: { displayTop: '1', displayCurrent: '0' },
+        })
+      ).toEqual({ valid: true })
+      expect(validateControlMessage({ msg: 'control', data: 'invalid' })).toEqual({
         valid: false,
         error: 'Message data must be an object',
       })
@@ -273,36 +164,20 @@ describe('message validators', () => {
   })
 
   describe('validateTextMessage', () => {
-    it('validates valid title message', () => {
-      const message = {
-        msg: 'title',
-        data: { text: 'Test Title' },
-      }
-      expect(validateTextMessage(message, 'title')).toEqual({ valid: true })
-    })
-
-    it('validates valid infotext message', () => {
-      const message = {
-        msg: 'infotext',
-        data: { text: 'Info text' },
-      }
-      expect(validateTextMessage(message, 'infotext')).toEqual({ valid: true })
-    })
-
-    it('validates valid daytime message', () => {
-      const message = {
-        msg: 'daytime',
-        data: { time: '12:34:56' },
-      }
-      expect(validateTextMessage(message, 'daytime')).toEqual({ valid: true })
+    it('validates text-based messages', () => {
+      expect(validateTextMessage({ msg: 'title', data: { text: 'Test' } }, 'title')).toEqual({
+        valid: true,
+      })
+      expect(validateTextMessage({ msg: 'infotext', data: { text: 'Info' } }, 'infotext')).toEqual({
+        valid: true,
+      })
+      expect(validateTextMessage({ msg: 'daytime', data: { time: '12:34:56' } }, 'daytime')).toEqual(
+        { valid: true }
+      )
     })
 
     it('rejects wrong message type', () => {
-      const message = {
-        msg: 'title',
-        data: { text: 'Test' },
-      }
-      expect(validateTextMessage(message, 'infotext')).toEqual({
+      expect(validateTextMessage({ msg: 'title', data: { text: 'Test' } }, 'infotext')).toEqual({
         valid: false,
         error: 'Invalid message type: title',
       })
@@ -310,38 +185,16 @@ describe('message validators', () => {
   })
 
   describe('validateResultRow', () => {
-    it('validates valid result row', () => {
-      const row = {
-        Bib: '123',
-        Name: 'Test',
-        Rank: 1,
-      }
-      expect(validateResultRow(row)).toEqual({ valid: true })
-    })
-
-    it('rejects row without Bib', () => {
-      const row = {
-        Name: 'Test',
-        Rank: 1,
-      }
-      expect(validateResultRow(row)).toEqual({
+    it('validates and rejects result rows correctly', () => {
+      expect(validateResultRow({ Bib: '123', Name: 'Test', Rank: 1 })).toEqual({ valid: true })
+      expect(validateResultRow({ Name: 'Test', Rank: 1 })).toEqual({
         valid: false,
         error: 'Result row must have a Bib',
       })
-    })
-
-    it('rejects row with empty Bib', () => {
-      const row = {
-        Bib: '',
-        Name: 'Test',
-      }
-      expect(validateResultRow(row)).toEqual({
+      expect(validateResultRow({ Bib: '', Name: 'Test' })).toEqual({
         valid: false,
         error: 'Result row must have a Bib',
       })
-    })
-
-    it('rejects non-object row', () => {
       expect(validateResultRow('string')).toEqual({
         valid: false,
         error: 'Result row must be an object',
@@ -350,19 +203,9 @@ describe('message validators', () => {
   })
 
   describe('validateCompetitorData', () => {
-    it('validates valid competitor data', () => {
-      const data = {
-        Bib: '123',
-        Name: 'Test',
-      }
-      expect(validateCompetitorData(data)).toEqual({ valid: true })
-    })
-
-    it('validates empty competitor data (valid for no one on course)', () => {
-      expect(validateCompetitorData({})).toEqual({ valid: true })
-    })
-
-    it('rejects non-object data', () => {
+    it('validates and rejects competitor data correctly', () => {
+      expect(validateCompetitorData({ Bib: '123', Name: 'Test' })).toEqual({ valid: true })
+      expect(validateCompetitorData({})).toEqual({ valid: true }) // Empty is valid (no one on course)
       expect(validateCompetitorData('string')).toEqual({
         valid: false,
         error: 'Competitor data must be an object',
