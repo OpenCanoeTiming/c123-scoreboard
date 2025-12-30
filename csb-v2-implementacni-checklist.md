@@ -129,8 +129,8 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
    - **Oprava:** Opravena logika scroll state machine
  - [x] scroll po dokončení jízdy nespolehlivý
    - **Oprava:** Po highlightu se nastaví `phase: IDLE` pro správný restart scroll automatu
- - [ ] dokončení jízdy závodníka máme podle mě nějak předčasné
-   - **Pozn.:** Highlight timing pochází z CLI `HighlightBib` v `top` zprávě - toto je správné chování podle analýzy (07-sitova-komunikace.md)
+ - [x] dokončení jízdy závodníka máme podle mě nějak předčasné
+   - **Pozn.:** Highlight timing pochází z CLI `HighlightBib` v `top` zprávě - toto je správné chování podle analýzy (07-sitova-komunikace.md) - **není bug, uzavřeno**
  
  
 
