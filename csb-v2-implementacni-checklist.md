@@ -9,23 +9,18 @@
 
 ---
 
-## Jak používat tento checklist
+## Aktuální stav
 
-- [ ] = Nesplněno
-- [x] = Splněno
-- [~] = Částečně / Vyžaduje revizi
-
-**Cíl:** Vytvořit scoreboard vizuálně identický s originálem. Žádné "vylepšení" - replikace 1:1.
-
-**Testovací rozlišení:**
-- Ledwall: **768×384** (`?type=ledwall`)
-- Vertical: **1080×1920**
+```
+Build:       ✅ OK (437 kB JS, 19 kB CSS)
+Unit testy:  ✅ 512 testů (25 test suites)
+E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
+Performance: ✅ FPS ~44, memory stable, load <1s
+```
 
 ---
 
-## Fáze 0-10: Základ a vizuální shoda ✅
-
-### Přehled dokončených fází
+## Fáze 0-12: Přehled
 
 | Fáze | Obsah | Stav |
 |------|-------|------|
@@ -38,32 +33,12 @@
 | 7-8 | Testování (unit, E2E, benchmarky) | ✅ |
 | 9 | Vizuální shoda s originálem | ✅ |
 | 10 | Finální testování a porovnání | ✅ |
-
-### Aktuální stav
-
-```
-Build:       ✅ OK (437 kB JS, 19 kB CSS)
-Unit testy:  ✅ 512 testů (25 test suites) - reduced from 570
-E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
-Performance: ✅ FPS ~44, memory stable, load <1s
-```
-
-### Vizuální shoda ověřena (2025-12-29)
-
-| Komponenta | Shoda |
-|------------|-------|
-| TopBar | ✅ 100% |
-| Title | ✅ 100% |
-| CurrentCompetitor | ✅ 100% |
-| ResultsList | ✅ 100% |
-| OnCourse | ✅ 100% |
-| Footer | ✅ 100% |
-
-Porovnání uloženo v `tests/e2e/comparison-screenshots/`.
+| 11 | Škálování ledwall (`displayRows`) | ⏳ Manuální testy |
+| 12 | Code cleanup (mrtvý kód, redukce testů) | ✅ |
 
 ---
 
-## Fáze 11: Škálování ledwall (PROBÍHÁ)
+## Fáze 11: Škálování ledwall (MANUÁLNÍ TESTY)
 
 > **Tag před implementací:** `pre-ledwall-scaling`
 >
@@ -98,7 +73,7 @@ Layout se škáluje tak, aby na výšku vyplnil disponibilní viewport s přesn�
 - [x] Vytvořit nový CSS wrapper pro škálovaný obsah v `ScoreboardLayout`
 - [x] Aplikovat CSS proměnnou z useLayout
 - [x] Zajistit že scrollování funguje i po škálování (používá unscaled pixely)
-- [ ] Otestovat že text zůstává ostrý (ne rozmazaný) - manuální test
+- [x] Otestovat že text zůstává ostrý (ne rozmazaný) - manuální test
 
 ### 11.4 Rozměry komponent při škálování ✅
 
@@ -117,89 +92,50 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
 ### 11.6 Testování
 
-**Automatizované:**
+**Automatizované:** ✅
 - [x] E2E test: screenshot s displayRows=5 (layout.spec.ts)
 - [x] E2E test: transform validation s displayRows (layout.spec.ts)
 
-**Manuální (čeká na provedení):**
-- [ ] `?type=ledwall&displayRows=5` na 1920×1080
-- [ ] `?type=ledwall&displayRows=3` na 768×384
-- [ ] Vizuální kontrola škálovaného ledwallu
-- [ ] Performance test - FPS při škálování
+**Manuální (čeká na provedení):** - provedeno, nálezy níže
+- [x] `?type=ledwall&displayRows=5` na 1920×1080
+- [x] `?type=ledwall&displayRows=3` na 768×384
+- [x] Vizuální kontrola škálovaného ledwallu
+- [x] Performance test - FPS při škálování 
 
 ### 11.7 Dokumentace ✅
 
 - [x] Aktualizovat README.md - nový parametr displayRows
 - [x] Aktualizovat checklist s výsledky testování
 
-### 🔍 Revize: Fáze 11
-
-- [ ] Provést manuální testy výše
-- [ ] **Commit:** "fix: address Phase 11 code review findings" ✅ (cdbce2c)
-
 ---
 
-## Zbývající práce
+## Release
 
-### Release
-
-- [ ] **Tag:** `v2.0.0` (čeká na hardware testování a manuální testy Fáze 11)
-
-### Střední priorita - Duplicitní kód
-
-- [x] **penaltyGates parsing** - Identická logika pro parsování gate penalties (`CurrentCompetitor.tsx:50-58`, `OnCourseDisplay.tsx:103-114`)
-- [x] **Message handlers** - Podobná struktura handleXxxMessage metod (`CLIProvider.ts`, `ReplayProvider.ts`) - extrahováno do `messageHandlers.ts`
-
-### Nízká priorita - Code Quality
-
-- [x] **ResultsList.tsx:51 showPenalty** - Odstraněna zbytečná proměnná, penalty je vždy zobrazen (matches original v1)
-- [x] **formatTime.ts empty checks** - Kontrola po trim() je potřebná pro whitespace-only stringy (test potvrzuje)
-- [x] **Dual exports** - Vyřešeno, žádné default exporty v codebase
-
-### Nízká priorita - Testy
-
-- [x] **layout.spec.ts** - Opraveny magic numbers (použití viewportWidth/Height * 0.9), přidány edge case testy pro displayRows (min/max hodnoty)
-- [x] **validation.test.ts** - Zredukováno z 44 na 16 testů (sloučeny testy pro triviální funkce)
-- [x] **parseGates.test.ts** - calculateTotalPenalty zredukováno z 6 na 2 testy
-- [x] **componentSnapshots.test.tsx** - Odstraněn duplicitní soubor (Footer a ResultRow jsou testovány v dedicated souborech)
+- [ ] Provést manuální testy Fáze 11 (výše)
+- [ ] **Tag:** `v2.0.0`
 
 ---
+## z manualniho testovani - dulezite k oprave:
+ - [x] vertical: odscrolloval hezky rychle jednu stránku a pak už se nepohnul :(
+   - **Oprava:** Přidán `scrollTick` state pro triggerování dalšího scrollu
+ - [x] vertical: přeskakování řádků mezi scrolly (22→24 místo 22→23)
+   - **Oprava:** Snížen `PAGE_HEIGHT_RATIO` z 0.9 na 0.85 pro větší overlap
+ - [x] vertical i ledwall: dva závodníci na trati - přeblikávání
+   - **Oprava:** `comp` zprávy aktualizují pouze `currentCompetitor`, nikoliv `onCourse` seznam
+   - Přidán `updateOnCourse` flag pro rozlišení `comp` vs `oncourse` zpráv
+ - [x] ledwall: displayRows způsobuje scrollbary
+   - **Oprava:** `overflow: hidden` na html/body/#root
+ - [x] ledwall: scroll nefunguje správně když je závodník na trati
+   - **Oprava:** Opravena logika scroll state machine
+ - [x] scroll po dokončení jízdy nespolehlivý
+   - **Oprava:** Po highlightu se nastaví `phase: IDLE` pro správný restart scroll automatu
+ - [ ] dokončení jízdy závodníka máme podle mě nějak předčasné
+   - **Pozn.:** Highlight timing pochází z CLI `HighlightBib` v `top` zprávě - toto je správné chování podle analýzy (07-sitova-komunikace.md)
+ 
+ 
 
-## Fáze 12: Code Cleanup (z review)
 
-> **Důvod:** Review odhalilo mrtvý kód a redundantní testy. 518 testů je příliš na aplikaci této velikosti.
-
-### 12.1 Mrtvý kód - smazat ✅
-
-- [x] **normalizeCompetitor.ts** - celý soubor je nepoužitý (normalizeCompetitor, normalizeResult, isEmptyCompetitor)
-- [x] **validation.ts** - smazat nepoužité funkce (isNumeric, validateCompetitorData)
-
-### 12.2 Redukce testů (~50 redundantních)
-
-> **Pozn:** useAutoScroll testy NECHAT - scrollování není doladěné
-
-**formatX funkce** - sloučit duplicitní null/empty/whitespace testy:
-- [x] **formatTime.test.ts** - 4 testy → 1 parametrizovaný
-- [x] **formatName.test.ts** - sloučit empty value testy
-- [x] **formatClub.test.ts** - sloučit empty value testy
-- [x] **formatNat.test.ts** - sloučit empty value testy
-
-**useLayout testy** - testovat chování, ne implementační detaily:
-- [x] **useLayout.test.ts** - odstranit testy na CSS proměnné (--row-height, --visible-rows)
-
-**E2E testy** - parametrizovat opakované setupy:
-- [x] **layout.spec.ts** - parametrizovat testy pro různá rozlišení (vertical, ledwall, ledwall-wide)
-
-### 12.3 Zbytečné fallbacky (minor)
-
-- [x] **getGateClass.ts:49-50** - odstranit `?? ''` (CSS module nikdy nevrací undefined)
-- [x] **validation.ts:76-80** - N/A (soubor byl smazán v 12.1)
-
----
-
-## Post-implementace
-
-### Budoucí kroky (až po release v2.0.0)
+## Post-implementace (po release)
 
 - [ ] C123Provider - přímé TCP připojení (vyžaduje WebSocket proxy)
 - [ ] Produkční nasazení
