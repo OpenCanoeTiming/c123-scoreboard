@@ -2,8 +2,8 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
   useCallback,
+  useReducer,
   type ReactNode,
 } from 'react'
 import type {
@@ -71,6 +71,155 @@ export interface ScoreboardContextValue extends ScoreboardState {
 }
 
 /**
+ * Reducer action types for atomic state updates
+ */
+type ScoreboardAction =
+  | { type: 'SET_STATUS'; status: ConnectionStatus }
+  | { type: 'SET_ERROR'; error: string | null }
+  | { type: 'ADD_PROVIDER_ERROR'; error: ProviderError }
+  | { type: 'CLEAR_PROVIDER_ERRORS' }
+  | {
+      type: 'SET_RESULTS'
+      results: Result[]
+      raceName: string
+      raceStatus: string
+      highlightBib: string | null
+    }
+  | {
+      type: 'SET_ON_COURSE'
+      current: OnCourseCompetitor | null
+      onCourse: OnCourseCompetitor[]
+    }
+  | { type: 'SET_VISIBILITY'; visibility: VisibilityState }
+  | { type: 'SET_EVENT_INFO'; title?: string; infoText?: string; dayTime?: string }
+  | { type: 'CLEAR_DEPARTING' }
+  | { type: 'RESET_STATE' }
+
+/**
+ * Initial state
+ */
+const initialState: ScoreboardState = {
+  status: 'disconnected',
+  error: null,
+  initialDataReceived: false,
+  providerErrors: [],
+  results: [],
+  raceName: '',
+  raceStatus: '',
+  highlightBib: null,
+  highlightTimestamp: null,
+  currentCompetitor: null,
+  onCourse: [],
+  departingCompetitor: null,
+  departedAt: null,
+  visibility: defaultVisibility,
+  title: '',
+  infoText: '',
+  dayTime: '',
+}
+
+/**
+ * Reducer for atomic state updates
+ * Ensures related state changes happen together
+ */
+function scoreboardReducer(
+  state: ScoreboardState,
+  action: ScoreboardAction
+): ScoreboardState {
+  switch (action.type) {
+    case 'SET_STATUS': {
+      const newState = { ...state, status: action.status }
+      if (action.status === 'connected') {
+        newState.error = null
+      }
+      return newState
+    }
+
+    case 'SET_ERROR':
+      return { ...state, error: action.error }
+
+    case 'ADD_PROVIDER_ERROR': {
+      const updated = [...state.providerErrors, action.error]
+      return { ...state, providerErrors: updated.slice(-10) }
+    }
+
+    case 'CLEAR_PROVIDER_ERRORS':
+      return { ...state, providerErrors: [] }
+
+    case 'SET_RESULTS': {
+      const newState: ScoreboardState = {
+        ...state,
+        results: action.results,
+        raceName: action.raceName,
+        raceStatus: action.raceStatus,
+        initialDataReceived: true,
+      }
+
+      // Atomic highlight update - bib and timestamp together
+      if (action.highlightBib && action.highlightBib !== state.highlightBib) {
+        newState.highlightBib = action.highlightBib
+        newState.highlightTimestamp = Date.now()
+
+        // Clear departing if this is the departing competitor's highlight
+        if (
+          state.departingCompetitor &&
+          state.departingCompetitor.bib === action.highlightBib
+        ) {
+          newState.departingCompetitor = null
+          newState.departedAt = null
+        }
+      }
+
+      return newState
+    }
+
+    case 'SET_ON_COURSE': {
+      const newState: ScoreboardState = {
+        ...state,
+        currentCompetitor: action.current,
+        onCourse: action.onCourse,
+      }
+
+      // Atomic departing update - if previous competitor exists and bib differs
+      const prev = state.currentCompetitor
+      if (prev && prev.bib !== action.current?.bib) {
+        newState.departingCompetitor = prev
+        newState.departedAt = Date.now()
+      }
+
+      return newState
+    }
+
+    case 'SET_VISIBILITY':
+      return { ...state, visibility: action.visibility }
+
+    case 'SET_EVENT_INFO':
+      return {
+        ...state,
+        title: action.title || state.title,
+        infoText: action.infoText || state.infoText,
+        dayTime: action.dayTime || state.dayTime,
+      }
+
+    case 'CLEAR_DEPARTING':
+      return { ...state, departingCompetitor: null, departedAt: null }
+
+    case 'RESET_STATE':
+      return {
+        ...initialState,
+        status: state.status,
+        visibility: state.visibility,
+        title: state.title,
+        infoText: state.infoText,
+        dayTime: state.dayTime,
+      }
+
+    default:
+      return state
+  }
+}
+
+/**
  * Create the context
  * Exported for use by useScoreboard hook
  */
@@ -91,211 +240,102 @@ interface ScoreboardProviderProps {
  *
  * Connects to a DataProvider and manages scoreboard state.
  * Subscribes to all data callbacks and updates state accordingly.
+ * Uses useReducer for atomic state updates of related fields.
  */
 export function ScoreboardProvider({
   provider,
   children,
 }: ScoreboardProviderProps) {
-  // Connection state
-  const [status, setStatus] = useState<ConnectionStatus>(provider.status)
-  const [error, setError] = useState<string | null>(null)
-  const [initialDataReceived, setInitialDataReceived] = useState(false)
-
-  // Provider errors (parse/validation errors that don't break connection)
-  const [providerErrors, setProviderErrors] = useState<ProviderError[]>([])
-
-  // Results data
-  const [results, setResults] = useState<Result[]>([])
-  const [raceName, setRaceName] = useState('')
-  const [raceStatus, setRaceStatus] = useState('')
-
-  // Highlight state (timestamp-based expiration)
-  const [highlightBib, setHighlightBib] = useState<string | null>(null)
-  const [highlightTimestamp, setHighlightTimestamp] = useState<number | null>(
-    null
-  )
-
-  // Competitors
-  const [currentCompetitor, setCurrentCompetitor] =
-    useState<OnCourseCompetitor | null>(null)
-  const [onCourse, setOnCourse] = useState<OnCourseCompetitor[]>([])
-
-  // Departing competitor state
-  const [departingCompetitor, setDepartingCompetitor] =
-    useState<OnCourseCompetitor | null>(null)
-  const [departedAt, setDepartedAt] = useState<number | null>(null)
-
-  // Visibility
-  const [visibility, setVisibility] =
-    useState<VisibilityState>(defaultVisibility)
-
-  // Event info
-  const [title, setTitle] = useState('')
-  const [infoText, setInfoText] = useState('')
-  const [dayTime, setDayTime] = useState('')
-
-  /**
-   * Reset state on reconnect - clear stale data
-   */
-  const resetState = useCallback(() => {
-    setResults([])
-    setRaceName('')
-    setRaceStatus('')
-    setHighlightBib(null)
-    setHighlightTimestamp(null)
-    setCurrentCompetitor(null)
-    setOnCourse([])
-    setDepartingCompetitor(null)
-    setDepartedAt(null)
-    setInitialDataReceived(false)
-    setProviderErrors([])
-    // Keep visibility and event info - they will be updated
-  }, [])
+  const [state, dispatch] = useReducer(scoreboardReducer, {
+    ...initialState,
+    status: provider.status,
+  })
 
   /**
    * Handle results data (from top messages)
-   *
-   * Activates highlight when HighlightBib is present.
-   * Trust server - if HighlightBib is set, show highlight.
-   *
-   * Also clears departing competitor when highlight arrives for them.
+   * Atomic update of results + highlight state
    */
   const handleResults = useCallback((data: ResultsData) => {
-    setResults(data.results)
-    setRaceName(data.raceName)
-    setRaceStatus(data.raceStatus)
-
-    // Highlight activation - trust server's HighlightBib value
-    const newHighlightBib = data.highlightBib
-    if (newHighlightBib) {
-      // Only activate if this is a new highlight
-      setHighlightBib((prevBib) => {
-        if (prevBib !== newHighlightBib) {
-          // New highlight - set timestamp
-          setHighlightTimestamp(Date.now())
-          return newHighlightBib
-        }
-        return prevBib
-      })
-
-      // Clear departing if this is the departing competitor's highlight
-      setDepartingCompetitor((prev) => {
-        if (prev && prev.bib === newHighlightBib) {
-          setDepartedAt(null)
-          return null
-        }
-        return prev
-      })
-    }
-    // Note: We use timestamp-based expiration, so we don't clear highlight here
-    // The highlight will expire naturally via useHighlight hook
-
-    // First top message means we have data
-    setInitialDataReceived(true)
+    dispatch({
+      type: 'SET_RESULTS',
+      results: data.results,
+      raceName: data.raceName,
+      raceStatus: data.raceStatus,
+      highlightBib: data.highlightBib ?? null,
+    })
   }, [])
 
   /**
    * Handle on-course data (from comp/oncourse messages)
-   *
-   * Departing logic:
-   * - When currentCompetitor changes (new or empty bib)
-   * - Store the previous competitor as departing with timestamp
-   * - Departing is cleared when highlight arrives or timeout expires
+   * Reducer handles departing detection by comparing with current state
    */
-  const handleOnCourse = useCallback(
-    (data: OnCourseData) => {
-      // Detect competitor change for departing logic
-      setCurrentCompetitor((prevCompetitor) => {
-        // If previous competitor exists and bib is different (or new is null/empty)
-        if (prevCompetitor && prevCompetitor.bib !== data.current?.bib) {
-          // Store previous as departing
-          setDepartingCompetitor(prevCompetitor)
-          setDepartedAt(Date.now())
-        }
-        return data.current
-      })
-      setOnCourse(data.onCourse)
-    },
-    [] // No dependencies needed as we use the callback form of setCurrentCompetitor
-  )
+  const handleOnCourse = useCallback((data: OnCourseData) => {
+    dispatch({
+      type: 'SET_ON_COURSE',
+      current: data.current,
+      onCourse: data.onCourse,
+    })
+  }, [])
 
   /**
    * Handle visibility data (from control messages)
    */
   const handleVisibility = useCallback((newVisibility: VisibilityState) => {
-    setVisibility(newVisibility)
+    dispatch({ type: 'SET_VISIBILITY', visibility: newVisibility })
   }, [])
 
   /**
    * Handle event info (from title/infoText/dayTime messages)
-   * Note: Only update non-empty values to allow partial updates
    */
   const handleEventInfo = useCallback((info: EventInfoData) => {
-    if (info.title) setTitle(info.title)
-    if (info.infoText) setInfoText(info.infoText)
-    if (info.dayTime) setDayTime(info.dayTime)
+    dispatch({
+      type: 'SET_EVENT_INFO',
+      title: info.title,
+      infoText: info.infoText,
+      dayTime: info.dayTime,
+    })
   }, [])
 
   /**
    * Handle connection status changes
    */
-  const handleConnectionChange = useCallback(
-    (newStatus: ConnectionStatus) => {
-      setStatus(newStatus)
-
-      // Clear error on successful connection
-      if (newStatus === 'connected') {
-        setError(null)
-      }
-
-      // Reset state when reconnecting to ensure fresh data
-      if (newStatus === 'reconnecting') {
-        resetState()
-      }
-    },
-    [resetState]
-  )
+  const handleConnectionChange = useCallback((newStatus: ConnectionStatus) => {
+    dispatch({ type: 'SET_STATUS', status: newStatus })
+    if (newStatus === 'reconnecting') {
+      dispatch({ type: 'RESET_STATE' })
+    }
+  }, [])
 
   /**
    * Handle provider errors (parse/validation errors)
-   * Keep last 10 errors to avoid unbounded growth
    */
   const handleProviderError = useCallback((providerError: ProviderError) => {
-    setProviderErrors((prev) => {
-      const updated = [...prev, providerError]
-      // Keep only last 10 errors
-      return updated.slice(-10)
-    })
+    dispatch({ type: 'ADD_PROVIDER_ERROR', error: providerError })
   }, [])
 
   /**
    * Clear provider errors
    */
   const clearProviderErrors = useCallback(() => {
-    setProviderErrors([])
+    dispatch({ type: 'CLEAR_PROVIDER_ERRORS' })
   }, [])
 
   /**
    * Manual reconnect trigger
    */
   const reconnect = useCallback(() => {
-    setError(null)
-    setProviderErrors([])
+    dispatch({ type: 'SET_ERROR', error: null })
+    dispatch({ type: 'CLEAR_PROVIDER_ERRORS' })
     provider.disconnect()
     provider.connect().catch((err: Error) => {
-      setError(err.message || 'Connection failed')
+      dispatch({ type: 'SET_ERROR', error: err.message || 'Connection failed' })
     })
   }, [provider])
 
   /**
    * Subscribe to provider callbacks on mount
-   *
-   * Note: We intentionally only depend on `provider` to prevent
-   * re-subscribing when handlers change. All handlers are stable
-   * (no dependencies or use refs) so this is safe.
    */
   useEffect(() => {
-    // Subscribe to all data streams
     const unsubResults = provider.onResults(handleResults)
     const unsubOnCourse = provider.onOnCourse(handleOnCourse)
     const unsubVisibility = provider.onVisibility(handleVisibility)
@@ -303,12 +343,10 @@ export function ScoreboardProvider({
     const unsubConnection = provider.onConnectionChange(handleConnectionChange)
     const unsubError = provider.onError(handleProviderError)
 
-    // Initial connection
     provider.connect().catch((err: Error) => {
-      setError(err.message || 'Connection failed')
+      dispatch({ type: 'SET_ERROR', error: err.message || 'Connection failed' })
     })
 
-    // Cleanup on unmount
     return () => {
       unsubResults()
       unsubOnCourse()
@@ -326,42 +364,23 @@ export function ScoreboardProvider({
    * Clears departing competitor after DEPARTING_TIMEOUT if no highlight arrives
    */
   useEffect(() => {
-    if (!departingCompetitor || !departedAt) {
+    if (!state.departingCompetitor || !state.departedAt) {
       return
     }
 
-    const elapsed = Date.now() - departedAt
+    const elapsed = Date.now() - state.departedAt
     const remaining = DEPARTING_TIMEOUT - elapsed
 
-    // Set timeout for expiration (use Math.max(0, remaining) to handle already expired case)
-    // This avoids synchronous setState within effect body
     const timeoutId = setTimeout(() => {
-      setDepartingCompetitor(null)
-      setDepartedAt(null)
+      dispatch({ type: 'CLEAR_DEPARTING' })
     }, Math.max(0, remaining))
 
     return () => clearTimeout(timeoutId)
-  }, [departingCompetitor, departedAt])
+  }, [state.departingCompetitor, state.departedAt])
 
   // Build context value
   const value: ScoreboardContextValue = {
-    status,
-    error,
-    initialDataReceived,
-    providerErrors,
-    results,
-    raceName,
-    raceStatus,
-    highlightBib,
-    highlightTimestamp,
-    currentCompetitor,
-    onCourse,
-    departingCompetitor,
-    departedAt,
-    visibility,
-    title,
-    infoText,
-    dayTime,
+    ...state,
     reconnect,
     clearProviderErrors,
   }
