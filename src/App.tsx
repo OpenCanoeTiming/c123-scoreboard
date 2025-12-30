@@ -62,7 +62,6 @@ function getUrlParams(): {
 function ScoreboardContent() {
   const {
     status,
-    error,
     initialDataReceived,
     title,
     raceName,
@@ -72,7 +71,6 @@ function ScoreboardContent() {
     onCourse,
     results,
     visibility,
-    reconnect,
   } = useScoreboard()
 
   const { layoutMode } = useLayout()
@@ -85,9 +83,7 @@ function ScoreboardContent() {
       {/* Connection status overlay */}
       <ConnectionStatus
         status={status}
-        error={error}
         initialDataReceived={initialDataReceived}
-        onRetry={reconnect}
       />
 
       <ScoreboardLayout

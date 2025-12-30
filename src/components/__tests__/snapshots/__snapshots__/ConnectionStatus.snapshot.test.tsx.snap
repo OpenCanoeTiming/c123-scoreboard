@@ -8,7 +8,7 @@ exports[`ConnectionStatus snapshots > connection states > should match snapshot 
 </div>
 `;
 
-exports[`ConnectionStatus snapshots > connection states > should match snapshot - connected with data (hidden) 1`] = `
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - connected with data 1`] = `
 <div>
   <div
     class="_indicator_1c5a2c _connected_1c5a2c"
@@ -32,10 +32,10 @@ exports[`ConnectionStatus snapshots > connection states > should match snapshot 
 </div>
 `;
 
-exports[`ConnectionStatus snapshots > connection states > should match snapshot - disconnected with retry button 1`] = `
+exports[`ConnectionStatus snapshots > connection states > should match snapshot - error 1`] = `
 <div>
   <div
-    class="_indicator_1c5a2c _disconnected_1c5a2c"
+    class="_indicator_1c5a2c _error_1c5a2c"
   />
 </div>
 `;
@@ -44,38 +44,6 @@ exports[`ConnectionStatus snapshots > connection states > should match snapshot 
 <div>
   <div
     class="_indicator_1c5a2c _reconnecting_1c5a2c"
-  />
-</div>
-`;
-
-exports[`ConnectionStatus snapshots > error states > should match snapshot - error with message 1`] = `
-<div>
-  <div
-    class="_indicator_1c5a2c _error_1c5a2c"
-  />
-</div>
-`;
-
-exports[`ConnectionStatus snapshots > error states > should match snapshot - error with retry button 1`] = `
-<div>
-  <div
-    class="_indicator_1c5a2c _error_1c5a2c"
-  />
-</div>
-`;
-
-exports[`ConnectionStatus snapshots > error states > should match snapshot - error without message 1`] = `
-<div>
-  <div
-    class="_indicator_1c5a2c _error_1c5a2c"
-  />
-</div>
-`;
-
-exports[`ConnectionStatus snapshots > error states > should match snapshot - long error message 1`] = `
-<div>
-  <div
-    class="_indicator_1c5a2c _error_1c5a2c"
   />
 </div>
 `;

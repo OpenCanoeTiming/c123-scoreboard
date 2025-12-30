@@ -7,12 +7,8 @@ import type { ConnectionStatus as ConnectionStatusType } from '@/types'
 interface ConnectionStatusProps {
   /** Current connection status */
   status: ConnectionStatusType
-  /** Error message if any */
-  error: string | null
   /** Whether initial data has been received */
   initialDataReceived: boolean
-  /** Callback for manual retry (unused in dot indicator) */
-  onRetry?: () => void
 }
 
 /**

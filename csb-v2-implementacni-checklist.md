@@ -645,8 +645,8 @@ Tag: `pre-review-final`
 
 ### Nízká priorita - Dead code
 
-- [ ] **ConnectionStatus.tsx:14-15 - Nepoužitý prop** - Prop `onRetry` je deklarován ale nikdy nepoužit.
-- [ ] **useAutoScroll.ts:227 - scrollToTop v deps** - `scrollToTop` v dependency array je zbytečný (konstanta, nikdy se nemění).
+- [x] **ConnectionStatus.tsx:14-15 - Nepoužitý prop** - Prop `onRetry` je deklarován ale nikdy nepoužit. **HOTOVO** - odstraněno `onRetry` a `error` z props
+- [x] **useAutoScroll.ts:227 - scrollToTop v deps** - `scrollToTop` v dependency array je zbytečný (konstanta, nikdy se nemění). **HOTOVO** - scrollToTop je nyní useCallback, ESLint pravidlo vyžaduje v deps
 - [ ] **validation.ts:71-81 - safeStringify** - Funkce je definována ale není přímo volána.
 
 ### Nízká priorita - Přebujelé testy
@@ -684,7 +684,7 @@ Tag: `pre-final-code-review`
 
 ### Střední priorita - Unused Props/Code
 
-- [ ] **ConnectionStatus.onRetry prop nepoužitý** - Prop je deklarován a předáván z App.tsx, ale v komponentě se nikdy nepoužívá (component je jen dot indicator). Odstranit prop.
+- [x] **ConnectionStatus.onRetry prop nepoužitý** - Prop je deklarován a předáván z App.tsx, ale v komponentě se nikdy nepoužívá (component je jen dot indicator). **HOTOVO** - odstraněno
 
 ### Nízká priorita - Console logs v produkci
 
