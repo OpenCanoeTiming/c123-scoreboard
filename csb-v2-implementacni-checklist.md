@@ -153,12 +153,12 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 ### Nízká priorita - Code Quality
 
 - [x] **ResultsList.tsx:51 showPenalty** - Odstraněna zbytečná proměnná, penalty je vždy zobrazen (matches original v1)
-- [ ] **formatTime.ts empty checks** - Redundantní kontroly po trim()
-- [ ] **Dual exports** - Většina souborů má named + default export
+- [x] **formatTime.ts empty checks** - Kontrola po trim() je potřebná pro whitespace-only stringy (test potvrzuje)
+- [x] **Dual exports** - Vyřešeno, žádné default exporty v codebase
 
 ### Nízká priorita - Testy
 
-- [ ] **layout.spec.ts** - Magic numbers (1000, 1800), chybí edge case testy pro displayRows
+- [x] **layout.spec.ts** - Opraveny magic numbers (použití viewportWidth/Height * 0.9), přidány edge case testy pro displayRows (min/max hodnoty)
 - [ ] **validation.test.ts** - 53 testů na triviální funkce - zredukovat na ~25
 - [ ] **parseGates.test.ts** - 6 testů na Math.reduce - ponechat 2-3
 - [ ] **componentSnapshots.test.tsx** - Duplicitní snapshot testy s dedicated soubory

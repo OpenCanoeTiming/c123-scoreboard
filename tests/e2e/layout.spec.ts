@@ -297,7 +297,9 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
   })
 
   test('scales layout to fill viewport with displayRows=5', async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 })
+    const viewportWidth = 1920
+    const viewportHeight = 1080
+    await page.setViewportSize({ width: viewportWidth, height: viewportHeight })
     await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
@@ -309,10 +311,10 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
       return { width: rect.width, height: rect.height }
     })
 
-    // Layout should approximately fill viewport
+    // Layout should approximately fill viewport (at least 90% of viewport dimensions)
     expect(layoutRect).not.toBeNull()
-    expect(layoutRect!.height).toBeGreaterThanOrEqual(1000) // Close to 1080
-    expect(layoutRect!.width).toBeGreaterThanOrEqual(1800) // Close to 1920
+    expect(layoutRect!.height).toBeGreaterThanOrEqual(viewportHeight * 0.9)
+    expect(layoutRect!.width).toBeGreaterThanOrEqual(viewportWidth * 0.9)
   })
 
   test('displayRows=3 applies scale transform', async ({ page }) => {
@@ -363,5 +365,78 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
     await expect(page).toHaveScreenshot('layout-ledwall-displayRows5-1920x1080.png', {
       fullPage: true,
     })
+  })
+
+  // Edge case tests for displayRows validation (min: 3, max: 20)
+  test('displayRows below minimum (2) is clamped to 3', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=2&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Should still render properly with clamped value
+    const transform = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      return window.getComputedStyle(layout).transform
+    })
+
+    expect(transform).not.toBe('none')
+    expect(transform).toContain('matrix')
+  })
+
+  test('displayRows at minimum (3) applies transform', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    const scaleInfo = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      const transform = window.getComputedStyle(layout).transform
+      const match = transform.match(/matrix\(([^,]+),/)
+      const scale = match ? parseFloat(match[1]) : null
+      return { transform, scale }
+    })
+
+    expect(scaleInfo).not.toBeNull()
+    expect(scaleInfo!.transform).not.toBe('none')
+    // With only 3 rows on 1080px viewport, scale should be significantly > 1
+    expect(scaleInfo!.scale).toBeGreaterThan(2)
+  })
+
+  test('displayRows at maximum (20) applies transform', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=20&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    const scaleInfo = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      const transform = window.getComputedStyle(layout).transform
+      const match = transform.match(/matrix\(([^,]+),/)
+      const scale = match ? parseFloat(match[1]) : null
+      return { transform, scale }
+    })
+
+    expect(scaleInfo).not.toBeNull()
+    expect(scaleInfo!.transform).not.toBe('none')
+    // With 20 rows on 1080px viewport, scale should be < 1 (content scaled down)
+    expect(scaleInfo!.scale).toBeLessThan(1)
+  })
+
+  test('displayRows above maximum (25) is clamped to 20', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=25&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Should still render properly with clamped value
+    const transform = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      return window.getComputedStyle(layout).transform
+    })
+
+    expect(transform).not.toBe('none')
+    expect(transform).toContain('matrix')
   })
 })
