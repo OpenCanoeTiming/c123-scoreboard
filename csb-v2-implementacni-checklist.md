@@ -667,20 +667,24 @@ Tag: `pre-final-code-review`
 
 ### Vysoká priorita - Dead Code
 
-- [ ] **normalizeCompetitor.ts - celý soubor nepoužitý** - Funkce `normalizeCompetitor`, `normalizeResult`, `isEmptyCompetitor` nejsou nikde importovány. Providers používají `parseMessages.ts`. **Smazat soubor**.
-- [ ] **detectFinish.ts - neintegrováno** - Funkce `detectFinish`, `isOnCourse`, `hasFinished` jsou připraveny pro C123Provider, ale nejsou nikde použity. Buď integrovat, nebo smazat.
-- [ ] **formatTTBDiff - nepoužitá funkce** - `formatTime.ts:119` exportuje `formatTTBDiff`, ale `CurrentCompetitor` zobrazuje `ttbDiff` raw bez formátování.
+- [x] **normalizeCompetitor.ts - celý soubor nepoužitý** - **SMAZÁNO** - soubor již neexistuje
+- [x] **detectFinish.ts - neintegrováno** - **SMAZÁNO** - soubor již neexistuje
+- [ ] **formatTTBDiff - nepoužitá funkce** - `formatTime.ts:119` exportuje `formatTTBDiff`, ale nikde se nepoužívá (jen v testech). Smazat funkci.
 
 ### Vysoká priorita - Duplicitní kód
 
-- [ ] **formatBehind - 2 implementace** - `formatTime.ts:70` vs `ResultRow.tsx:34` - dvě různé implementace se stejným názvem. ResultRow má vlastní lokální verzi místo importu z utils.
-- [ ] **penaltyGates parsing** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:102-114` mají identický pattern pro parsování gate penalties. Extrahovat do `getPenaltyGates(gates: string)` utility.
-- [ ] **Message handlers v providerech** - `CLIProvider:336-407` vs `ReplayProvider:507-565` mají velmi podobné handleControlMessage, handleTitleMessage, atd. Extrahovat do `parseMessages.ts`.
+- [ ] **formatBehind - 2 implementace** - `formatTime.ts:70` vs `ResultRow.tsx:34` - dvě různé implementace se stejným názvem. ResultRow má vlastní lokální verzi místo importu z utils. Smazat lokální verzi a použít import.
+- [ ] **penaltyGates parsing** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:102-114` mají identický pattern pro parsování gate penalties. Extrahovat do `getPenaltyGates(gates: string)` utility nebo custom hook.
+- [ ] **Message handlers v providerech** - `CLIProvider:336-407` vs `ReplayProvider:507-565` mají podobné handleControlMessage, handleTitleMessage, atd. Lze zjednodušit.
 
 ### Střední priorita - Nekonzistence typů
 
-- [ ] **Result.time chybí v types** - `src/types/result.ts` nemá `time` field, ale testy (`ResultRow.snapshot.test.tsx:14`) ho používají. Buď přidat do typu, nebo opravit testy.
-- [ ] **OnCourseCompetitor.dtStart typ** - Type je `string | null`, ale test v `CurrentCompetitor.snapshot.test.tsx:12` předává `Date.now()` (number).
+- [ ] **Result.time chybí v types** - `src/types/result.ts` nemá `time` field, ale testy (`ResultRow.snapshot.test.tsx:14`) ho používají. Opravit testy.
+- [ ] **OnCourseCompetitor.dtStart typ** - Type je `string | null`, ale test v `CurrentCompetitor.snapshot.test.tsx:12` předává `Date.now()` (number). Opravit testy.
+
+### Střední priorita - Unused Props/Code
+
+- [ ] **ConnectionStatus.onRetry prop nepoužitý** - Prop je deklarován a předáván z App.tsx, ale v komponentě se nikdy nepoužívá (component je jen dot indicator). Odstranit prop.
 
 ### Nízká priorita - Console logs v produkci
 
@@ -693,6 +697,37 @@ Tag: `pre-final-code-review`
 ### Nízká priorita - Dual exports
 
 - [ ] **Named + default exports** - Většina souborů exportuje jak named tak default. Zvolit jeden přístup (doporučeno: pouze named exports).
+
+---
+
+## Code Review nálezy (2025-12-30, Session 2)
+
+Tag: `pre-code-review-final-2`
+
+### Vysoká priorita - Konsolidace duplicit
+
+- [ ] **penaltyGates parsing duplicitní** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:103-114` mají identický kód pro parsování gate penalties. Vytvořit utility funkci nebo hook `usePenaltyGates`.
+
+### Střední priorita - Přebujelé testy
+
+Tyto testy testují triviální funkce příliš důkladně a přidávají maintenance overhead:
+
+- [ ] **validation.test.ts - zredukovat** - 53 testů na validační funkce. Mnoho testů je redundantních (např. testování `isObject` pro různé typy primitiv). Cíl: ~25 testů.
+- [ ] **parseGates.test.ts - zredukovat calculateTotalPenalty testy** - 6 testů na `Math.reduce`. Ponechat 2-3 (empty, mixed, edge case).
+
+### Střední priorita - Unused utils exports
+
+- [ ] **formatTime.ts exports** - `formatBehind` z utils se nepoužívá (ResultRow má vlastní lokální verzi). Buď smazat z utils a ponechat lokální, nebo sjednotit.
+- [ ] **formatTTBDiff nepoužitá** - Nikde v produkčním kódu se nepoužívá. Smazat včetně testů.
+
+### Nízká priorita - Kódová čistota
+
+- [ ] **parseGates.ts:22-33 - přebujelé null checks** - 11 řádků validace lze zredukovat na `if (!gates?.trim()) return []`. TypeScript types jsou dostatečné.
+- [ ] **useTimestamp.ts - useCallback pro triviální funkce** - `calculateIsActive`, `calculateTimeRemaining`, `calculateProgress` jsou jednoduché výpočty volané ihned. `useCallback` je zbytečné, stačí plain funkce.
+
+### Nízká priorita - Styl kódu
+
+- [ ] **Provideři mají podobnou strukturu message handlerů** - handleTitleMessage, handleInfoTextMessage, handleDayTimeMessage mají téměř identický tvar. Lze zjednodušit pomocí generické funkce, ale není kritické.
 
 ---
 
