@@ -143,38 +143,6 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     }
   }, [])
 
-  // Helper functions - inline in effect to avoid unnecessary re-renders
-  const isAtBottom = () => {
-    const container = containerRef.current
-    if (!container) return false
-    return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
-  }
-
-  const getRowsPerPage = () => {
-    const container = containerRef.current
-    if (!container) return 1
-    return Math.max(1, Math.floor((container.clientHeight * PAGE_HEIGHT_RATIO) / rowHeight))
-  }
-
-  const getTotalRows = () => {
-    const container = containerRef.current
-    if (!container) return 0
-    return container.children.length
-  }
-
-  const scrollToRow = (rowIndex: number) => {
-    const container = containerRef.current
-    if (!container) return
-
-    const targetRow = container.children[rowIndex] as HTMLElement | undefined
-    if (!targetRow) return
-
-    container.scrollTo({
-      top: targetRow.offsetTop,
-      behavior: 'smooth',
-    })
-  }
-
   const scrollToTop = useCallback(() => {
     containerRef.current?.scrollTo({
       top: 0,
@@ -247,6 +215,29 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       return
     }
 
+    // Helper functions - defined inside effect to read current values from refs/container
+    const isAtBottom = () => {
+      return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
+    }
+
+    const getRowsPerPage = () => {
+      return Math.max(1, Math.floor((container.clientHeight * PAGE_HEIGHT_RATIO) / rowHeight))
+    }
+
+    const getTotalRows = () => {
+      return container.children.length
+    }
+
+    const scrollToRow = (rowIndex: number) => {
+      const targetRow = container.children[rowIndex] as HTMLElement | undefined
+      if (!targetRow) return
+
+      container.scrollTo({
+        top: targetRow.offsetTop,
+        behavior: 'smooth',
+      })
+    }
+
     let timeoutId: ReturnType<typeof setTimeout>
 
     switch (phase) {
@@ -306,9 +297,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-    // Note: helper functions are intentionally not in deps - they read from refs
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldScroll, phase, scrollConfig])
+  }, [shouldScroll, phase, scrollConfig, rowHeight])
 
   return {
     phase,
