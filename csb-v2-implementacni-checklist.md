@@ -617,6 +617,50 @@ Tag: `pre-review-phase11`
 
 ---
 
+## Code Review nálezy (2025-12-30, Final Review)
+
+Tag: `pre-review-final`
+
+### Vysoká priorita - Duplicitní kód
+
+- [ ] **CLIProvider + ReplayProvider - Callback Sets** - 7× identické Set deklarace (CLIProvider:55-61, ReplayProvider:66-72) a subscription metody (CLIProvider:142-175 vs ReplayProvider:121-154). Vytvořit base class nebo mixin `CallbackManager`.
+- [ ] **CLIProvider + ReplayProvider - Message handlers** - 12+ handleXxxMessage metod (CLIProvider:295-425 vs ReplayProvider:460-597) mají velmi podobnou strukturu. Extrahovat společnou logiku do utility.
+- [ ] **OnCourseDisplay + CurrentCompetitor - parseGates logika** - Obě komponenty opakují stejný kód pro parseGates a filtrování penalt (OnCourseDisplay:103-114 vs CurrentCompetitor:50-58). Vytvořit hook `usePenaltyGates`.
+- [ ] **detectFinish.ts:34-35, 52, 55, 71 - hasValidValue pattern** - Pattern `!!value && value !== ''` se opakuje 4×. Extrahovat utility funkci.
+
+### Střední priorita - Neefektivní konstrukce
+
+- [ ] **useTimestamp.ts:49-77 - Zbytečné useCallback** - Tři useCallback funkce se volají ihned (řádky 110-112) a nepředávají se jako props. Nahradit plain `const` nebo `useMemo`.
+- [ ] **useAutoScroll.ts:122-125 - Zbytečný useMemo** - `prefersReducedMotion` se nikdy nemění za běhu. Může být konstanta mimo komponentu.
+- [ ] **useLayout.ts:270 - Zbytečný useMemo** - `getLayoutParamsFromURL()` se volá pouze jednou při mount. Memoizace s `[]` je zbytečná.
+- [ ] **parseGates.ts:22-33 - Přebujelé null checks** - 11 řádků validace lze zredukovat na `if (!gates?.trim()) return []`.
+- [ ] **formatTime.ts:14-23, 73-82, 122-130 - Redundantní empty checks** - Po trim() se znovu kontroluje prázdný string.
+- [ ] **ScoreboardContext.tsx:181-188 - Vnořené setState** - Vnořené `setDepartingCompetitor` obsahuje vnořené `setDepartedAt`. Lze zjednodušit.
+
+### Střední priorita - Zbytečné fallbacky
+
+- [ ] **useAutoScroll.ts:147-163 - Redundantní container checks** - Helper funkce kontrolují `!container` ale jsou volány z efektu kde už je guard.
+- [ ] **validation.ts:86-191 - Opakovaný msg/type fallback** - Všech 7 validators má `message.msg || message.type` - extrahovat.
+- [ ] **CLIProvider.ts:111-116 - console.error v onerror** - Redundantní s emitError. Odstranit console log z production kódu.
+
+### Nízká priorita - Dead code
+
+- [ ] **ConnectionStatus.tsx:14-15 - Nepoužitý prop** - Prop `onRetry` je deklarován ale nikdy nepoužit.
+- [ ] **useAutoScroll.ts:227 - scrollToTop v deps** - `scrollToTop` v dependency array je zbytečný (konstanta, nikdy se nemění).
+- [ ] **validation.ts:71-81 - safeStringify** - Funkce je definována ale není přímo volána.
+
+### Nízká priorita - Přebujelé testy
+
+- [ ] **validation.test.ts:92-144 - safeString/safeNumber testy** - 40 testů na triviální konverzní funkce. Zredukovat na 10-15.
+- [ ] **validation.test.ts:147-371 - Message validator testy** - 31 téměř identických testů. Konsolidovat nebo parametrizovat.
+- [ ] **detectFinish.test.ts:73-143 - isOnCourse/hasFinished testy** - 13 testů na jednoduchou boolean logiku. Zredukovat na 5-6.
+- [ ] **parseGates.test.ts:59-83 - calculateTotalPenalty testy** - 6 testů na Math.reduce. Ponechat 2-3.
+- [ ] **useAutoScroll.test.ts - IDLE phase checks** - 19× `expect(phase).toBe('IDLE')` - konsolidovat do 2-3 testů.
+- [ ] **useLayout.test.ts:275-297 - Min/max bounds testy** - 8 testů pro min/max rozsahy. Konsolidovat.
+- [ ] **componentSnapshots.test.tsx:60-94 - ResultRow varianty** - 6 podobných snapshot testů. Parametrizovat.
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
