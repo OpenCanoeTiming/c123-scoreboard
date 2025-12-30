@@ -188,7 +188,7 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 - [x] **useLayout.test.ts** - odstranit testy na CSS proměnné (--row-height, --visible-rows)
 
 **E2E testy** - parametrizovat opakované setupy:
-- [ ] **layout.spec.ts** - parametrizovat testy pro různá rozlišení (vertical, ledwall, ledwall-wide)
+- [x] **layout.spec.ts** - parametrizovat testy pro různá rozlišení (vertical, ledwall, ledwall-wide)
 
 ### 12.3 Zbytečné fallbacky (minor)
 

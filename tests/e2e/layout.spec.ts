@@ -23,147 +23,114 @@ async function waitForDataLoad(page: Page, timeout = 30000) {
   await page.waitForTimeout(1000)
 }
 
-test.describe('Layout: Vertical 1080×1920', () => {
-  test('displays full layout with all components', async ({ page }) => {
-    await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
+// Parametrized layout configurations
+interface LayoutConfig {
+  name: string
+  width: number
+  height: number
+  type: 'vertical' | 'ledwall'
+  expectedColumns: number
+  showFooter: boolean
+  screenshotName: string
+}
 
-    // All main components should be visible
-    await expect(page.getByTestId('topbar')).toBeVisible()
-    await expect(page.getByTestId('title')).toBeVisible()
-    await expect(page.getByTestId('oncourse')).toBeVisible()
-    await expect(page.getByTestId('results-list')).toBeVisible()
-    await expect(page.getByTestId('footer')).toBeVisible()
-  })
+const layoutConfigs: LayoutConfig[] = [
+  {
+    name: 'Vertical 1080×1920',
+    width: 1080,
+    height: 1920,
+    type: 'vertical',
+    expectedColumns: 6,
+    showFooter: true,
+    screenshotName: 'layout-vertical-1080x1920.png',
+  },
+  {
+    name: 'Ledwall 768×384',
+    width: 768,
+    height: 384,
+    type: 'ledwall',
+    expectedColumns: 5,
+    showFooter: false,
+    screenshotName: 'layout-ledwall-768x384.png',
+  },
+  {
+    name: 'Ledwall 1920×480 (wide)',
+    width: 1920,
+    height: 480,
+    type: 'ledwall',
+    expectedColumns: 5,
+    showFooter: false,
+    screenshotName: 'layout-ledwall-1920x480.png',
+  },
+]
 
-  test('results grid has all columns visible', async ({ page }) => {
-    await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
+for (const config of layoutConfigs) {
+  test.describe(`Layout: ${config.name}`, () => {
+    test('displays layout with correct components', async ({ page }) => {
+      await page.setViewportSize({ width: config.width, height: config.height })
+      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      await waitForDataLoad(page)
 
-    // Check that grid template has expected columns for vertical layout
-    // Expected: rank, bib, name, penalty, time, behind
-    const gridStyle = await page.evaluate(() => {
-      const list = document.querySelector('[data-testid="results-list"]')
-      if (!list) return null
-      const row = list.querySelector('div[class*="row"]')
-      if (!row) return null
-      return window.getComputedStyle(row).gridTemplateColumns
+      // Main components should be visible
+      await expect(page.getByTestId('topbar')).toBeVisible()
+      await expect(page.getByTestId('title')).toBeVisible()
+      await expect(page.getByTestId('oncourse')).toBeVisible()
+      await expect(page.getByTestId('results-list')).toBeVisible()
+
+      // Footer visibility depends on layout type
+      if (config.showFooter) {
+        await expect(page.getByTestId('footer')).toBeVisible()
+      } else {
+        await expect(page.getByTestId('footer')).not.toBeVisible()
+      }
     })
 
-    // Vertical layout should have 6 columns
-    expect(gridStyle).toBeTruthy()
-    const columnCount = gridStyle!.split(' ').filter(s => s.trim()).length
-    expect(columnCount).toBe(6)
-  })
+    test('results grid has correct number of columns', async ({ page }) => {
+      await page.setViewportSize({ width: config.width, height: config.height })
+      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      await waitForDataLoad(page)
 
-  test('displays correct number of result rows', async ({ page }) => {
-    await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
+      const gridStyle = await page.evaluate(() => {
+        const list = document.querySelector('[data-testid="results-list"]')
+        if (!list) return null
+        const row = list.querySelector('div[class*="row"]')
+        if (!row) return null
+        return window.getComputedStyle(row).gridTemplateColumns
+      })
 
-    const rowCount = await page.evaluate(() => {
-      const list = document.querySelector('[data-testid="results-list"]')
-      return list ? list.querySelectorAll('div[class*="row"]').length : 0
+      expect(gridStyle).toBeTruthy()
+      const columnCount = gridStyle!.split(' ').filter(s => s.trim()).length
+      expect(columnCount).toBe(config.expectedColumns)
     })
 
-    // Should have multiple rows for vertical layout
-    expect(rowCount).toBeGreaterThan(5)
-  })
+    test('screenshot for reference', async ({ page }) => {
+      await page.setViewportSize({ width: config.width, height: config.height })
+      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      await waitForDataLoad(page)
+      await page.waitForTimeout(1000)
 
-  test('screenshot for reference', async ({ page }) => {
-    await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-    await page.waitForTimeout(1000)
-
-    await expect(page).toHaveScreenshot('layout-vertical-1080x1920.png', {
-      fullPage: true,
+      await expect(page).toHaveScreenshot(config.screenshotName, {
+        fullPage: true,
+      })
     })
   })
-})
+}
 
-test.describe('Layout: Ledwall 768×384 (exactSize)', () => {
-  test('displays compact layout without footer', async ({ page }) => {
+// Ledwall-specific tests
+test.describe('Layout: Ledwall specific', () => {
+  test('all content fits in viewport (768×384)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
     await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
-    // Main components should be visible
-    await expect(page.getByTestId('topbar')).toBeVisible()
-    await expect(page.getByTestId('title')).toBeVisible()
-    await expect(page.getByTestId('oncourse')).toBeVisible()
-    await expect(page.getByTestId('results-list')).toBeVisible()
-
-    // Footer should be hidden in ledwall mode
-    await expect(page.getByTestId('footer')).not.toBeVisible()
-  })
-
-  test('results grid has compact columns', async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-
-    // Check grid template for ledwall layout
-    const gridStyle = await page.evaluate(() => {
-      const list = document.querySelector('[data-testid="results-list"]')
-      if (!list) return null
-      const row = list.querySelector('div[class*="row"]')
-      if (!row) return null
-      return window.getComputedStyle(row).gridTemplateColumns
-    })
-
-    // Ledwall has 5 columns (rank, bib, name, penalty, time) - less than vertical's 6
-    // Ledwall grid: 80px 40px 1fr 40px 100px (behind column hidden)
-    expect(gridStyle).toBeTruthy()
-    const columnCount = gridStyle!.split(' ').filter(s => s.trim()).length
-    expect(columnCount).toBe(5)
-  })
-
-  test('all content fits in viewport', async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-
-    // Check that no scrollbar is visible (content fits)
     const hasScroll = await page.evaluate(() => {
       return document.documentElement.scrollHeight > document.documentElement.clientHeight
     })
 
-    // Ledwall should not require vertical scroll
     expect(hasScroll).toBe(false)
   })
 
-  test('screenshot for reference', async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-    await page.waitForTimeout(1000)
-
-    await expect(page).toHaveScreenshot('layout-ledwall-768x384.png', {
-      fullPage: true,
-    })
-  })
-})
-
-test.describe('Layout: Ledwall 1920×480 (wide)', () => {
-  test('displays wide ledwall layout', async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 480 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-
-    // Main components should be visible
-    await expect(page.getByTestId('topbar')).toBeVisible()
-    await expect(page.getByTestId('title')).toBeVisible()
-    await expect(page.getByTestId('oncourse')).toBeVisible()
-    await expect(page.getByTestId('results-list')).toBeVisible()
-
-    // Footer should still be hidden in ledwall mode
-    await expect(page.getByTestId('footer')).not.toBeVisible()
-  })
-
-  test('has more result rows visible than standard ledwall', async ({ page }) => {
+  test('wide ledwall has more rows than standard', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 480 })
     await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
@@ -173,7 +140,6 @@ test.describe('Layout: Ledwall 1920×480 (wide)', () => {
       return list ? list.querySelectorAll('div[class*="row"]').length : 0
     })
 
-    // Compare with standard ledwall
     await page.setViewportSize({ width: 768, height: 384 })
     await page.waitForTimeout(500)
 
@@ -182,19 +148,7 @@ test.describe('Layout: Ledwall 1920×480 (wide)', () => {
       return list ? list.querySelectorAll('div[class*="row"]').length : 0
     })
 
-    // Wide ledwall (480px height) may display more rows than 384px
     expect(wideRowCount).toBeGreaterThanOrEqual(standardRowCount)
-  })
-
-  test('screenshot for reference', async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 480 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
-    await waitForDataLoad(page)
-    await page.waitForTimeout(1000)
-
-    await expect(page).toHaveScreenshot('layout-ledwall-1920x480.png', {
-      fullPage: true,
-    })
   })
 })
 
