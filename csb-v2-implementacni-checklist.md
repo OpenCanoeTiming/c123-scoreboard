@@ -292,6 +292,78 @@ Implementováno v `tests/e2e/layout.spec.ts` - 28 automatických testů
 
 ---
 
+## Fáze 11: Škálování ledwall
+
+> **Tag před implementací:** `pre-ledwall-scaling`
+>
+> **Požadavek:** Ledwall potřebuje škálování, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy tabule má velké rozlišení, ale je daleko od diváků. V takovém případě potřebujeme méně řádků s většími písmeny.
+
+### 11.1 URL parametr `displayRows`
+
+Nový URL parametr pro ledwall mód, který určuje počet viditelných řádků výsledků.
+
+- [ ] Přidat URL parametr `displayRows` (number, default: auto-calculated)
+- [ ] Dokumentovat parametr v App.tsx komentáři
+- [ ] Přidat validaci (min: 3, max: 20)
+
+**Příklady použití:**
+```
+?type=ledwall&displayRows=5   // 5 řádků výsledků
+?type=ledwall&displayRows=8   // 8 řádků výsledků
+```
+
+### 11.2 Výpočet škálování
+
+Layout se škáluje tak, aby na výšku vyplnil disponibilní viewport s přesně zadaným počtem řádků.
+
+- [ ] Upravit `useLayout.ts` - přidat podporu pro `displayRows` parametr
+- [ ] Vypočítat `scaleFactor` = viewport_height / (header + oncourse + displayRows * rowHeight)
+- [ ] Aplikovat `transform: scale(scaleFactor)` na root kontejner
+- [ ] Nastavit `transform-origin: top left`
+- [ ] Kompenzovat šířku: `width: calc(100% / scaleFactor)`
+
+### 11.3 CSS transformace
+
+- [ ] Vytvořit nový CSS wrapper pro škálovaný obsah v `ScoreboardLayout`
+- [ ] Aplikovat CSS proměnnou `--scale-factor` z useLayout
+- [ ] Zajistit že scrollování funguje i po škálování
+- [ ] Otestovat že text zůstává ostrý (ne rozmazaný)
+
+### 11.4 Rozměry komponent při škálování
+
+Při škálování se mění efektivní velikost prvků, ale zachovává se původní pixel-perfect layout.
+
+- [ ] TopBar: původních 60px × scaleFactor
+- [ ] CurrentCompetitor: původní rozměry × scaleFactor
+- [ ] ResultRow: původních 56px × scaleFactor
+- [ ] Fonty: původní velikosti × scaleFactor
+
+### 11.5 Autoscroll při škálování
+
+- [ ] Ověřit že autoscroll funguje správně se škálovaným obsahem
+- [ ] Scroll offset musí být počítán v původních (neškálovaných) pixelech
+- [ ] Page-based scrollování: posun o `displayRows` řádků
+
+### 11.6 Testování
+
+- [ ] Manuální test: `?type=ledwall&displayRows=5` na 1920×1080
+- [ ] Manuální test: `?type=ledwall&displayRows=3` na 768×384
+- [ ] E2E test: screenshot s displayRows=5
+- [ ] E2E test: autoscroll s displayRows=5
+
+### 11.7 Dokumentace
+
+- [ ] Aktualizovat README.md - nový parametr displayRows
+- [ ] Aktualizovat checklist s výsledky testování
+
+### 🔍 Revize: Fáze 11
+
+- [ ] Vizuální kontrola škálovaného ledwallu
+- [ ] Performance test - FPS při škálování
+- [ ] **Commit:** "feat: add ledwall displayRows scaling"
+
+---
+
 ## Post-implementace
 
 ### Budoucí kroky (až po dosažení parity)
@@ -435,7 +507,7 @@ Tohle je seznam k dalšímu postupnému opravování a zapracování:
  - [x] řádky results jsou na ledwall i vertical nešikovně vertikálně zarovnané, nebo spíš to pruhování na pozadí results není ideálně zarovnané s obsahem results, který je jakoby trochu níž **OPRAVENO** - změněno padding: 0, margin: 2px 0 jako v originálu, přidány paddingy do jednotlivých buněk
  - [x] záhlaví vertical je moc vysoké, název akce je jakoby odsazený dolu. Myslím že kdyby title prostě překrýval topbar nebo byl jeho součástí, tak je to správně. Na ledwall je to v pohodě. **OPRAVENO** - Title je nyní absolutně pozicionován (top: 24px, left: 150px) a překrývá TopBar; header height snížen ze 142px na 100px jako v originálu
  - [x] když jsou dva závodníci na trati, tak je řádek oncourse úplně blbě, jen se tam nějak divně přepisují, čas jim neběží. Uděláme to tak, že ledwall ukazuje závodníka z oncourse/current, který má nejvyšší čas (tedy current) nebo který právě dojel do cíle, abychom odprezentovali jeho výsledek. Vertical bude obsahovat všechny jedoucí závodníky (běží jim čas) nebo závodníky co dojeli do cíle (ukazujeme jejich výsledek), tzn bude tam i více řádků oncourse/current pod sebou. **OPRAVENO** - ledwall nyní zobrazuje pouze CurrentCompetitor (ten s nejvyšším časem), OnCourseDisplay je skrytý; vertical zobrazuje CurrentCompetitor + OnCourseDisplay pro ostatní závodníky
- - [ ] teď větší věc: škálování ledwall. Udělej si před touto změnou tag v gitu a všechno commitni, ať se kdyžtak můžeme vrátit. V rámci tohoto bodu pouze rozepiš do checklistu samostatnou kapitolu "škálování ledwall", neprogramuj. ledwall potřebujeme škálovat, protože samotné rozlišení zařízení a responsivita nepokryje situaci, kdy sice tabule má velké rozlišení, ale je daleko a stejně musíme mít jen pár řádků a písmena velká. Takže ledwall mód by měl mít parametr displayRows, který uvádí kolik řádků výsledků má být vidět pod nadpisem a jedním řádkem oncourse. Ledwall se naškáluje tak, aby na výšku vyplnil disponibilní viewport tak, že bude vidět právě zadaný počet řádků ... a na šířku se samozřejmě responsivně přizpůsobí.
+ - [x] teď větší věc: škálování ledwall. Udělej si před touto změnou tag v gitu a všechno commitni, ať se kdyžtak můžeme vrátit. V rámci tohoto bodu pouze rozepiš do checklistu samostatnou kapitolu "škálování ledwall", neprogramuj. **Tag vytvořen:** `pre-ledwall-scaling`, viz sekce "Fáze 11: Škálování ledwall" níže
  - [ ] aktualizuj readme.md tak, aby melo podobnou strukturu a napln jako u original, ovsem platne k soucasnemu stavu projektu v2
 
 ---
