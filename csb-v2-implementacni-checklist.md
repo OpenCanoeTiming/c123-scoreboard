@@ -623,7 +623,7 @@ Tag: `pre-review-final`
 
 ### Vysoká priorita - Duplicitní kód
 
-- [ ] **CLIProvider + ReplayProvider - Callback Sets** - 7× identické Set deklarace (CLIProvider:55-61, ReplayProvider:66-72) a subscription metody (CLIProvider:142-175 vs ReplayProvider:121-154). Vytvořit base class nebo mixin `CallbackManager`.
+- [x] **CLIProvider + ReplayProvider - Callback Sets** - 7× identické Set deklarace (CLIProvider:55-61, ReplayProvider:66-72) a subscription metody (CLIProvider:142-175 vs ReplayProvider:121-154). Vytvořit base class nebo mixin `CallbackManager`. **HOTOVO** - vytvořen `CallbackManager` v `src/providers/utils/CallbackManager.ts`
 - [ ] **CLIProvider + ReplayProvider - Message handlers** - 12+ handleXxxMessage metod (CLIProvider:295-425 vs ReplayProvider:460-597) mají velmi podobnou strukturu. Extrahovat společnou logiku do utility.
 - [ ] **OnCourseDisplay + CurrentCompetitor - parseGates logika** - Obě komponenty opakují stejný kód pro parseGates a filtrování penalt (OnCourseDisplay:103-114 vs CurrentCompetitor:50-58). Vytvořit hook `usePenaltyGates`.
 - [ ] **detectFinish.ts:34-35, 52, 55, 71 - hasValidValue pattern** - Pattern `!!value && value !== ''` se opakuje 4×. Extrahovat utility funkci.

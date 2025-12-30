@@ -8,6 +8,7 @@ import type {
   ProviderError,
 } from './types'
 import { parseResults, parseCompetitor } from './utils/parseMessages'
+import { CallbackManager } from './utils/CallbackManager'
 
 /**
  * Recorded message structure from JSONL file
@@ -62,14 +63,8 @@ export class ReplayProvider implements DataProvider {
   private playbackStartTimestamp = 0
   private timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  // Callbacks
-  private resultsCallbacks = new Set<(data: ResultsData) => void>()
-  private onCourseCallbacks = new Set<(data: OnCourseData) => void>()
-  private configCallbacks = new Set<(config: RaceConfig) => void>()
-  private visibilityCallbacks = new Set<(visibility: VisibilityState) => void>()
-  private eventInfoCallbacks = new Set<(info: EventInfoData) => void>()
-  private connectionCallbacks = new Set<(status: ConnectionStatus) => void>()
-  private errorCallbacks = new Set<(error: ProviderError) => void>()
+  // Callback manager (safeMode=true for ReplayProvider - errors are logged but don't break playback)
+  private callbacks = new CallbackManager(true)
 
   // Data source
   private source: string
@@ -119,38 +114,31 @@ export class ReplayProvider implements DataProvider {
   }
 
   onResults(callback: (data: ResultsData) => void): Unsubscribe {
-    this.resultsCallbacks.add(callback)
-    return () => this.resultsCallbacks.delete(callback)
+    return this.callbacks.onResults(callback)
   }
 
   onOnCourse(callback: (data: OnCourseData) => void): Unsubscribe {
-    this.onCourseCallbacks.add(callback)
-    return () => this.onCourseCallbacks.delete(callback)
+    return this.callbacks.onOnCourse(callback)
   }
 
   onConfig(callback: (config: RaceConfig) => void): Unsubscribe {
-    this.configCallbacks.add(callback)
-    return () => this.configCallbacks.delete(callback)
+    return this.callbacks.onConfig(callback)
   }
 
   onVisibility(callback: (visibility: VisibilityState) => void): Unsubscribe {
-    this.visibilityCallbacks.add(callback)
-    return () => this.visibilityCallbacks.delete(callback)
+    return this.callbacks.onVisibility(callback)
   }
 
   onEventInfo(callback: (info: EventInfoData) => void): Unsubscribe {
-    this.eventInfoCallbacks.add(callback)
-    return () => this.eventInfoCallbacks.delete(callback)
+    return this.callbacks.onEventInfo(callback)
   }
 
   onConnectionChange(callback: (status: ConnectionStatus) => void): Unsubscribe {
-    this.connectionCallbacks.add(callback)
-    return () => this.connectionCallbacks.delete(callback)
+    return this.callbacks.onConnectionChange(callback)
   }
 
   onError(callback: (error: ProviderError) => void): Unsubscribe {
-    this.errorCallbacks.add(callback)
-    return () => this.errorCallbacks.delete(callback)
+    return this.callbacks.onError(callback)
   }
 
   // --- Playback controls ---
@@ -289,21 +277,7 @@ export class ReplayProvider implements DataProvider {
 
   private setStatus(status: ConnectionStatus): void {
     this._status = status
-    this.safeCallCallbacks(this.connectionCallbacks, status)
-  }
-
-  /**
-   * Safely call all callbacks, catching any errors thrown by individual callbacks
-   */
-  private safeCallCallbacks<T>(callbacks: Set<(arg: T) => void>, arg: T): void {
-    callbacks.forEach((cb) => {
-      try {
-        cb(arg)
-      } catch (err) {
-        // Log error but don't propagate - one bad callback shouldn't break others
-        console.error('Callback threw error:', err)
-      }
-    })
+    this.callbacks.emitConnection(status)
   }
 
   private emitError(
@@ -311,13 +285,7 @@ export class ReplayProvider implements DataProvider {
     message: string,
     cause?: unknown
   ): void {
-    const error: ProviderError = {
-      code,
-      message,
-      cause,
-      timestamp: Date.now(),
-    }
-    this.safeCallCallbacks(this.errorCallbacks, error)
+    this.callbacks.emitError(code, message, cause)
   }
 
   private async loadMessages(): Promise<void> {
@@ -454,7 +422,7 @@ export class ReplayProvider implements DataProvider {
       dayTime: time,
     }
 
-    this.safeCallCallbacks(this.eventInfoCallbacks, info)
+    this.callbacks.emitEventInfo(info)
   }
 
   private dispatchWSMessage(type: string, data: unknown): void {
@@ -499,7 +467,7 @@ export class ReplayProvider implements DataProvider {
       highlightBib: payload.HighlightBib ? String(payload.HighlightBib) : null,
     }
 
-    this.safeCallCallbacks(this.resultsCallbacks, results)
+    this.callbacks.emitResults(results)
   }
 
   private handleCompMessage(data: unknown): void {
@@ -518,7 +486,7 @@ export class ReplayProvider implements DataProvider {
       onCourse: current ? [current] : [],
     }
 
-    this.safeCallCallbacks(this.onCourseCallbacks, onCourseData)
+    this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleOnCourseMessage(data: unknown): void {
@@ -533,7 +501,7 @@ export class ReplayProvider implements DataProvider {
       onCourse: parsed,
     }
 
-    this.safeCallCallbacks(this.onCourseCallbacks, onCourseData)
+    this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleControlMessage(data: unknown): void {
@@ -554,7 +522,7 @@ export class ReplayProvider implements DataProvider {
       displayOnCourse: payload.displayOnCourse === '1',
     }
 
-    this.safeCallCallbacks(this.visibilityCallbacks, visibility)
+    this.callbacks.emitVisibility(visibility)
   }
 
   private handleTitleMessage(data: unknown): void {
@@ -567,7 +535,7 @@ export class ReplayProvider implements DataProvider {
       dayTime: '',
     }
 
-    this.safeCallCallbacks(this.eventInfoCallbacks, info)
+    this.callbacks.emitEventInfo(info)
   }
 
   private handleInfoTextMessage(data: unknown): void {
@@ -580,7 +548,7 @@ export class ReplayProvider implements DataProvider {
       dayTime: '',
     }
 
-    this.safeCallCallbacks(this.eventInfoCallbacks, info)
+    this.callbacks.emitEventInfo(info)
   }
 
   private handleDayTimeMessage(data: unknown): void {
@@ -593,6 +561,6 @@ export class ReplayProvider implements DataProvider {
       dayTime: wrapper?.data?.time || '',
     }
 
-    this.safeCallCallbacks(this.eventInfoCallbacks, info)
+    this.callbacks.emitEventInfo(info)
   }
 }

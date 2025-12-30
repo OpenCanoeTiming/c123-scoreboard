@@ -2,3 +2,4 @@ export { parseGates, calculateTotalPenalty, type GatePenalty } from './parseGate
 export { normalizeCompetitor, normalizeResult, isEmptyCompetitor } from './normalizeCompetitor'
 export { detectFinish, isOnCourse, hasFinished } from './detectFinish'
 export { parseResults, parseCompetitor } from './parseMessages'
+export { CallbackManager } from './CallbackManager'

@@ -17,6 +17,7 @@ import {
   validateTextMessage,
 } from './utils/validation'
 import { parseResults, parseCompetitor } from './utils/parseMessages'
+import { CallbackManager } from './utils/CallbackManager'
 
 /**
  * CLIProvider options
@@ -51,14 +52,8 @@ export class CLIProvider implements DataProvider {
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null
   private isManualDisconnect = false
 
-  // Callbacks
-  private resultsCallbacks = new Set<(data: ResultsData) => void>()
-  private onCourseCallbacks = new Set<(data: OnCourseData) => void>()
-  private configCallbacks = new Set<(config: RaceConfig) => void>()
-  private visibilityCallbacks = new Set<(visibility: VisibilityState) => void>()
-  private eventInfoCallbacks = new Set<(info: EventInfoData) => void>()
-  private connectionCallbacks = new Set<(status: ConnectionStatus) => void>()
-  private errorCallbacks = new Set<(error: ProviderError) => void>()
+  // Callback manager (safeMode=false for CLIProvider - errors bubble up)
+  private callbacks = new CallbackManager(false)
 
   constructor(url: string, options: CLIProviderOptions = {}) {
     // Ensure proper WebSocket URL format
@@ -140,45 +135,38 @@ export class CLIProvider implements DataProvider {
   }
 
   onResults(callback: (data: ResultsData) => void): Unsubscribe {
-    this.resultsCallbacks.add(callback)
-    return () => this.resultsCallbacks.delete(callback)
+    return this.callbacks.onResults(callback)
   }
 
   onOnCourse(callback: (data: OnCourseData) => void): Unsubscribe {
-    this.onCourseCallbacks.add(callback)
-    return () => this.onCourseCallbacks.delete(callback)
+    return this.callbacks.onOnCourse(callback)
   }
 
   onConfig(callback: (config: RaceConfig) => void): Unsubscribe {
-    this.configCallbacks.add(callback)
-    return () => this.configCallbacks.delete(callback)
+    return this.callbacks.onConfig(callback)
   }
 
   onVisibility(callback: (visibility: VisibilityState) => void): Unsubscribe {
-    this.visibilityCallbacks.add(callback)
-    return () => this.visibilityCallbacks.delete(callback)
+    return this.callbacks.onVisibility(callback)
   }
 
   onEventInfo(callback: (info: EventInfoData) => void): Unsubscribe {
-    this.eventInfoCallbacks.add(callback)
-    return () => this.eventInfoCallbacks.delete(callback)
+    return this.callbacks.onEventInfo(callback)
   }
 
   onConnectionChange(callback: (status: ConnectionStatus) => void): Unsubscribe {
-    this.connectionCallbacks.add(callback)
-    return () => this.connectionCallbacks.delete(callback)
+    return this.callbacks.onConnectionChange(callback)
   }
 
   onError(callback: (error: ProviderError) => void): Unsubscribe {
-    this.errorCallbacks.add(callback)
-    return () => this.errorCallbacks.delete(callback)
+    return this.callbacks.onError(callback)
   }
 
   // --- Private methods ---
 
   private setStatus(status: ConnectionStatus): void {
     this._status = status
-    this.connectionCallbacks.forEach((cb) => cb(status))
+    this.callbacks.emitConnection(status)
   }
 
   private emitError(
@@ -186,13 +174,7 @@ export class CLIProvider implements DataProvider {
     message: string,
     cause?: unknown
   ): void {
-    const error: ProviderError = {
-      code,
-      message,
-      cause,
-      timestamp: Date.now(),
-    }
-    this.errorCallbacks.forEach((cb) => cb(error))
+    this.callbacks.emitError(code, message, cause)
   }
 
   private handleDisconnect(): void {
@@ -308,7 +290,7 @@ export class CLIProvider implements DataProvider {
       highlightBib: payload.HighlightBib ? safeString(payload.HighlightBib) : null,
     }
 
-    this.resultsCallbacks.forEach((cb) => cb(results))
+    this.callbacks.emitResults(results)
   }
 
   private handleCompMessage(message: Record<string, unknown>): void {
@@ -326,7 +308,7 @@ export class CLIProvider implements DataProvider {
       onCourse: current ? [current] : [],
     }
 
-    this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
+    this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleOnCourseMessage(message: Record<string, unknown>): void {
@@ -348,7 +330,7 @@ export class CLIProvider implements DataProvider {
       onCourse: parsed,
     }
 
-    this.onCourseCallbacks.forEach((cb) => cb(onCourseData))
+    this.callbacks.emitOnCourse(onCourseData)
   }
 
   private handleControlMessage(message: Record<string, unknown>): void {
@@ -370,7 +352,7 @@ export class CLIProvider implements DataProvider {
       displayOnCourse: safeString(payload.displayOnCourse) === '1',
     }
 
-    this.visibilityCallbacks.forEach((cb) => cb(visibility))
+    this.callbacks.emitVisibility(visibility)
   }
 
   private handleTitleMessage(message: Record<string, unknown>): void {
@@ -387,7 +369,7 @@ export class CLIProvider implements DataProvider {
       dayTime: '',
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.callbacks.emitEventInfo(info)
   }
 
   private handleInfoTextMessage(message: Record<string, unknown>): void {
@@ -404,7 +386,7 @@ export class CLIProvider implements DataProvider {
       dayTime: '',
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.callbacks.emitEventInfo(info)
   }
 
   private handleDayTimeMessage(message: Record<string, unknown>): void {
@@ -421,6 +403,6 @@ export class CLIProvider implements DataProvider {
       dayTime: safeString(payload.time),
     }
 
-    this.eventInfoCallbacks.forEach((cb) => cb(info))
+    this.callbacks.emitEventInfo(info)
   }
 }
