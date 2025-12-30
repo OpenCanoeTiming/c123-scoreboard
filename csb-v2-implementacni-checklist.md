@@ -149,21 +149,11 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
 - [x] **penaltyGates parsing** - Identická logika pro parsování gate penalties (`CurrentCompetitor.tsx:50-58`, `OnCourseDisplay.tsx:103-114`)
 - [x] **Message handlers** - Podobná struktura handleXxxMessage metod (`CLIProvider.ts`, `ReplayProvider.ts`) - extrahováno do `messageHandlers.ts`
-- [ ] **parseMessages API** - parseResults má skipValidation, parseCompetitor ne (`parseMessages.ts`)
-
-### Střední priorita - Neefektivní konstrukce
-
-- [ ] **OnCourseDisplay memoizace** - Dva useMemo za sebou pro triviální operace (`OnCourseDisplay.tsx:103-114`)
-- [ ] **useLayout debounce** - Vytváří N timeoutů a ruší N-1 (`useLayout.ts:220-244`)
 
 ### Nízká priorita - Code Quality
 
-- [ ] **useTimestamp Date.now()** - calculateIsActive/calculateTimeRemaining volají Date.now() nezávisle
-- [ ] **ResultRow forwardRef** - Ref se používá jen pro data-bib lookup, forwardRef zbytečný
-- [ ] **types.ts:92 onConfig** - Callback v interface ale nikde neimplementován
-- [ ] **ResultsList.tsx:51 showPenalty** - Vždy true, buď odstranit nebo vysvětlit
+- [x] **ResultsList.tsx:51 showPenalty** - Odstraněna zbytečná proměnná, penalty je vždy zobrazen (matches original v1)
 - [ ] **formatTime.ts empty checks** - Redundantní kontroly po trim()
-- [ ] **console.warn v produkci** - CLIProvider, ReplayProvider, parseMessages - podmínit pro produkci
 - [ ] **Dual exports** - Většina souborů má named + default export
 
 ### Nízká priorita - Testy

@@ -1,10 +1,11 @@
-import type { ConnectionStatus, RaceConfig } from '@/types'
+import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
 import type {
   DataProvider,
   Unsubscribe,
   ResultsData,
   OnCourseData,
   ProviderError,
+  EventInfoData,
 } from './types'
 import {
   isObject,

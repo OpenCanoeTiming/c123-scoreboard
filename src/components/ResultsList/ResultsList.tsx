@@ -46,9 +46,8 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
     enabled: results.length > 0 && !disableScroll,
   })
 
-  // Whether to show optional columns based on layout
-  // Original v1 shows penalty column on both layouts, but hides behind in ledwall
-  const showPenalty = true
+  // Whether to show behind column (hidden on ledwall, shown on vertical)
+  // Note: Penalty column is always shown on both layouts (matches original v1)
   const showBehind = layoutMode !== 'ledwall'
 
   // Container classes
@@ -73,7 +72,6 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
             key={result.bib}
             result={result}
             isHighlighted={isHighlighted}
-            showPenalty={showPenalty}
             showBehind={showBehind}
             layoutMode={layoutMode}
           />

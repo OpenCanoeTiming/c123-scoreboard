@@ -44,9 +44,9 @@ function formatBehind(behind: string): string {
  * - Rank (position)
  * - Bib (start number)
  * - Name (competitor name)
- * - Penalty (optional, hidden on ledwall)
+ * - Penalty (always shown on both layouts)
  * - Time (total time)
- * - Behind (optional, time behind leader)
+ * - Behind (hidden on ledwall)
  *
  * @example
  * ```tsx
