@@ -52,3 +52,40 @@ export function parseGates(gates: string | null | undefined): GatePenalty[] {
 export function calculateTotalPenalty(gates: GatePenalty[]): number {
   return gates.reduce<number>((sum, pen) => sum + (pen ?? 0), 0)
 }
+
+/**
+ * Gate with non-zero penalty and its number
+ */
+export interface PenaltyGate {
+  gateNumber: number
+  penalty: 2 | 50
+}
+
+/**
+ * Extract gates with penalties from a gates string
+ *
+ * Parses the gates string and returns only gates that have
+ * 2s or 50s penalties, with their gate numbers.
+ *
+ * @param gates - Gates string from competitor data
+ * @returns Array of gates with penalties
+ *
+ * @example
+ * ```ts
+ * getPenaltyGates("0,0,2,0,50,0")
+ * // Returns: [{ gateNumber: 3, penalty: 2 }, { gateNumber: 5, penalty: 50 }]
+ * ```
+ */
+export function getPenaltyGates(gates: string | null | undefined): PenaltyGate[] {
+  const parsed = parseGates(gates)
+  const result: PenaltyGate[] = []
+
+  for (let i = 0; i < parsed.length; i++) {
+    const penalty = parsed[i]
+    if (penalty === 2 || penalty === 50) {
+      result.push({ gateNumber: i + 1, penalty })
+    }
+  }
+
+  return result
+}

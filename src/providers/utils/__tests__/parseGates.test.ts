@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseGates, calculateTotalPenalty } from '../parseGates'
+import { parseGates, calculateTotalPenalty, getPenaltyGates } from '../parseGates'
 
 describe('parseGates', () => {
   it('should parse comma-separated gates', () => {
@@ -79,5 +79,48 @@ describe('calculateTotalPenalty', () => {
 
   it('should handle multiple misses', () => {
     expect(calculateTotalPenalty([50, 50])).toBe(100)
+  })
+})
+
+describe('getPenaltyGates', () => {
+  it('should return gates with 2s and 50s penalties', () => {
+    expect(getPenaltyGates('0,0,2,0,50,0')).toEqual([
+      { gateNumber: 3, penalty: 2 },
+      { gateNumber: 5, penalty: 50 },
+    ])
+  })
+
+  it('should return empty array for no penalties', () => {
+    expect(getPenaltyGates('0,0,0,0')).toEqual([])
+  })
+
+  it('should return empty array for empty input', () => {
+    expect(getPenaltyGates('')).toEqual([])
+    expect(getPenaltyGates(null)).toEqual([])
+    expect(getPenaltyGates(undefined)).toEqual([])
+  })
+
+  it('should handle multiple penalties of same type', () => {
+    expect(getPenaltyGates('2,0,2,0,2')).toEqual([
+      { gateNumber: 1, penalty: 2 },
+      { gateNumber: 3, penalty: 2 },
+      { gateNumber: 5, penalty: 2 },
+    ])
+  })
+
+  it('should handle all 50s', () => {
+    expect(getPenaltyGates('50,50')).toEqual([
+      { gateNumber: 1, penalty: 50 },
+      { gateNumber: 2, penalty: 50 },
+    ])
+  })
+
+  it('should handle single gate with penalty', () => {
+    expect(getPenaltyGates('2')).toEqual([{ gateNumber: 1, penalty: 2 }])
+    expect(getPenaltyGates('50')).toEqual([{ gateNumber: 1, penalty: 50 }])
+  })
+
+  it('should handle single gate without penalty', () => {
+    expect(getPenaltyGates('0')).toEqual([])
   })
 })

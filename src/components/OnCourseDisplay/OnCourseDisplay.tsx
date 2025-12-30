@@ -3,7 +3,7 @@ import styles from './OnCourseDisplay.module.css'
 import type { OnCourseCompetitor } from '@/types'
 import { formatName } from '@/utils/formatName'
 import { createGateClassGetter } from '@/utils/getGateClass'
-import { parseGates } from '@/providers/utils/parseGates'
+import { getPenaltyGates } from '@/providers/utils/parseGates'
 import { useLayout } from '@/hooks'
 
 /**
@@ -99,19 +99,10 @@ interface OnCourseRowProps {
 }
 
 function OnCourseRow({ competitor, layoutMode }: OnCourseRowProps) {
-  // Parse gates to get penalties
-  const gates = useMemo(() => {
-    return parseGates(competitor.gates)
-  }, [competitor.gates])
-
-  // Get only gates with penalties (2s or 50s)
+  // Get gates with penalties (2s or 50s)
   const penaltyGates = useMemo(() => {
-    return gates
-      .map((penalty, index) => ({ gateNumber: index + 1, penalty }))
-      .filter(
-        (g) => g.penalty !== null && g.penalty !== 0
-      ) as { gateNumber: number; penalty: 2 | 50 }[]
-  }, [gates])
+    return getPenaltyGates(competitor.gates)
+  }, [competitor.gates])
 
   const hasPenalty = competitor.pen > 0
   const displayTime = competitor.total || competitor.time

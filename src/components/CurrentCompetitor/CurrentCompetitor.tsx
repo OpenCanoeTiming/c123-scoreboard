@@ -3,7 +3,7 @@ import styles from './CurrentCompetitor.module.css'
 import type { OnCourseCompetitor } from '@/types'
 import { formatName } from '@/utils/formatName'
 import { createGateClassGetter } from '@/utils/getGateClass'
-import { parseGates } from '@/providers/utils/parseGates'
+import { getPenaltyGates } from '@/providers/utils/parseGates'
 import { useLayout } from '@/hooks'
 
 /**
@@ -46,15 +46,10 @@ export function CurrentCompetitor({
 }: CurrentCompetitorProps) {
   const { layoutMode } = useLayout()
 
-  // Parse gates into penalty array and filter only gates with penalties
+  // Get gates with penalties (2s or 50s)
   const penaltyGates = useMemo(() => {
     if (!competitor) return []
-    const gates = parseGates(competitor.gates)
-    return gates
-      .map((penalty, index) => ({ gateNumber: index + 1, penalty }))
-      .filter(
-        (g) => g.penalty !== null && g.penalty !== 0
-      ) as { gateNumber: number; penalty: 2 | 50 }[]
+    return getPenaltyGates(competitor.gates)
   }, [competitor])
 
   // If no competitor, render nothing
