@@ -661,6 +661,41 @@ Tag: `pre-review-final`
 
 ---
 
+## Code Review nálezy (2025-12-30, Final Comprehensive Review)
+
+Tag: `pre-final-code-review`
+
+### Vysoká priorita - Dead Code
+
+- [ ] **normalizeCompetitor.ts - celý soubor nepoužitý** - Funkce `normalizeCompetitor`, `normalizeResult`, `isEmptyCompetitor` nejsou nikde importovány. Providers používají `parseMessages.ts`. **Smazat soubor**.
+- [ ] **detectFinish.ts - neintegrováno** - Funkce `detectFinish`, `isOnCourse`, `hasFinished` jsou připraveny pro C123Provider, ale nejsou nikde použity. Buď integrovat, nebo smazat.
+- [ ] **formatTTBDiff - nepoužitá funkce** - `formatTime.ts:119` exportuje `formatTTBDiff`, ale `CurrentCompetitor` zobrazuje `ttbDiff` raw bez formátování.
+
+### Vysoká priorita - Duplicitní kód
+
+- [ ] **formatBehind - 2 implementace** - `formatTime.ts:70` vs `ResultRow.tsx:34` - dvě různé implementace se stejným názvem. ResultRow má vlastní lokální verzi místo importu z utils.
+- [ ] **penaltyGates parsing** - `CurrentCompetitor.tsx:50-58` a `OnCourseDisplay.tsx:102-114` mají identický pattern pro parsování gate penalties. Extrahovat do `getPenaltyGates(gates: string)` utility.
+- [ ] **Message handlers v providerech** - `CLIProvider:336-407` vs `ReplayProvider:507-565` mají velmi podobné handleControlMessage, handleTitleMessage, atd. Extrahovat do `parseMessages.ts`.
+
+### Střední priorita - Nekonzistence typů
+
+- [ ] **Result.time chybí v types** - `src/types/result.ts` nemá `time` field, ale testy (`ResultRow.snapshot.test.tsx:14`) ho používají. Buď přidat do typu, nebo opravit testy.
+- [ ] **OnCourseCompetitor.dtStart typ** - Type je `string | null`, ale test v `CurrentCompetitor.snapshot.test.tsx:12` předává `Date.now()` (number).
+
+### Nízká priorita - Console logs v produkci
+
+- [ ] **console.warn zůstává v produkci** - `CLIProvider.ts:231,238,272`, `ReplayProvider.ts:338`, `parseMessages.ts:33`. Pro produkci by měly být podmíněné nebo odstraněné.
+
+### Nízká priorita - Duplicitní snapshot testy
+
+- [ ] **componentSnapshots.test.tsx duplicity** - Obsahuje snapshot testy pro `ResultRow` a `Footer`, které jsou také v dedicated souborech. Konsolidovat.
+
+### Nízká priorita - Dual exports
+
+- [ ] **Named + default exports** - Většina souborů exportuje jak named tak default. Zvolit jeden přístup (doporučeno: pouze named exports).
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
