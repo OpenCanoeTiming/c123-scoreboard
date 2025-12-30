@@ -193,7 +193,7 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 ### 12.3 Zbytečné fallbacky (minor)
 
 - [x] **getGateClass.ts:49-50** - odstranit `?? ''` (CSS module nikdy nevrací undefined)
-- [ ] **validation.ts:76-80** - N/A (soubor neexistuje)
+- [x] **validation.ts:76-80** - N/A (soubor byl smazán v 12.1)
 
 ---
 
