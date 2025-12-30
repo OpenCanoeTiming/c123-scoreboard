@@ -52,9 +52,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const showBehind = layoutMode !== 'ledwall'
 
   // Container classes
-  const containerClasses = [styles.container, !visible && styles.hidden]
-    .filter(Boolean)
-    .join(' ')
+  const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}`
 
   // Empty state
   if (results.length === 0) {

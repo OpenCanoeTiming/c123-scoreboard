@@ -743,7 +743,7 @@ Tag: `pre-review-useAutoScroll-cleanup`
 
 ### Střední priorita
 
-- [ ] **Redundantní .filter(Boolean).join(' ') pro CSS classes** - V CurrentCompetitor.tsx:66-72, ResultsList.tsx:55-57, ResultRow.tsx:65-71. Přepsat na template stringy.
+- [x] **Redundantní .filter(Boolean).join(' ') pro CSS classes** - V CurrentCompetitor.tsx:66-72, ResultsList.tsx:55-57, ResultRow.tsx:65-71. **HOTOVO** - přepsáno na template stringy
 - [ ] **getGateClass.ts:49-50 - Zbytečné || '' fallback** - CSS modules vždy vrací string, fallback je redundantní.
 - [ ] **CurrentCompetitor.tsx:74-75 - Nejednoznačná displayTime logika** - `(competitor.total || competitor.time || '').trim()` - trim na prázdný string je zbytečné.
 - [ ] **ReplayProvider.ts:337-338 - Nekonzistentní zkrácení chybového logu** - Zkracuje na 100 znaků pro console.warn ale emitError dostane plnou verzi.

@@ -62,13 +62,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     { result, isHighlighted = false, showPenalty = true, showBehind = true, layoutMode = 'vertical' },
     ref
   ) {
-    const rowClasses = [
-      styles.row,
-      isHighlighted && styles.highlighted,
-      layoutMode === 'ledwall' && styles.ledwall,
-    ]
-      .filter(Boolean)
-      .join(' ')
+    const rowClasses = `${styles.row}${isHighlighted ? ` ${styles.highlighted}` : ''}${layoutMode === 'ledwall' ? ` ${styles.ledwall}` : ''}`
 
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
