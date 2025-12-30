@@ -111,8 +111,8 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
 ## Release
 
-- [ ] Provést manuální testy Fáze 11 (výše)
-- [ ] **Tag:** `v2.0.0`
+- [x] Provést manuální testy Fáze 11 (výše)
+- [x] **Tag:** `v2.0.0`
 
 ---
 ## z manualniho testovani - dulezite k oprave:
