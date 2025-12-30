@@ -42,12 +42,12 @@ export function getGatePenaltyClass(penalty: GatePenalty): GatePenaltyClass {
  * const className = getGateClass(2) // Returns styles.penalty2
  */
 export function createGateClassGetter(
-  styles: Record<string, string | undefined>
+  styles: Record<string, string>
 ): (penalty: GatePenalty) => string {
   return (penalty: GatePenalty): string => {
     const classification = getGatePenaltyClass(penalty)
-    if (classification === 'penalty2') return styles.penalty2 ?? ''
-    if (classification === 'penalty50') return styles.penalty50 ?? ''
+    if (classification === 'penalty2') return styles.penalty2
+    if (classification === 'penalty50') return styles.penalty50
     return ''
   }
 }

@@ -2,22 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { formatTime } from '../formatTime'
 
 describe('formatTime', () => {
-  describe('handles empty/null values', () => {
-    it('returns empty string for null', () => {
-      expect(formatTime(null)).toBe('')
-    })
-
-    it('returns empty string for undefined', () => {
-      expect(formatTime(undefined)).toBe('')
-    })
-
-    it('returns empty string for empty string', () => {
-      expect(formatTime('')).toBe('')
-    })
-
-    it('returns empty string for whitespace', () => {
-      expect(formatTime('   ')).toBe('')
-    })
+  it.each([
+    [null, ''],
+    [undefined, ''],
+    ['', ''],
+    ['   ', ''],
+  ])('returns empty string for %p', (input, expected) => {
+    expect(formatTime(input)).toBe(expected)
   })
 
   describe('formats seconds under 1 minute', () => {

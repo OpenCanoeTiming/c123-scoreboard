@@ -2,22 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { formatName, formatClub, formatNat } from '../formatName'
 
 describe('formatName', () => {
-  describe('handles empty/null values', () => {
-    it('returns empty string for null', () => {
-      expect(formatName(null)).toBe('')
-    })
-
-    it('returns empty string for undefined', () => {
-      expect(formatName(undefined)).toBe('')
-    })
-
-    it('returns empty string for empty string', () => {
-      expect(formatName('')).toBe('')
-    })
-
-    it('returns empty string for whitespace', () => {
-      expect(formatName('   ')).toBe('')
-    })
+  it.each([
+    [null, ''],
+    [undefined, ''],
+    ['', ''],
+    ['   ', ''],
+  ])('returns empty string for %p', (input, expected) => {
+    expect(formatName(input)).toBe(expected)
   })
 
   describe('uses combined name field', () => {
@@ -70,18 +61,8 @@ describe('formatName', () => {
 })
 
 describe('formatClub', () => {
-  describe('handles empty/null values', () => {
-    it('returns empty string for null', () => {
-      expect(formatClub(null)).toBe('')
-    })
-
-    it('returns empty string for undefined', () => {
-      expect(formatClub(undefined)).toBe('')
-    })
-
-    it('returns empty string for empty string', () => {
-      expect(formatClub('')).toBe('')
-    })
+  it.each([[null], [undefined], ['']])('returns empty string for %p', (input) => {
+    expect(formatClub(input)).toBe('')
   })
 
   describe('formats club names', () => {
@@ -102,18 +83,8 @@ describe('formatClub', () => {
 })
 
 describe('formatNat', () => {
-  describe('handles empty/null values', () => {
-    it('returns empty string for null', () => {
-      expect(formatNat(null)).toBe('')
-    })
-
-    it('returns empty string for undefined', () => {
-      expect(formatNat(undefined)).toBe('')
-    })
-
-    it('returns empty string for empty string', () => {
-      expect(formatNat('')).toBe('')
-    })
+  it.each([[null], [undefined], ['']])('returns empty string for %p', (input) => {
+    expect(formatNat(input)).toBe('')
   })
 
   describe('formats nationality codes', () => {

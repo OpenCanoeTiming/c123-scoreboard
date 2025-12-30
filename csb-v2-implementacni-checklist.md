@@ -43,7 +43,7 @@
 
 ```
 Build:       ✅ OK (437 kB JS, 19 kB CSS)
-Unit testy:  ✅ 518 testů (25 test suites) - reduced from 570
+Unit testy:  ✅ 512 testů (25 test suites) - reduced from 570
 E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
 Performance: ✅ FPS ~44, memory stable, load <1s
 ```
@@ -162,6 +162,38 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 - [x] **validation.test.ts** - Zredukováno z 44 na 16 testů (sloučeny testy pro triviální funkce)
 - [x] **parseGates.test.ts** - calculateTotalPenalty zredukováno z 6 na 2 testy
 - [x] **componentSnapshots.test.tsx** - Odstraněn duplicitní soubor (Footer a ResultRow jsou testovány v dedicated souborech)
+
+---
+
+## Fáze 12: Code Cleanup (z review)
+
+> **Důvod:** Review odhalilo mrtvý kód a redundantní testy. 518 testů je příliš na aplikaci této velikosti.
+
+### 12.1 Mrtvý kód - smazat ✅
+
+- [x] **normalizeCompetitor.ts** - celý soubor je nepoužitý (normalizeCompetitor, normalizeResult, isEmptyCompetitor)
+- [x] **validation.ts** - smazat nepoužité funkce (isNumeric, validateCompetitorData)
+
+### 12.2 Redukce testů (~50 redundantních)
+
+> **Pozn:** useAutoScroll testy NECHAT - scrollování není doladěné
+
+**formatX funkce** - sloučit duplicitní null/empty/whitespace testy:
+- [x] **formatTime.test.ts** - 4 testy → 1 parametrizovaný
+- [x] **formatName.test.ts** - sloučit empty value testy
+- [x] **formatClub.test.ts** - sloučit empty value testy
+- [x] **formatNat.test.ts** - sloučit empty value testy
+
+**useLayout testy** - testovat chování, ne implementační detaily:
+- [x] **useLayout.test.ts** - odstranit testy na CSS proměnné (--row-height, --visible-rows)
+
+**E2E testy** - parametrizovat opakované setupy:
+- [ ] **layout.spec.ts** - parametrizovat testy pro různá rozlišení (vertical, ledwall, ledwall-wide)
+
+### 12.3 Zbytečné fallbacky (minor)
+
+- [x] **getGateClass.ts:49-50** - odstranit `?? ''` (CSS module nikdy nevrací undefined)
+- [ ] **validation.ts:76-80** - N/A (soubor neexistuje)
 
 ---
 
