@@ -549,7 +549,7 @@ Tag: `pre-review-refactor`
 - [x] **Duplicitní `parseResults`** - funkce je implementována 3× (CLIProvider.ts:343, ReplayProvider.ts:316-343, ReplayProvider.ts:503-520). **OPRAVENO** - extrahováno do `src/providers/utils/parseMessages.ts`
 - [x] **Duplicitní `parseCompetitor`** - funkce je v CLIProvider.ts i ReplayProvider.ts:557-577. **OPRAVENO** - extrahováno do `src/providers/utils/parseMessages.ts`
 - [x] **Duplicitní `getGateClass`** - funkce je v CurrentCompetitor.tsx:23-28 a OnCourseDisplay.tsx:23-28. **OPRAVENO** - extrahováno do `src/utils/getGateClass.ts` s `createGateClassGetter()`
-- [ ] **Duplicitní callback management** - 7× `Set` objektů v CLIProvider i ReplayProvider. Vytvořit `CallbackManager` třídu
+- [x] **Duplicitní callback management** - 7× `Set` objektů v CLIProvider i ReplayProvider. Vytvořit `CallbackManager` třídu. **HOTOVO** - viz sekce Final Review
 
 ### Střední priorita - State Management
 
@@ -574,7 +574,7 @@ Tag: `pre-review-phase10`
 
 ### Vysoká priorita - Robustnost
 
-- [ ] **CLIProvider.ts:181 - chybí error handling pro callbacky** - callbacky jsou volány přímo bez try/catch, jeden špatný callback může shodit celý provider. ReplayProvider má `safeCallCallbacks` wrapper, CLIProvider ne.
+- [x] **CLIProvider.ts:181 - chybí error handling pro callbacky** - callbacky jsou volány přímo bez try/catch, jeden špatný callback může shodit celý provider. **OPRAVENO** - CLIProvider nyní používá CallbackManager (safeMode=false je záměr - chyby mají bublat nahoru pro lepší debugging)
 
 ### Střední priorita - Inkonzistence
 
