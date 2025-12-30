@@ -368,9 +368,9 @@ describe('CLIProvider', () => {
           ttbDiff: '+1.23',
           ttbName: 'Leader Name',
         }),
-        onCourse: expect.arrayContaining([
-          expect.objectContaining({ bib: '9' }),
-        ]),
+        // comp messages don't update onCourse list
+        onCourse: [],
+        updateOnCourse: false,
       })
     })
 
@@ -393,6 +393,7 @@ describe('CLIProvider', () => {
           expect.objectContaining({ bib: '9', name: 'First' }),
           expect.objectContaining({ bib: '12', name: 'Second' }),
         ],
+        updateOnCourse: true,
       })
     })
 
@@ -409,6 +410,7 @@ describe('CLIProvider', () => {
       expect(callback).toHaveBeenCalledWith({
         current: null,
         onCourse: [],
+        updateOnCourse: false,
       })
     })
 

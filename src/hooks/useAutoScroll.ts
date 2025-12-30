@@ -24,7 +24,9 @@ type ScrollPhase =
  */
 // Constants for scroll detection
 const BOTTOM_THRESHOLD_PX = 20
-const PAGE_HEIGHT_RATIO = 0.9
+// Scroll by ~85% of visible height to ensure 1-2 row overlap between pages
+// This prevents skipping rows that are partially visible at the bottom
+const PAGE_HEIGHT_RATIO = 0.85
 
 const SCROLL_CONFIG = {
   vertical: {
@@ -101,6 +103,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const containerRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<ScrollPhase>('IDLE')
   const [manuallyPaused, setManuallyPaused] = useState(false)
+  // Counter to trigger re-render after each scroll step (since phase stays SCROLLING)
+  const [scrollTick, setScrollTick] = useState(0)
 
   // Current row index for page-based scrolling
   const currentRowIndexRef = useRef(0)
@@ -137,6 +141,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const reset = useCallback(() => {
     setManuallyPaused(false)
     setPhase('IDLE')
+    setScrollTick(0)
     currentRowIndexRef.current = 0
     if (containerRef.current) {
       containerRef.current.scrollTop = 0
@@ -187,7 +192,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       const timeoutId = setTimeout(() => {
         scrollToTop()
         currentRowIndexRef.current = 0
-        setPhase('WAITING')
+        // Set to IDLE, let main state machine restart scroll when shouldScroll becomes true
+        // (e.g., after competitor leaves onCourse on ledwall)
+        setPhase('IDLE')
       }, 500) // Small delay for highlight to fade
 
       return () => clearTimeout(timeoutId)
@@ -267,6 +274,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
             // Scroll to next page
             currentRowIndexRef.current = nextRowIndex
             scrollToRow(nextRowIndex)
+            // Trigger next scroll cycle by incrementing tick
+            setScrollTick((t) => t + 1)
           }
         }, scrollConfig.pageInterval)
         break
@@ -297,7 +306,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick])
 
   return {
     phase,

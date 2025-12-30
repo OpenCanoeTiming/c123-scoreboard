@@ -89,6 +89,7 @@ type ScoreboardAction =
       type: 'SET_ON_COURSE'
       current: OnCourseCompetitor | null
       onCourse: OnCourseCompetitor[]
+      updateOnCourse?: boolean
     }
   | { type: 'SET_VISIBILITY'; visibility: VisibilityState }
   | { type: 'SET_EVENT_INFO'; title?: string; infoText?: string; dayTime?: string }
@@ -174,10 +175,14 @@ function scoreboardReducer(
     }
 
     case 'SET_ON_COURSE': {
+      // Only update onCourse if updateOnCourse flag is true (from oncourse message)
+      // comp messages set updateOnCourse=false to preserve existing onCourse list
+      const shouldUpdateOnCourse = action.updateOnCourse !== false
+
       const newState: ScoreboardState = {
         ...state,
         currentCompetitor: action.current,
-        onCourse: action.onCourse,
+        onCourse: shouldUpdateOnCourse ? action.onCourse : state.onCourse,
       }
 
       // Atomic departing update - if previous competitor exists and bib differs
@@ -274,6 +279,7 @@ export function ScoreboardProvider({
       type: 'SET_ON_COURSE',
       current: data.current,
       onCourse: data.onCourse,
+      updateOnCourse: data.updateOnCourse,
     })
   }, [])
 

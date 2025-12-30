@@ -21,6 +21,12 @@ export interface ResultsData {
 export interface OnCourseData {
   current: OnCourseCompetitor | null
   onCourse: OnCourseCompetitor[]
+  /**
+   * Whether onCourse list should update.
+   * - true: Update from oncourse message (full list)
+   * - false: Comp message (current only, preserve existing onCourse)
+   */
+  updateOnCourse?: boolean
 }
 
 /**

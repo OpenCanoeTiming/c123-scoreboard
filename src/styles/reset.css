@@ -13,6 +13,7 @@ body,
 #root {
   height: 100%;
   width: 100%;
+  overflow: hidden; /* Prevent scrollbars - scoreboard is fixed viewport display */
 }
 
 body {

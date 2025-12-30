@@ -39,12 +39,15 @@ export function transformTopMessage(
 
 /**
  * Transform a comp message payload to OnCourseData
+ * Note: comp messages only update currentCompetitor, not the full onCourse list.
+ * The onCourse list comes from oncourse messages which contain all competitors.
  */
 export function transformCompMessage(payload: CompPayload): OnCourseData {
   const current = parseCompetitor(payload)
   return {
     current,
-    onCourse: current ? [current] : [],
+    onCourse: [],
+    updateOnCourse: false, // Don't overwrite onCourse list from comp message
   }
 }
 
@@ -60,6 +63,7 @@ export function transformOnCourseMessage(competitors: OnCoursePayload): OnCourse
   return {
     current: parsed[0] || null,
     onCourse: parsed,
+    updateOnCourse: true, // Full list from oncourse message
   }
 }
 

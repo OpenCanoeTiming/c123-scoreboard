@@ -69,7 +69,9 @@ describe('messageHandlers', () => {
 
       expect(result.current).not.toBeNull()
       expect(result.current?.bib).toBe('15')
-      expect(result.onCourse).toHaveLength(1)
+      // comp messages don't update onCourse list (that comes from oncourse messages)
+      expect(result.onCourse).toHaveLength(0)
+      expect(result.updateOnCourse).toBe(false)
     })
 
     it('should handle empty competitor', () => {
@@ -82,6 +84,7 @@ describe('messageHandlers', () => {
 
       expect(result.current).toBeNull()
       expect(result.onCourse).toHaveLength(0)
+      expect(result.updateOnCourse).toBe(false)
     })
   })
 
