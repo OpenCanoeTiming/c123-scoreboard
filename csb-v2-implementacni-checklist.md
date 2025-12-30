@@ -565,6 +565,32 @@ Tag: `pre-review-refactor`
 
 ---
 
+## Code Review nálezy (2025-12-30, aktualizace)
+
+Tag: `pre-review-phase10`
+
+### Vysoká priorita - Robustnost
+
+- [ ] **CLIProvider.ts:181 - chybí error handling pro callbacky** - callbacky jsou volány přímo bez try/catch, jeden špatný callback může shodit celý provider. ReplayProvider má `safeCallCallbacks` wrapper, CLIProvider ne.
+
+### Střední priorita - Inkonzistence
+
+- [ ] **parseMessages.ts:18-20 vs :62 - asymetrické API** - `parseResults` má `skipValidation` parametr, `parseCompetitor` validuje vždy. Měly by mít konzistentní interface.
+- [ ] **CLIProvider.ts:64-67 - příliš jednoduchá URL normalizace** - automaticky přidává `ws://` prefix, ale nevaliduje URL formát. Může vytvořit neplatné URL.
+
+### Nízká priorita - Efektivita
+
+- [ ] **OnCourseDisplay.tsx:103-114 - over-memoization** - dvě `useMemo` pro triviální gate parsing (<10 položek). Přidává komplexitu bez měřitelného přínosu.
+- [ ] **OnCourseDisplay.tsx:26-31 - hardcoded time validation** - kontroluje specifické stringy "0:00.00", "0.00", "0". Křehké při změně formátu.
+- [ ] **useLayout.ts:220-244 - neefektivní debounce** - vytváří N timeoutů a ruší N-1 z nich místo ref-based přístupu.
+- [ ] **ResultsList.tsx:51 - zbytečný showPenalty** - vždy `true`, komentář vysvětluje proč, ale přidává kognitivní zátěž.
+
+### Nízká priorita - Testy
+
+- [ ] **ResultsList.test.tsx:236-254 - duplicitní testy** - dva téměř identické testy pro highlight neaplikace.
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
