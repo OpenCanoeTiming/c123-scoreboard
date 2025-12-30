@@ -363,7 +363,7 @@ Autoscroll funguje správně, protože používá `offsetTop` a `scrollHeight` k
 
 - [ ] Vizuální kontrola škálovaného ledwallu
 - [ ] Performance test - FPS při škálování
-- [ ] **Commit:** "feat: add ledwall displayRows scaling"
+- [x] **Commit:** "fix: address Phase 11 code review findings" (cdbce2c)
 
 ---
 
