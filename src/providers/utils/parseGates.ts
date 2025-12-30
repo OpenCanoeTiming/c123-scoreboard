@@ -19,16 +19,7 @@ export type GatePenalty = 0 | 2 | 50 | null
  * @returns Array of gate penalties
  */
 export function parseGates(gates: string | null | undefined): GatePenalty[] {
-  // Handle non-string inputs gracefully
-  if (gates === null || gates === undefined) {
-    return []
-  }
-
-  if (typeof gates !== 'string') {
-    return []
-  }
-
-  if (gates.trim() === '') {
+  if (typeof gates !== 'string' || !gates.trim()) {
     return []
   }
 

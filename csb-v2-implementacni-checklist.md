@@ -633,7 +633,7 @@ Tag: `pre-review-final`
 - [ ] **useTimestamp.ts:49-77 - Zbytečné useCallback** - Tři useCallback funkce se volají ihned (řádky 110-112) a nepředávají se jako props. Nahradit plain `const` nebo `useMemo`.
 - [ ] **useAutoScroll.ts:122-125 - Zbytečný useMemo** - `prefersReducedMotion` se nikdy nemění za běhu. Může být konstanta mimo komponentu.
 - [ ] **useLayout.ts:270 - Zbytečný useMemo** - `getLayoutParamsFromURL()` se volá pouze jednou při mount. Memoizace s `[]` je zbytečná.
-- [ ] **parseGates.ts:22-33 - Přebujelé null checks** - 11 řádků validace lze zredukovat na `if (!gates?.trim()) return []`.
+- [x] **parseGates.ts:22-33 - Přebujelé null checks** - 11 řádků validace lze zredukovat na `if (!gates?.trim()) return []`. **OPRAVENO** - 11 řádků → 3 řádky
 - [ ] **formatTime.ts:14-23, 73-82, 122-130 - Redundantní empty checks** - Po trim() se znovu kontroluje prázdný string.
 - [ ] **ScoreboardContext.tsx:181-188 - Vnořené setState** - Vnořené `setDepartingCompetitor` obsahuje vnořené `setDepartedAt`. Lze zjednodušit.
 
