@@ -97,8 +97,8 @@ npm run preview
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
 | `type` | `vertical`, `ledwall` | auto | Force layout mode |
-| `source` | `replay`, `cli` | `replay` | Data source |
-| `host` | `ip:port` | `192.168.68.108:8081` | CLI WebSocket server address |
+| `source` | `replay`, `cli`, `c123` | `replay` | Data source |
+| `host` | `ip:port` | `192.168.68.108:8081` | WebSocket server address |
 | `speed` | number | `10` | Replay speed multiplier |
 | `loop` | `true`, `false` | `true` | Loop replay playback |
 | `disableScroll` | `true` | `false` | Disable auto-scroll (for screenshots) |
@@ -276,10 +276,26 @@ Abstracts data sources for easy switching between live and replay modes:
 
 ```
 DataProvider (interface)
-├── CLIProvider    - WebSocket connection to CLI server
-├── ReplayProvider - Recorded session playback
-└── C123Provider   - Direct TCP to Canoe123 (planned)
+├── CLIProvider    - WebSocket connection to CLI server (via CanoeLiveInterface)
+├── C123Provider   - Direct connection to Canoe123 via WebSocket proxy
+└── ReplayProvider - Recorded session playback
 ```
+
+#### C123Provider Setup
+
+C123Provider connects directly to the Canoe123 timing system, bypassing CanoeLiveInterface. This requires a WebSocket proxy since browsers cannot open TCP sockets directly.
+
+1. Start the proxy:
+   ```bash
+   npm run c123-proxy -- 192.168.68.108 8082
+   ```
+
+2. Use the C123 source in the URL:
+   ```
+   ?source=c123&host=localhost:8082
+   ```
+
+The proxy connects to Canoe123 TCP:27333 and exposes it via WebSocket.
 
 ### Component Structure
 

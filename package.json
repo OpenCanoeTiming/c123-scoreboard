@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "c123-proxy": "node scripts/c123-proxy.js"
   },
   "dependencies": {
     "react": "^19.2.0",

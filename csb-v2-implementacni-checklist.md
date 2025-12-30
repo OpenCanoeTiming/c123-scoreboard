@@ -13,7 +13,7 @@
 
 ```
 Build:       ✅ OK (437 kB JS, 19 kB CSS)
-Unit testy:  ✅ 512 testů (25 test suites)
+Unit testy:  ✅ 534 testů (26 test suites)
 E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
 Performance: ✅ FPS ~44, memory stable, load <1s
 ```
@@ -137,7 +137,11 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
 ## Post-implementace (po release)
 
-- [ ] C123Provider - přímé TCP připojení (vyžaduje WebSocket proxy)
+- [x] C123Provider - přímé TCP připojení (vyžaduje WebSocket proxy)
+  - Implementován `src/providers/C123Provider.ts` pro XML parsing
+  - Proxy server `scripts/c123-proxy.js` pro TCP→WebSocket bridge
+  - 22 unit testů pro C123Provider
+  - Dokumentace v README.md
 - [ ] Produkční nasazení
 - [ ] Performance optimalizace (pokud potřeba)
 
