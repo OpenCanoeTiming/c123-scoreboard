@@ -757,6 +757,24 @@ Tag: `pre-review-useAutoScroll-cleanup`
 
 ---
 
+## Code Review nálezy (2025-12-30, Session 4)
+
+Tag: `pre-code-review-session-4`
+
+### Střední priorita
+
+- [ ] **CLIProvider.ts:59-62 - neúplná URL validace** - Po normalizaci URL (přidání `ws://`) chybí validace formátu. Může vytvořit neplatné URL jako `ws://invalid..hostname`. Přidat základní validaci pomocí `URL()` konstruktoru.
+- [ ] **getGateClass.ts:49-50 - redundantní `|| ''` fallback** - CSS modules vždy vrací string (prázdný když třída neexistuje). Odstranit zbytečné `|| ''`.
+
+### Nízká priorita
+
+- [ ] **OnCourseDisplay.tsx:103-114 - dvojitá memoizace** - Dvě po sobě jdoucí `useMemo` pro triviální operace (<10 položek). Sloučit do jedné kalkulace nebo odstranit memoizaci.
+- [ ] **ResultRow.tsx:60-84 - zbytečný forwardRef** - Ref se používá pouze pro `data-bib` lookup, ne pro DOM operace. Odstranit `forwardRef` wrapper.
+- [ ] **CLIProvider.ts:111 - duplicitní error logging** - `console.error` i `emitError` reportují stejnou chybu. Odstranit `console.error` z produkčního kódu.
+- [ ] **ScoreboardContext.tsx:132-135 - implicitní error clearing** - Error se implicitně maže když status = 'connected'. Explicitněji dispatch `SET_ERROR(null)`.
+
+---
+
 ### Commity
 - `02adce2` fix: align visual styles with original v1
 - `d47c524` docs: add visual verification section 9.16 to checklist
