@@ -102,6 +102,7 @@ npm run preview
 | `speed` | number | `10` | Replay speed multiplier |
 | `loop` | `true`, `false` | `true` | Loop replay playback |
 | `disableScroll` | `true` | `false` | Disable auto-scroll (for screenshots) |
+| `displayRows` | `3-20` | auto | Fixed number of result rows (for ledwall scaling) |
 
 #### Example URLs
 
@@ -118,6 +119,11 @@ npm run preview
 **Development with slow replay:**
 ```
 ?source=replay&speed=1
+```
+
+**LED Wall with scaled rows (for distant viewing):**
+```
+?type=ledwall&displayRows=5&source=cli&host=192.168.1.100:8081
 ```
 
 ### Layout Modes
@@ -137,6 +143,17 @@ npm run preview
 - Shows only primary competitor on course
 
 Layout is auto-detected based on aspect ratio (>1.5 = ledwall), or forced via `type` parameter.
+
+#### Ledwall Scaling (displayRows)
+
+For LED panels that are far from viewers, use the `displayRows` parameter to show fewer, larger rows. The entire layout is scaled to fill the viewport with exactly the specified number of result rows.
+
+```
+?type=ledwall&displayRows=5    # 5 large rows for distant viewing
+?type=ledwall&displayRows=8    # 8 rows for closer viewing
+```
+
+The parameter accepts values from 3 to 20. When not set, rows are auto-calculated based on viewport height.
 
 ### Data Sources
 

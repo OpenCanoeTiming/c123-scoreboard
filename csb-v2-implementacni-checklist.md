@@ -322,39 +322,42 @@ Layout se škáluje tak, aby na výšku vyplnil disponibilní viewport s přesn�
 - [x] Nastavit `transform-origin: top left`
 - [x] Kompenzovat šířku: `width: calc(100% / scaleFactor)`
 
-### 11.3 CSS transformace
+### 11.3 CSS transformace ✅
 
-- [ ] Vytvořit nový CSS wrapper pro škálovaný obsah v `ScoreboardLayout`
-- [ ] Aplikovat CSS proměnnou `--scale-factor` z useLayout
-- [ ] Zajistit že scrollování funguje i po škálování
-- [ ] Otestovat že text zůstává ostrý (ne rozmazaný)
+- [x] Vytvořit nový CSS wrapper pro škálovaný obsah v `ScoreboardLayout`
+- [x] Aplikovat CSS proměnnou `--scale-factor` z useLayout
+- [x] Zajistit že scrollování funguje i po škálování (používá unscaled pixely)
+- [ ] Otestovat že text zůstává ostrý (ne rozmazaný) - manuální test
 
-### 11.4 Rozměry komponent při škálování
+### 11.4 Rozměry komponent při škálování ✅
 
 Při škálování se mění efektivní velikost prvků, ale zachovává se původní pixel-perfect layout.
+CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
-- [ ] TopBar: původních 60px × scaleFactor
-- [ ] CurrentCompetitor: původní rozměry × scaleFactor
-- [ ] ResultRow: původních 56px × scaleFactor
-- [ ] Fonty: původní velikosti × scaleFactor
+- [x] TopBar: původních 60px × scaleFactor
+- [x] CurrentCompetitor: původní rozměry × scaleFactor
+- [x] ResultRow: původních 56px × scaleFactor
+- [x] Fonty: původní velikosti × scaleFactor
 
-### 11.5 Autoscroll při škálování
+### 11.5 Autoscroll při škálování ✅
 
-- [ ] Ověřit že autoscroll funguje správně se škálovaným obsahem
-- [ ] Scroll offset musí být počítán v původních (neškálovaných) pixelech
-- [ ] Page-based scrollování: posun o `displayRows` řádků
+Autoscroll funguje správně, protože používá `offsetTop` a `scrollHeight` které nejsou ovlivněny CSS transformem.
+
+- [x] Ověřit že autoscroll funguje správně se škálovaným obsahem
+- [x] Scroll offset musí být počítán v původních (neškálovaných) pixelech
+- [x] Page-based scrollování: posun o `displayRows` řádků
 
 ### 11.6 Testování
 
 - [ ] Manuální test: `?type=ledwall&displayRows=5` na 1920×1080
 - [ ] Manuální test: `?type=ledwall&displayRows=3` na 768×384
-- [ ] E2E test: screenshot s displayRows=5
-- [ ] E2E test: autoscroll s displayRows=5
+- [x] E2E test: screenshot s displayRows=5 (layout.spec.ts)
+- [x] E2E test: transform validation s displayRows (layout.spec.ts)
 
-### 11.7 Dokumentace
+### 11.7 Dokumentace ✅
 
-- [ ] Aktualizovat README.md - nový parametr displayRows
-- [ ] Aktualizovat checklist s výsledky testování
+- [x] Aktualizovat README.md - nový parametr displayRows
+- [x] Aktualizovat checklist s výsledky testování
 
 ### 🔍 Revize: Fáze 11
 

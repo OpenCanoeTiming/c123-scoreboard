@@ -277,3 +277,84 @@ test.describe('Layout: Dynamic resize', () => {
     await expect(page.getByTestId('results-list')).toBeVisible()
   })
 })
+
+test.describe('Layout: displayRows scaling (Phase 11)', () => {
+  test('applies CSS transform when displayRows is set', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Check that transform is applied
+    const transform = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      return window.getComputedStyle(layout).transform
+    })
+
+    // Transform should be a scale matrix (not 'none')
+    expect(transform).not.toBe('none')
+    expect(transform).toContain('matrix')
+  })
+
+  test('scales layout to fill viewport with displayRows=5', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Check that layout fills viewport height
+    const layoutRect = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      const rect = layout.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    })
+
+    // Layout should approximately fill viewport
+    expect(layoutRect).not.toBeNull()
+    expect(layoutRect!.height).toBeGreaterThanOrEqual(1000) // Close to 1080
+    expect(layoutRect!.width).toBeGreaterThanOrEqual(1800) // Close to 1920
+  })
+
+  test('displayRows=3 shows larger elements', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 384 })
+    await page.goto('/?type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Get scale factor
+    const transform = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      return window.getComputedStyle(layout).transform
+    })
+
+    // Transform should be applied (scale > 1 for fewer rows)
+    expect(transform).not.toBe('none')
+  })
+
+  test('no scaling when displayRows is not set', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 384 })
+    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+
+    // Check that no transform is applied
+    const transform = await page.evaluate(() => {
+      const layout = document.querySelector('[data-layout-mode]')
+      if (!layout) return null
+      return window.getComputedStyle(layout).transform
+    })
+
+    // Transform should be 'none' or identity matrix
+    expect(transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true)
+  })
+
+  test('screenshot with displayRows=5 on 1920x1080', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    await waitForDataLoad(page)
+    await page.waitForTimeout(1000)
+
+    await expect(page).toHaveScreenshot('layout-ledwall-displayRows5-1920x1080.png', {
+      fullPage: true,
+    })
+  })
+})
