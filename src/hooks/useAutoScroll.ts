@@ -24,9 +24,6 @@ type ScrollPhase =
  */
 // Constants for scroll detection
 const BOTTOM_THRESHOLD_PX = 20
-// Scroll by ~85% of visible height to ensure 1-2 row overlap between pages
-// This prevents skipping rows that are partially visible at the bottom
-const PAGE_HEIGHT_RATIO = 0.85
 
 const SCROLL_CONFIG = {
   vertical: {
@@ -227,8 +224,21 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
     }
 
+    /**
+     * Calculate rows per page based on actual container height.
+     * Measures the real visible height and divides by actual row height.
+     * Subtracts 1 to create overlap between pages (prevents skipping rows).
+     */
     const getRowsPerPage = () => {
-      return Math.max(1, Math.floor((container.clientHeight * PAGE_HEIGHT_RATIO) / rowHeight))
+      // Measure actual row height from first row element
+      const firstRow = container.children[0] as HTMLElement | undefined
+      const actualRowHeight = firstRow?.offsetHeight ?? rowHeight
+
+      // Calculate full rows that fit in the visible area
+      const fullRows = Math.floor(container.clientHeight / actualRowHeight)
+
+      // Subtract 1 for overlap between pages (at least 1 row visible from previous page)
+      return Math.max(1, fullRows - 1)
     }
 
     const getTotalRows = () => {
