@@ -282,16 +282,31 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
     /**
      * Calculate rows per page based on actual container height.
-     * Measures the real visible height and divides by actual row height.
+     * Measures the real visible height and actual row spacing (including margins).
      * Subtracts 1 to create overlap between pages (prevents skipping rows).
      */
     const getRowsPerPage = () => {
-      // Measure actual row height from first row element
-      const firstRow = container.children[0] as HTMLElement | undefined
-      const actualRowHeight = firstRow?.offsetHeight ?? rowHeight
+      // Calculate actual row height including margins by measuring gap between rows
+      // This is more accurate than offsetHeight which doesn't include margins
+      const rows = Array.from(container.children) as HTMLElement[]
+      if (rows.length < 2) {
+        // Fallback to simple calculation
+        const fullRows = Math.floor(container.clientHeight / rowHeight)
+        return Math.max(1, fullRows - 1)
+      }
+
+      // Measure actual spacing between row tops (includes margin)
+      const row0Top = rows[0].offsetTop
+      const row1Top = rows[1].offsetTop
+      const actualRowSpacing = row1Top - row0Top
+
+      // If spacing is unreasonable, fall back to rowHeight
+      const effectiveRowHeight = actualRowSpacing > 0 && actualRowSpacing < rowHeight * 2
+        ? actualRowSpacing
+        : rowHeight
 
       // Calculate full rows that fit in the visible area
-      const fullRows = Math.floor(container.clientHeight / actualRowHeight)
+      const fullRows = Math.floor(container.clientHeight / effectiveRowHeight)
 
       // Subtract 1 for overlap between pages (at least 1 row visible from previous page)
       return Math.max(1, fullRows - 1)
@@ -366,9 +381,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         // Handled separately
         break
 
-      case 'SCROLLING_TO_TOP_FOR_COMPETITOR':
-        // Handled above, before shouldScroll check
-        break
+      // Note: SCROLLING_TO_TOP_FOR_COMPETITOR is handled above (before shouldScroll check)
+      // and TypeScript correctly narrows it out at this point
     }
 
     return () => {
