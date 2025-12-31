@@ -116,8 +116,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Get layout for config
   const { layoutMode, rowHeight } = useLayout()
 
-  // Get OnCourse state and results - on ledwall, auto-scroll stops when competitor is on course
-  const { currentCompetitor, onCourse, results } = useScoreboard()
+  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is on course
+  const { currentCompetitor, onCourse } = useScoreboard()
   const hasActiveCompetitor = layoutMode === 'ledwall' && (currentCompetitor !== null || onCourse.length > 0)
 
   // Track if we've already scrolled to the highlighted row
@@ -192,19 +192,15 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
   /**
    * Handle highlight - scroll to highlighted row
-   * Only scroll when the highlighted result actually exists in results array.
-   * This ensures we wait for the result to arrive before scrolling.
+   *
+   * CLI sends HighlightBib when a competitor finishes and should be highlighted.
+   * The competitor is already in results at this point (either from current run
+   * or from previous run in multi-run events). We trust CLI's timing and scroll
+   * immediately when HighlightBib is set.
    */
   useEffect(() => {
     if (!isHighlightActive || !highlightBib || !containerRef.current) return
     if (hasScrolledToHighlight.current) return
-
-    // Check if result for highlighted bib exists in results
-    const resultExists = results.some(r => r.bib === highlightBib)
-    if (!resultExists) {
-      // Result not yet in list - wait for next render when it arrives
-      return
-    }
 
     setPhase('HIGHLIGHT_VIEW')
 
@@ -223,7 +219,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         block: 'center',
       })
     }
-  }, [isHighlightActive, highlightBib, results])
+  }, [isHighlightActive, highlightBib])
 
   /**
    * Return to normal after highlight ends
