@@ -359,14 +359,15 @@ describe('ScoreboardContext', () => {
 
       const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
 
-      // Set and then change competitor
+      // Set competitor on course (must include in onCourse list)
       act(() => {
         mockProvider.triggerOnCourse({
           current: competitor,
-          onCourse: [],
+          onCourse: [competitor],
         })
       })
 
+      // Remove competitor from course
       act(() => {
         mockProvider.triggerOnCourse({
           current: null,
@@ -393,14 +394,15 @@ describe('ScoreboardContext', () => {
 
       const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
 
-      // Set and then change competitor
+      // Set competitor on course (must include in onCourse list)
       act(() => {
         mockProvider.triggerOnCourse({
           current: competitor,
-          onCourse: [],
+          onCourse: [competitor],
         })
       })
 
+      // Remove competitor from course
       act(() => {
         mockProvider.triggerOnCourse({
           current: null,
@@ -532,7 +534,10 @@ describe('ScoreboardContext', () => {
 
       expect(result.current.visibility.displayCurrent).toBe(true)
       expect(result.current.visibility.displayTop).toBe(false)
-      expect(result.current.visibility.displayFooter).toBe(false)
+      // Footer, TopBar, and Title are always forced to true regardless of CLI
+      expect(result.current.visibility.displayFooter).toBe(true)
+      expect(result.current.visibility.displayTopBar).toBe(true)
+      expect(result.current.visibility.displayTitle).toBe(true)
     })
   })
 

@@ -179,15 +179,50 @@ function scoreboardReducer(
       // comp messages set updateOnCourse=false to preserve existing onCourse list
       const shouldUpdateOnCourse = action.updateOnCourse !== false
 
+      let newOnCourse: OnCourseCompetitor[]
+      if (shouldUpdateOnCourse) {
+        // Full list from oncourse message
+        newOnCourse = action.onCourse
+      } else if (action.current) {
+        // comp message - update existing competitor in onCourse list or add if not present
+        const existingIndex = state.onCourse.findIndex(c => c.bib === action.current!.bib)
+        if (existingIndex >= 0) {
+          // Update existing competitor's data
+          newOnCourse = [...state.onCourse]
+          newOnCourse[existingIndex] = action.current
+        } else {
+          // New competitor - add to list
+          newOnCourse = [...state.onCourse, action.current]
+        }
+      } else {
+        newOnCourse = state.onCourse
+      }
+
+      // currentCompetitor is always the oldest (lowest dtStart) from onCourse
+      // This ensures stable selection when multiple competitors are on course
+      let newCurrent: OnCourseCompetitor | null = null
+      if (newOnCourse.length === 1) {
+        newCurrent = newOnCourse[0]
+      } else if (newOnCourse.length > 1) {
+        // Sort by dtStart ascending (oldest first)
+        const sorted = [...newOnCourse].sort((a, b) => {
+          if (!a.dtStart && !b.dtStart) return 0
+          if (!a.dtStart) return 1
+          if (!b.dtStart) return -1
+          return a.dtStart.localeCompare(b.dtStart)
+        })
+        newCurrent = sorted[0]
+      }
+
       const newState: ScoreboardState = {
         ...state,
-        currentCompetitor: action.current,
-        onCourse: shouldUpdateOnCourse ? action.onCourse : state.onCourse,
+        currentCompetitor: newCurrent,
+        onCourse: newOnCourse,
       }
 
       // Atomic departing update - if previous competitor exists and bib differs
       const prev = state.currentCompetitor
-      if (prev && prev.bib !== action.current?.bib) {
+      if (prev && prev.bib !== newCurrent?.bib) {
         newState.departingCompetitor = prev
         newState.departedAt = Date.now()
       }
@@ -196,7 +231,17 @@ function scoreboardReducer(
     }
 
     case 'SET_VISIBILITY':
-      return { ...state, visibility: action.visibility }
+      // Override certain visibility flags to always be true
+      // These should be displayed regardless of CLI instructions
+      return {
+        ...state,
+        visibility: {
+          ...action.visibility,
+          displayTopBar: true, // logos always visible
+          displayTitle: true, // title always visible
+          displayFooter: true, // footer always visible
+        },
+      }
 
     case 'SET_EVENT_INFO':
       return {

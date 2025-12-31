@@ -112,9 +112,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Get layout for config
   const { layoutMode, rowHeight } = useLayout()
 
-  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is on course
-  const { currentCompetitor, onCourse } = useScoreboard()
+  // Get OnCourse state and results - on ledwall, auto-scroll stops when competitor is on course
+  const { currentCompetitor, onCourse, results } = useScoreboard()
   const hasActiveCompetitor = layoutMode === 'ledwall' && (currentCompetitor !== null || onCourse.length > 0)
+
+  // Track if we've already scrolled to the highlighted row
+  const hasScrolledToHighlight = useRef(false)
 
   // Get layout-specific scroll config
   const scrollConfig = SCROLL_CONFIG[layoutMode]
@@ -158,15 +161,30 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    */
   const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActiveCompetitor
 
+  // Reset scroll tracking when highlight bib changes
+  useEffect(() => {
+    hasScrolledToHighlight.current = false
+  }, [highlightBib])
+
   /**
    * Handle highlight - scroll to highlighted row
+   * Only scroll when the highlighted result actually exists in results array.
+   * This ensures we wait for the result to arrive before scrolling.
    */
   useEffect(() => {
     if (!isHighlightActive || !highlightBib || !containerRef.current) return
+    if (hasScrolledToHighlight.current) return
+
+    // Check if result for highlighted bib exists in results
+    const resultExists = results.some(r => r.bib === highlightBib)
+    if (!resultExists) {
+      // Result not yet in list - wait for next render when it arrives
+      return
+    }
 
     setPhase('HIGHLIGHT_VIEW')
 
-    // Find the highlighted row
+    // Find the highlighted row in DOM
     const container = containerRef.current
     const rows = Array.from(container.children) as HTMLElement[]
     const highlightedRow = rows.find(
@@ -174,12 +192,14 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     )
 
     if (highlightedRow) {
-      container.scrollTo({
-        top: Math.max(0, highlightedRow.offsetTop - container.clientHeight / 2 + highlightedRow.clientHeight / 2),
+      hasScrolledToHighlight.current = true
+      // Use scrollIntoView with 'center' block to position the row in the middle
+      highlightedRow.scrollIntoView({
         behavior: 'smooth',
+        block: 'center',
       })
     }
-  }, [isHighlightActive, highlightBib])
+  }, [isHighlightActive, highlightBib, results])
 
   /**
    * Return to normal after highlight ends

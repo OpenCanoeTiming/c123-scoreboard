@@ -52,7 +52,33 @@ export function transformCompMessage(payload: CompPayload): OnCourseData {
 }
 
 /**
+ * Find the competitor who has been on course the longest (lowest dtStart).
+ * This ensures consistent selection when multiple competitors are on course.
+ */
+function findOldestOnCourse(
+  competitors: import('@/types').OnCourseCompetitor[]
+): import('@/types').OnCourseCompetitor | null {
+  if (competitors.length === 0) return null
+  if (competitors.length === 1) return competitors[0]
+
+  // Sort by dtStart ascending (oldest first)
+  // Null dtStart goes last
+  const sorted = [...competitors].sort((a, b) => {
+    if (!a.dtStart && !b.dtStart) return 0
+    if (!a.dtStart) return 1
+    if (!b.dtStart) return -1
+    return a.dtStart.localeCompare(b.dtStart)
+  })
+
+  return sorted[0]
+}
+
+/**
  * Transform an oncourse message payload to OnCourseData
+ *
+ * When multiple competitors are on course, the one who started earliest
+ * (lowest dtStart) is selected as "current" to ensure stable selection
+ * and prevent flickering between competitors.
  */
 export function transformOnCourseMessage(competitors: OnCoursePayload): OnCourseData {
   const parsed = competitors
@@ -61,7 +87,7 @@ export function transformOnCourseMessage(competitors: OnCoursePayload): OnCourse
     .filter((c) => c !== null)
 
   return {
-    current: parsed[0] || null,
+    current: findOldestOnCourse(parsed),
     onCourse: parsed,
     updateOnCourse: true, // Full list from oncourse message
   }
