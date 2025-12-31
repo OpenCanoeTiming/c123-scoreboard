@@ -197,20 +197,32 @@ describe('ScoreboardContext', () => {
     })
   })
 
-  describe('highlight activation', () => {
-    it('activates highlight when highlightBib is set in results', () => {
+  describe('highlight activation via dtFinish transition', () => {
+    it('activates highlight when dtFinish transitions from null to timestamp', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      // Send results with highlightBib
+      const competitor = createOnCourseCompetitor({ bib: '42', dtFinish: null })
+
+      // Set competitor on course (running)
       act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+        mockProvider.triggerOnCourse({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.highlightBib).toBeNull()
+
+      // Competitor finishes - dtFinish transitions to timestamp
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: { ...competitor, dtFinish: '2025-12-28T10:01:30', time: '90.50' },
+          onCourse: [{ ...competitor, dtFinish: '2025-12-28T10:01:30', time: '90.50' }],
+          updateOnCourse: true,
         })
       })
 
@@ -219,72 +231,82 @@ describe('ScoreboardContext', () => {
       expect(result.current.highlightTimestamp).not.toBeNull()
     })
 
-    it('activates highlight even when competitor is on course (server knows best)', () => {
+    it('does not activate highlight when competitor appears with dtFinish already set', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor42 = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+      const competitor = createOnCourseCompetitor({
+        bib: '42',
+        dtFinish: '2025-12-28T10:01:30', // Already finished
+      })
 
-      // First, set competitor on course
+      // Competitor appears with dtFinish already set (e.g., reconnect)
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      })
+
+      // Highlight should NOT be active - we didn't see the transition
+      expect(result.current.highlightBib).toBeNull()
+      expect(result.current.highlightTimestamp).toBeNull()
+    })
+
+    it('ignores highlightBib from results (CLI) - uses dtFinish detection instead', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Send results with highlightBib - this should be ignored
+      act(() => {
+        mockProvider.triggerResults({
+          results: [],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: '42',
+        })
+      })
+
+      // Highlight should NOT be active - we only use dtFinish detection now
+      expect(result.current.highlightBib).toBeNull()
+      expect(result.current.highlightTimestamp).toBeNull()
+    })
+
+    it('activates highlight when competitor finishes while another is on course', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor42 = createOnCourseCompetitor({ bib: '42', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other', dtStart: '2025-12-28T10:01:00', dtFinish: null })
+
+      // Two competitors on course
       act(() => {
         mockProvider.triggerOnCourse({
           current: competitor42,
-          onCourse: [competitor42],
+          onCourse: [competitor42, competitor99],
+          updateOnCourse: true,
         })
       })
 
-      // Then highlight same competitor (server says they just finished)
+      // Competitor 42 finishes while 99 is still on course
       act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+        mockProvider.triggerOnCourse({
+          current: { ...competitor42, dtFinish: '2025-12-28T10:01:30' },
+          onCourse: [{ ...competitor42, dtFinish: '2025-12-28T10:01:30' }, competitor99],
+          updateOnCourse: true,
         })
       })
 
-      // Highlight SHOULD be active - trust server's HighlightBib value
+      // Highlight SHOULD be active for the competitor who just finished
       expect(result.current.highlightBib).toBe('42')
       expect(result.current.highlightTimestamp).not.toBeNull()
-    })
-
-    it('does not reset timestamp for same highlightBib', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
-
-      // First highlight
-      act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      const firstTimestamp = result.current.highlightTimestamp
-
-      // Advance time
-      act(() => {
-        vi.advanceTimersByTime(1000)
-      })
-
-      // Same highlight again
-      act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      // Timestamp should not change for same bib
-      expect(result.current.highlightTimestamp).toBe(firstTimestamp)
     })
   })
 
@@ -386,46 +408,42 @@ describe('ScoreboardContext', () => {
       expect(result.current.departedAt).toBeNull()
     })
 
-    it('clears departing competitor when highlight arrives for them', () => {
+    it('clears departing competitor when dtFinish highlight arrives for them', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete' })
+      // Two competitors on course - 42 started earlier
+      const competitor42 = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other Athlete', dtStart: '2025-12-28T10:01:00', dtFinish: null })
 
-      // Set competitor on course (must include in onCourse list)
+      // Set both competitors on course
       act(() => {
         mockProvider.triggerOnCourse({
-          current: competitor,
-          onCourse: [competitor],
+          current: competitor42,
+          onCourse: [competitor42, competitor99],
+          updateOnCourse: true,
         })
       })
 
-      // Remove competitor from course
+      expect(result.current.currentCompetitor?.bib).toBe('42')
+
+      // Competitor 42 finishes - dtFinish transitions to timestamp
+      // This triggers highlight and clears any departing state for that bib
       act(() => {
         mockProvider.triggerOnCourse({
-          current: null,
-          onCourse: [],
+          current: competitor42,
+          onCourse: [{ ...competitor42, dtFinish: '2025-12-28T10:01:30' }, competitor99],
+          updateOnCourse: true,
         })
       })
 
-      expect(result.current.departingCompetitor?.bib).toBe('42')
-
-      // Highlight arrives for departing competitor
-      act(() => {
-        mockProvider.triggerResults({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      // Departing should be cleared, highlight should be active
+      // Highlight should be active for 42
+      expect(result.current.highlightBib).toBe('42')
+      // Departing should be cleared (42 was the one that triggered highlight)
       expect(result.current.departingCompetitor).toBeNull()
       expect(result.current.departedAt).toBeNull()
-      expect(result.current.highlightBib).toBe('42')
     })
   })
 
@@ -436,19 +454,37 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Current' })
+      const competitor = createOnCourseCompetitor({ bib: '42', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Current', dtStart: '2025-12-28T10:01:00' })
 
-      // Populate state with data
+      // Populate state with data - first set running, then finish
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      })
+
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: { ...competitor, dtFinish: '2025-12-28T10:01:30' },
+          onCourse: [{ ...competitor, dtFinish: '2025-12-28T10:01:30' }],
+          updateOnCourse: true,
+        })
+      })
+
       act(() => {
         mockProvider.triggerResults({
           results: [createResult()],
           raceName: 'Test Race',
           raceStatus: 'Running',
-          highlightBib: '42',
+          highlightBib: null,
         })
         mockProvider.triggerOnCourse({
           current: competitor99,
           onCourse: [competitor99],
+          updateOnCourse: true,
         })
       })
 
@@ -594,60 +630,32 @@ describe('ScoreboardContext', () => {
     })
   })
 
-  describe('rapid highlight changes (edge cases)', () => {
-    it('handles multiple highlights arriving < 100ms apart', () => {
+  describe('rapid highlight changes via dtFinish (edge cases)', () => {
+    it('handles multiple competitors finishing rapidly', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      // First highlight
+      const comp1 = createOnCourseCompetitor({ bib: '1', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const comp2 = createOnCourseCompetitor({ bib: '2', dtStart: '2025-12-28T10:00:30', dtFinish: null })
+      const comp3 = createOnCourseCompetitor({ bib: '3', dtStart: '2025-12-28T10:01:00', dtFinish: null })
+
+      // All three on course
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+        mockProvider.triggerOnCourse({
+          current: comp1,
+          onCourse: [comp1, comp2, comp3],
+          updateOnCourse: true,
         })
       })
-
-      expect(result.current.highlightBib).toBe('42')
-      const firstTimestamp = result.current.highlightTimestamp
-
-      // Advance just 50ms
-      act(() => {
-        vi.advanceTimersByTime(50)
-      })
-
-      // Second highlight for DIFFERENT competitor
-      act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '99',
-        })
-      })
-
-      // Should switch to new highlight
-      expect(result.current.highlightBib).toBe('99')
-      // Timestamp should be updated (different bib)
-      expect(result.current.highlightTimestamp).toBeGreaterThan(firstTimestamp!)
-    })
-
-    it('handles three competitors finishing within 200ms', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
 
       // Competitor 1 finishes
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '1' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '1',
+        mockProvider.triggerOnCourse({
+          current: comp1,
+          onCourse: [{ ...comp1, dtFinish: '2025-12-28T10:01:30' }, comp2, comp3],
+          updateOnCourse: true,
         })
       })
 
@@ -659,11 +667,10 @@ describe('ScoreboardContext', () => {
       })
 
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '1' }), createResult({ bib: '2', rank: 2 })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '2',
+        mockProvider.triggerOnCourse({
+          current: comp2,
+          onCourse: [{ ...comp1, dtFinish: '2025-12-28T10:01:30' }, { ...comp2, dtFinish: '2025-12-28T10:01:31' }, comp3],
+          updateOnCourse: true,
         })
       })
 
@@ -675,128 +682,65 @@ describe('ScoreboardContext', () => {
       })
 
       act(() => {
-        mockProvider.triggerResults({
-          results: [
-            createResult({ bib: '1' }),
-            createResult({ bib: '2', rank: 2 }),
-            createResult({ bib: '3', rank: 3 }),
+        mockProvider.triggerOnCourse({
+          current: comp3,
+          onCourse: [
+            { ...comp1, dtFinish: '2025-12-28T10:01:30' },
+            { ...comp2, dtFinish: '2025-12-28T10:01:31' },
+            { ...comp3, dtFinish: '2025-12-28T10:01:32' },
           ],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '3',
+          updateOnCourse: true,
         })
       })
 
       expect(result.current.highlightBib).toBe('3')
     })
 
-    it('does not flash null highlight between rapid changes', () => {
+    it('replaces old highlight with new highlight when new competitor finishes', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      // Track all highlight values
-      const highlightHistory: (string | null)[] = []
+      const comp42 = createOnCourseCompetitor({ bib: '42', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const comp99 = createOnCourseCompetitor({ bib: '99', dtStart: '2025-12-28T10:00:30', dtFinish: null })
 
-      // Subscribe to changes (simplified)
-      const captureHighlight = () => {
-        highlightHistory.push(result.current.highlightBib)
-      }
-
-      // First highlight
+      // Both on course
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+        mockProvider.triggerOnCourse({
+          current: comp42,
+          onCourse: [comp42, comp99],
+          updateOnCourse: true,
         })
       })
-      captureHighlight()
 
-      // Immediately second highlight (same render cycle simulation)
+      // Competitor 42 finishes
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '99',
-        })
-      })
-      captureHighlight()
-
-      // Should never have null between valid highlights
-      expect(highlightHistory).toEqual(['42', '99'])
-    })
-
-    it('does not immediately clear highlight when server sends null (uses timestamp expiration)', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
-
-      // Set initial highlight
-      act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+        mockProvider.triggerOnCourse({
+          current: comp42,
+          onCourse: [{ ...comp42, dtFinish: '2025-12-28T10:01:30' }, comp99],
+          updateOnCourse: true,
         })
       })
 
       expect(result.current.highlightBib).toBe('42')
+      const firstTimestamp = result.current.highlightTimestamp
 
-      // Server sends null - highlight should NOT be cleared immediately
-      // (uses timestamp-based expiration via useHighlight hook instead)
-      act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: null,
-        })
-      })
-
-      // Highlight still active - will expire via timestamp
-      expect(result.current.highlightBib).toBe('42')
-      expect(result.current.highlightTimestamp).not.toBeNull()
-    })
-
-    it('replaces old highlight with new highlight when new one arrives', () => {
-      const mockProvider = createMockProvider()
-      const wrapper = createWrapper(mockProvider)
-
-      const { result } = renderHook(() => useScoreboard(), { wrapper })
-
-      // Set initial highlight
-      act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
-        })
-      })
-
-      expect(result.current.highlightBib).toBe('42')
-
-      // 10ms later, new highlight arrives - should replace old one
+      // 10ms later, competitor 99 finishes - should replace highlight
       act(() => {
         vi.advanceTimersByTime(10)
       })
 
       act(() => {
-        mockProvider.triggerResults({
-          results: [createResult({ bib: '42' }), createResult({ bib: '99', rank: 2 })],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '99',
+        mockProvider.triggerOnCourse({
+          current: comp99,
+          onCourse: [{ ...comp42, dtFinish: '2025-12-28T10:01:30' }, { ...comp99, dtFinish: '2025-12-28T10:01:31' }],
+          updateOnCourse: true,
         })
       })
 
       expect(result.current.highlightBib).toBe('99')
+      expect(result.current.highlightTimestamp).toBeGreaterThan(firstTimestamp!)
     })
   })
 

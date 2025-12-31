@@ -193,10 +193,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   /**
    * Handle highlight - scroll to highlighted row
    *
-   * CLI sends HighlightBib when a competitor finishes and should be highlighted.
-   * The competitor is already in results at this point (either from current run
-   * or from previous run in multi-run events). We trust CLI's timing and scroll
-   * immediately when HighlightBib is set.
+   * Highlight is triggered by dtFinish transition in oncourse data.
+   * This is protocol-agnostic and works with CLI, C123, and Replay providers.
+   * The competitor should already be in results at this point (either from
+   * current run or from previous run in multi-run events).
    */
   useEffect(() => {
     if (!isHighlightActive || !highlightBib || !containerRef.current) return

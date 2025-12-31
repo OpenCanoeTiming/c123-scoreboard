@@ -148,30 +148,17 @@ function scoreboardReducer(
       return { ...state, providerErrors: [] }
 
     case 'SET_RESULTS': {
-      const newState: ScoreboardState = {
+      // Note: We intentionally ignore action.highlightBib from CLI.
+      // Highlight is triggered by dtFinish transition in SET_ON_COURSE instead.
+      // This makes the system protocol-agnostic (works with CLI, C123, Replay).
+      // The dtFinish detection in oncourse data is the source of truth for finish timing.
+      return {
         ...state,
         results: action.results,
         raceName: action.raceName,
         raceStatus: action.raceStatus,
         initialDataReceived: true,
       }
-
-      // Atomic highlight update - bib and timestamp together
-      if (action.highlightBib && action.highlightBib !== state.highlightBib) {
-        newState.highlightBib = action.highlightBib
-        newState.highlightTimestamp = Date.now()
-
-        // Clear departing if this is the departing competitor's highlight
-        if (
-          state.departingCompetitor &&
-          state.departingCompetitor.bib === action.highlightBib
-        ) {
-          newState.departingCompetitor = null
-          newState.departedAt = null
-        }
-      }
-
-      return newState
     }
 
     case 'SET_ON_COURSE': {
@@ -231,6 +218,26 @@ function scoreboardReducer(
       if (prev && prev.bib !== newCurrent?.bib) {
         newState.departingCompetitor = prev
         newState.departedAt = Date.now()
+      }
+
+      // Detect finish by dtFinish transition (null -> timestamp)
+      // This works independently of CLI HighlightBib and is protocol-agnostic
+      // (works with CLI, C123, and Replay providers)
+      for (const curr of newOnCourse) {
+        const prevComp = state.onCourse.find(c => c.bib === curr.bib)
+        // Only trigger if we've seen this competitor before without dtFinish
+        // This prevents false highlights on reconnect or initial load
+        if (prevComp && !prevComp.dtFinish && curr.dtFinish) {
+          // Competitor just finished - trigger highlight
+          newState.highlightBib = curr.bib
+          newState.highlightTimestamp = Date.now()
+          // Clear departing if this was the departing competitor
+          if (state.departingCompetitor?.bib === curr.bib) {
+            newState.departingCompetitor = null
+            newState.departedAt = null
+          }
+          break // Only one competitor can finish at a time
+        }
       }
 
       return newState

@@ -4,8 +4,29 @@ import { createElement, type ReactNode } from 'react'
 import { ScoreboardProvider } from '@/context/ScoreboardContext'
 import { HIGHLIGHT_DURATION } from '@/context/constants'
 import { useHighlight } from '../useHighlight'
-import type { DataProvider, Unsubscribe } from '@/providers/types'
-import type { ConnectionStatus } from '@/types'
+import type { DataProvider, Unsubscribe, OnCourseData } from '@/providers/types'
+import type { ConnectionStatus, OnCourseCompetitor } from '@/types'
+
+// Helper to create a complete OnCourseCompetitor object
+function createCompetitor(overrides: Partial<OnCourseCompetitor> = {}): OnCourseCompetitor {
+  return {
+    bib: '42',
+    name: 'Test Athlete',
+    club: 'Test Club',
+    nat: '',
+    raceId: 'TEST_RACE',
+    time: '',
+    total: '',
+    pen: 0,
+    gates: '',
+    dtStart: null,
+    dtFinish: null,
+    ttbDiff: '',
+    ttbName: '',
+    rank: 0,
+    ...overrides,
+  }
+}
 
 // Mock DataProvider for testing
 function createMockProvider(overrides: Partial<DataProvider> = {}): DataProvider {
@@ -48,13 +69,13 @@ describe('useHighlight', () => {
     expect(result.current.progress).toBe(0)
   })
 
-  it('activates highlight when bib and timestamp are set', () => {
-    let resultsCallback: ((data: unknown) => void) | null = null
+  it('activates highlight when dtFinish transitions from null to timestamp', () => {
+    let onCourseCallback: ((data: OnCourseData) => void) | null = null
 
     const mockProvider = createMockProvider({
-      onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
-        resultsCallback = callback
-        return () => { resultsCallback = null }
+      onOnCourse: vi.fn((callback: (data: OnCourseData) => void): Unsubscribe => {
+        onCourseCallback = callback
+        return () => { onCourseCallback = null }
       }),
     })
 
@@ -63,14 +84,33 @@ describe('useHighlight', () => {
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
-    // Simulate receiving results with highlight
+    // First, competitor on course without dtFinish (running)
     act(() => {
-      if (resultsCallback) {
-        resultsCallback({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+      if (onCourseCallback) {
+        const competitor = createCompetitor({ bib: '42', dtStart: '2025-01-01T10:00:00Z', dtFinish: null })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      }
+    })
+
+    expect(result.current.isActive).toBe(false)
+
+    // Then, competitor finishes - dtFinish transitions to timestamp
+    act(() => {
+      if (onCourseCallback) {
+        const competitor = createCompetitor({
+          bib: '42',
+          dtStart: '2025-01-01T10:00:00Z',
+          dtFinish: '2025-01-01T10:01:00Z',
+          time: '60.00',
+        })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
         })
       }
     })
@@ -82,12 +122,12 @@ describe('useHighlight', () => {
   })
 
   it('expires highlight after HIGHLIGHT_DURATION', async () => {
-    let resultsCallback: ((data: unknown) => void) | null = null
+    let onCourseCallback: ((data: OnCourseData) => void) | null = null
 
     const mockProvider = createMockProvider({
-      onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
-        resultsCallback = callback
-        return () => { resultsCallback = null }
+      onOnCourse: vi.fn((callback: (data: OnCourseData) => void): Unsubscribe => {
+        onCourseCallback = callback
+        return () => { onCourseCallback = null }
       }),
     })
 
@@ -96,14 +136,30 @@ describe('useHighlight', () => {
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
-    // Simulate receiving results with highlight
+    // Set up competitor on course
     act(() => {
-      if (resultsCallback) {
-        resultsCallback({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+      if (onCourseCallback) {
+        const competitor = createCompetitor({ bib: '42', dtStart: '2025-01-01T10:00:00Z', dtFinish: null })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      }
+    })
+
+    // Trigger finish
+    act(() => {
+      if (onCourseCallback) {
+        const competitor = createCompetitor({
+          bib: '42',
+          dtStart: '2025-01-01T10:00:00Z',
+          dtFinish: '2025-01-01T10:01:00Z',
+        })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
         })
       }
     })
@@ -121,12 +177,12 @@ describe('useHighlight', () => {
   })
 
   it('calculates progress correctly over time', () => {
-    let resultsCallback: ((data: unknown) => void) | null = null
+    let onCourseCallback: ((data: OnCourseData) => void) | null = null
 
     const mockProvider = createMockProvider({
-      onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
-        resultsCallback = callback
-        return () => { resultsCallback = null }
+      onOnCourse: vi.fn((callback: (data: OnCourseData) => void): Unsubscribe => {
+        onCourseCallback = callback
+        return () => { onCourseCallback = null }
       }),
     })
 
@@ -135,14 +191,29 @@ describe('useHighlight', () => {
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
-    // Simulate receiving results with highlight
+    // Set up and trigger finish
     act(() => {
-      if (resultsCallback) {
-        resultsCallback({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+      if (onCourseCallback) {
+        const competitor = createCompetitor({ bib: '42', dtStart: '2025-01-01T10:00:00Z', dtFinish: null })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      }
+    })
+
+    act(() => {
+      if (onCourseCallback) {
+        const competitor = createCompetitor({
+          bib: '42',
+          dtStart: '2025-01-01T10:00:00Z',
+          dtFinish: '2025-01-01T10:01:00Z',
+        })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
         })
       }
     })
@@ -165,16 +236,11 @@ describe('useHighlight', () => {
     expect(result.current.progress).toBeGreaterThanOrEqual(1)
   })
 
-  it('activates highlight for competitor even when on course (server knows best)', () => {
-    let resultsCallback: ((data: unknown) => void) | null = null
-    let onCourseCallback: ((data: unknown) => void) | null = null
+  it('does not activate highlight for new competitor with dtFinish already set (reconnect scenario)', () => {
+    let onCourseCallback: ((data: OnCourseData) => void) | null = null
 
     const mockProvider = createMockProvider({
-      onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
-        resultsCallback = callback
-        return () => { resultsCallback = null }
-      }),
-      onOnCourse: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
+      onOnCourse: vi.fn((callback: (data: OnCourseData) => void): Unsubscribe => {
         onCourseCallback = callback
         return () => { onCourseCallback = null }
       }),
@@ -185,45 +251,86 @@ describe('useHighlight', () => {
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
-    // First, set a competitor on course
+    // Competitor appears with dtFinish already set (e.g., after reconnect)
+    // This should NOT trigger highlight since we didn't see the transition
+    act(() => {
+      if (onCourseCallback) {
+        const competitor = createCompetitor({
+          bib: '42',
+          dtStart: '2025-01-01T10:00:00Z',
+          dtFinish: '2025-01-01T10:01:00Z',
+        })
+        onCourseCallback({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      }
+    })
+
+    // Highlight should NOT be active - we didn't see the transition
+    expect(result.current.isActive).toBe(false)
+    expect(result.current.highlightBib).toBeNull()
+  })
+
+  it('activates highlight when competitor finishes while another is on course', () => {
+    let onCourseCallback: ((data: OnCourseData) => void) | null = null
+
+    const mockProvider = createMockProvider({
+      onOnCourse: vi.fn((callback: (data: OnCourseData) => void): Unsubscribe => {
+        onCourseCallback = callback
+        return () => { onCourseCallback = null }
+      }),
+    })
+
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(ScoreboardProvider, { provider: mockProvider, children })
+
+    const { result } = renderHook(() => useHighlight(), { wrapper })
+
+    const competitor42 = createCompetitor({ bib: '42', dtStart: '2025-01-01T10:00:00Z', dtFinish: null })
+    const competitor99 = createCompetitor({ bib: '99', name: 'Other Athlete', dtStart: '2025-01-01T10:01:00Z', dtFinish: null })
+
+    // Two competitors on course
     act(() => {
       if (onCourseCallback) {
         onCourseCallback({
-          current: { bib: '42', name: 'Test Athlete' },
-          onCourse: [{ bib: '42', name: 'Test Athlete' }],
+          current: competitor42,
+          onCourse: [competitor42, competitor99],
+          updateOnCourse: true,
         })
       }
     })
 
-    // Then highlight the same competitor (server says they just finished)
+    // Competitor 42 finishes while 99 is still on course
     act(() => {
-      if (resultsCallback) {
-        resultsCallback({
-          results: [],
-          raceName: 'Test Race',
-          raceStatus: 'Running',
-          highlightBib: '42',
+      if (onCourseCallback) {
+        const finished42 = createCompetitor({
+          bib: '42',
+          dtStart: '2025-01-01T10:00:00Z',
+          dtFinish: '2025-01-01T10:01:30Z',
+          time: '90.00',
+        })
+        onCourseCallback({
+          current: finished42,
+          onCourse: [finished42, competitor99],
+          updateOnCourse: true,
         })
       }
     })
 
-    // Highlight SHOULD be active - trust server's HighlightBib value
+    // Highlight SHOULD be active for the competitor who just finished
     expect(result.current.isActive).toBe(true)
     expect(result.current.highlightBib).toBe('42')
   })
 
-  it('activates highlight for competitor NOT on course', () => {
+  it('ignores highlightBib from results (CLI) - uses dtFinish detection instead', () => {
     let resultsCallback: ((data: unknown) => void) | null = null
-    let onCourseCallback: ((data: unknown) => void) | null = null
 
     const mockProvider = createMockProvider({
       onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
         resultsCallback = callback
         return () => { resultsCallback = null }
-      }),
-      onOnCourse: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
-        onCourseCallback = callback
-        return () => { onCourseCallback = null }
       }),
     })
 
@@ -232,17 +339,7 @@ describe('useHighlight', () => {
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
-    // Set a different competitor on course
-    act(() => {
-      if (onCourseCallback) {
-        onCourseCallback({
-          current: { bib: '99', name: 'Other Athlete' },
-          onCourse: [{ bib: '99', name: 'Other Athlete' }],
-        })
-      }
-    })
-
-    // Highlight a competitor who is NOT on course
+    // Send results with highlightBib - this should be ignored
     act(() => {
       if (resultsCallback) {
         resultsCallback({
@@ -254,8 +351,8 @@ describe('useHighlight', () => {
       }
     })
 
-    // Highlight SHOULD be active
-    expect(result.current.isActive).toBe(true)
-    expect(result.current.highlightBib).toBe('42')
+    // Highlight should NOT be active - we only use dtFinish detection now
+    expect(result.current.isActive).toBe(false)
+    expect(result.current.highlightBib).toBeNull()
   })
 })

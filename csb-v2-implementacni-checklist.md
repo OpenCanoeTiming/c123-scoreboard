@@ -13,7 +13,7 @@
 
 ```
 Build:       ✅ OK (437 kB JS, 19 kB CSS)
-Unit testy:  ✅ 534 testů (26 test suites)
+Unit testy:  ✅ 536 testů (26 test suites)
 E2E testy:   ✅ 87 passed, 39 skipped (CLI server tests)
 Performance: ✅ FPS ~44, memory stable, load <1s
 ```
@@ -160,7 +160,7 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
  - [x] scrollování po stránkách ještě není ideální, na vertical např. v situaci, kdy při počátečním zobrazení končí seznam 22. pozicí, tak po prvním scrollu je nahoře 25., tedy scrolluje moc (zkoušel jsem i na jiných rozlišeních a vypadá to že čím větší rozlišení tím víc přescrolluje. na ledwall je problém opačný, na 384x768 (stejně i při 576x960 a displayrows=6) by to mohlo scrollovat o jeden řádek výsledků víc.
    - **Oprava:** Funkce `getRowsPerPage()` v `useAutoScroll.ts` nyní měří skutečnou mezeru mezi řádky (`offsetTop` rozdíl), čímž správně zohledňuje margin mezi řádky. Dříve se počítalo pouze s `offsetHeight`, které nezahrnuje margin.
  - [x] stále nefunguje správně highlight při dojetí, protože výsledky nascrollují a provede se highlight, když se závodníkovi zastaví čas, ne když má ve výsledcích svůj výsledek. Tady budeš asi muset naplánovat sem do checklistu pár podrobnějších kroků na analýzu stiuace třeba z nahraných dat a nějak líp to načasovat. Mysli na to, jaký je rozdíl mezi rozhraním CLI a C123, musí se to chovat stejně i bez "cukru". Možná tě mate to, že při druhé jízdě, kdy to testuji, už je závodník ve výsledcích s hodnotou první jízdy. My ho chceme ale vysvítit až když tam má výsledek (i) z druhé jízdy. (Při první jízdě samozřejmě ve chvíli, kdy se objeví ve výsledcích s výsledkem první jízdy.)
-   - **Oprava:** Problém byl v tom, že `useAutoScroll` čekal na "nový výsledek" v results seznamu. Při 2. jízdě je závodník už ve výsledcích s časem 1. jízdy, takže kontrola `results.some(r => r.bib === highlightBib)` procházela okamžitě. CLI posílá `HighlightBib` právě ve správný okamžik (ts=63212), následně přichází oncourse s `dtFinish` (ts=63213). Oprava: spoléháme na timing CLI a scrollujeme ihned při příchodu `HighlightBib`, bez kontroly existence výsledku.
+   - **Oprava (v2):** Highlight je nyní detekován pomocí přechodu `dtFinish` z `null` na timestamp v `oncourse` datech. Toto je **protokolově nezávislé řešení** - funguje s CLI, C123 i Replay providerem. Timeline z dat: `ts=62847` oncourse s `dtFinish=null` (závodník běží), `ts=63213` oncourse s `dtFinish="..."` (závodník dojel) → detekce přechodu spustí highlight. HighlightBib z CLI `top` zprávy je nyní ignorován - spoléháme výhradně na dtFinish.
 
 ## Post-implementace (po release)
 
