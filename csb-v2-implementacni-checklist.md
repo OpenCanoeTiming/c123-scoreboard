@@ -136,15 +136,15 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
    - **Oprava:** Zvětšena šířka time sloupce z 130px na 150px, snížen padding z 15px na 8px
  - [x] ledwall bez displayRows scrolluje dobře (při závodníkovi na trati i bez něj)
  - [x] vertical scrolluje dobře
- - [ ] ledwall s displayRows nescrolluje vůbec
+ - [x] ledwall s displayRows nescrolluje vůbec
+   - **Oprava:** ResultsList kontejner dostává pevnou výšku `displayRows * rowHeight` když je displayRows nastaven, což umožňuje scrollování uvnitř škálovaného layoutu
  - [ ] nešlo by na obou layoutech nějak lépe dopočítat, kolik těch řádků je vidět a o kolik se má scrollovat? Ten koeficient z výšky obrazovky je podle mě nespolehlivý. Chtělo by to zohlednit i to, kolik oncourse se zobrazuje na vertical.
  - [ ] komponenty se objevují podle toho, jak je zapnu v CLI. My to ale chceme tak, že loga, footer, nadpis mají být zapnuté bez ohledu na CLI instrukce. 
  - [ ] když jsou dva (nebo více) závodníci na trati, tak na oboy layoutech se oba přepisují v tom jednom řádku, je to stále dokola, nedaří se ti to opravit. Je tam asi nějaký hlubší principiální problém. Má se to chovat takto: Ledwall vždy max. jeden závodník na trati, ten který vyjel dřív (má větší čas). Vertical by mohl zobrazovat všechny aktivní závodníky na trati (běží jim čas, nebo jsou čerstvě dojetí a probíhá jejich highlight).
  - [ ] po dojetí závodníka se scrolluje na jeho pozici v results moc brzo!! Results ještě neobsahují nový výsledek, zobrazuje se něco, co nedává smysl. Scroll a highlight ve výsledcích musí proběhnout ve chvíli, kdy přijde nový výsledek v results. Zamysli se, prozkoumej, jak to chodí sousledně v datech, předělej ten automat.
  - [ ] na ledwall po dojetí závodníka nascrolluje tak nějak divně, ten highlight řádek je nahoře ale jakoby zasunutý, je třeba nascrollovat ještě o kousek níž, ideálně aby byl cca uprostřed plochy s výsledky
- - [ ] ledwall se zapnutým displayRows nesrolluje vůbec nikdy :(
- 
-
+ - [x] ledwall se zapnutým displayRows nesrolluje vůbec nikdy :(
+   - **Oprava:** (viz výše) ResultsList kontejner má fixní výšku při displayRows
 
 ## Post-implementace (po release)
 

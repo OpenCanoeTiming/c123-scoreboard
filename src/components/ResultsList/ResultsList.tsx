@@ -1,3 +1,4 @@
+import { useMemo, type CSSProperties } from 'react'
 import styles from './ResultsList.module.css'
 import { ResultRow } from './ResultRow'
 import type { Result } from '@/types'
@@ -28,6 +29,9 @@ interface ResultsListProps {
  * - Vertical layout: all columns visible
  * - Ledwall layout: behind column hidden (matches original v1)
  *
+ * When displayRows is set (ledwall scaling mode), the container has a fixed
+ * height to enable scrolling within the scaled layout.
+ *
  * @example
  * ```tsx
  * <ResultsList
@@ -38,13 +42,25 @@ interface ResultsListProps {
  */
 export function ResultsList({ results, visible = true }: ResultsListProps) {
   const { highlightBib, isActive } = useHighlight()
-  const { disableScroll, layoutMode } = useLayout()
+  const { disableScroll, layoutMode, displayRows, rowHeight } = useLayout()
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
   const { containerRef } = useAutoScroll({
     enabled: results.length > 0 && !disableScroll,
   })
+
+  // When displayRows is set, fix the container height to enable scrolling
+  // within the scaled layout (otherwise content expands and no scroll is needed)
+  const containerStyle = useMemo((): CSSProperties => {
+    if (displayRows === null) return {}
+    // Fixed height = displayRows * rowHeight (in unscaled pixels)
+    return {
+      height: `${displayRows * rowHeight}px`,
+      maxHeight: `${displayRows * rowHeight}px`,
+      overflow: 'hidden auto', // hidden horizontal, auto vertical
+    }
+  }, [displayRows, rowHeight])
 
   // Whether to show behind column (hidden on ledwall, shown on vertical)
   // Note: Penalty column is always shown on both layouts (matches original v1)
@@ -63,7 +79,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   }
 
   return (
-    <div className={containerClasses} ref={containerRef} data-testid="results-list">
+    <div className={containerClasses} ref={containerRef} style={containerStyle} data-testid="results-list">
       {/* Result rows - no header row to match original v1 */}
       {results.map((result) => {
         const isHighlighted = isActive && result.bib === highlightBib
