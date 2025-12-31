@@ -13,6 +13,7 @@ type ScrollPhase =
   | 'PAUSED_AT_BOTTOM'
   | 'RETURNING_TO_TOP'
   | 'HIGHLIGHT_VIEW'
+  | 'SCROLLING_TO_TOP_FOR_COMPETITOR' // New: scroll to top before showing OnCourse
 
 /**
  * Auto-scroll configuration per layout (matching original v1)
@@ -106,6 +107,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Current row index for page-based scrolling
   const currentRowIndexRef = useRef(0)
 
+  // Track previous hasActiveCompetitor state for transition detection
+  const prevHasActiveCompetitorRef = useRef(false)
+
   // Get highlight state - auto-scroll stops during highlight
   const { isActive: isHighlightActive, highlightBib } = useHighlight()
 
@@ -167,6 +171,26 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   }, [highlightBib])
 
   /**
+   * Handle competitor appearing on course during scroll
+   * When a competitor arrives on ledwall while scrolling, scroll to top first
+   */
+  useEffect(() => {
+    const wasActive = prevHasActiveCompetitorRef.current
+    prevHasActiveCompetitorRef.current = hasActiveCompetitor
+
+    // Competitor just appeared and we were scrolling (not idle)
+    if (hasActiveCompetitor && !wasActive) {
+      // Only trigger scroll-to-top if we're in an active scrolling phase
+      if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
+        // Check if we're not already at top
+        if (containerRef.current && containerRef.current.scrollTop > 0) {
+          setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
+        }
+      }
+    }
+  }, [hasActiveCompetitor, phase])
+
+  /**
    * Handle highlight - scroll to highlighted row
    * Only scroll when the highlighted result actually exists in results array.
    * This ensures we wait for the result to arrive before scrolling.
@@ -222,6 +246,18 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    * Main auto-scroll state machine
    */
   useEffect(() => {
+    // Special handling for SCROLLING_TO_TOP_FOR_COMPETITOR phase
+    // This phase runs even when hasActiveCompetitor is true (shouldScroll is false)
+    if (phase === 'SCROLLING_TO_TOP_FOR_COMPETITOR') {
+      scrollToTop()
+      currentRowIndexRef.current = 0
+      // After scrolling to top, transition to IDLE
+      const timeoutId = setTimeout(() => {
+        setPhase('IDLE')
+      }, 500) // Wait for scroll animation
+      return () => clearTimeout(timeoutId)
+    }
+
     // Don't run if disabled or highlight active
     if (!shouldScroll) {
       if (phase !== 'HIGHLIGHT_VIEW' && phase !== 'IDLE') {
@@ -329,6 +365,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       case 'HIGHLIGHT_VIEW':
         // Handled separately
         break
+
+      case 'SCROLLING_TO_TOP_FOR_COMPETITOR':
+        // Handled above, before shouldScroll check
+        break
     }
 
     return () => {
@@ -336,7 +376,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop])
 
   return {
     phase,

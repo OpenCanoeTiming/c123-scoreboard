@@ -151,6 +151,13 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
  - [x] ledwall se zapnutým displayRows nesrolluje vůbec nikdy :(
    - **Oprava:** (viz výše) ResultsList kontejner má fixní výšku při displayRows
 
+ - [x] ledwall: když ledwall scrolluje (tedy neni závodník na trati) a přiběhne nový závodník na trať, tak se musí před (korektním) zastavením scrollování odjet úplně nahou, aby byl vidět TOP
+   - **Oprava:** Přidána nová fáze `SCROLLING_TO_TOP_FOR_COMPETITOR` do useAutoScroll. Když přijde závodník na trať během scrollování, nejprve se odscrolluje nahoru a teprve poté se zastaví scroll.
+ - [ ] když jsou dva závodníci na trati, tak STále!!!! problikávají oba v oncourse, tohle se ti nedaří opravit, soustřeď se na to, udělej to pořádně. 
+ - [ ] mysli i na situaci, kdy na trati jsou závodníci ale nejedou, pak nemají být vidět nikdy a vůbec
+ - [ ] scrollování po stránkách ještě není ideální, na vertical např. v situaci, kdy při počátečním zobrazení končí seznam 22. pozicí, tak po prvním scrollu je nahoře 25., tedy scrolluje moc (zkoušel jsem i na jiných rozlišeních a vypadá to že čím větší rozlišení tím víc přescrolluje. na ledwall je problém opačný, na 384x768 (stejně i při 576x960 a displayrows=6) by to mohlo scrollovat o jeden řádek výsledků víc.
+ - [ ] stále nefunguje správně highlight při dojetí, protože výsledky nascrollují a provede se highlight, když se závodníkovi zastaví čas, ne když má ve výsledcích svůj výsledek. Tady budeš asi muset naplánovat sem do checklistu pár podrobnějších kroků na analýzu stiuace třeba z nahraných dat a nějak líp to načasovat. Mysli na to, jaký je rozdíl mezi rozhraním CLI a C123, musí se to chovat stejně i bez "cukru". Možná tě mate to, že při druhé jízdě, kdy to testuji, už je závodník ve výsledcích s hodnotou první jízdy. My ho chceme ale vysvítit až když tam má výsledek (i) z druhé jízdy. (Při první jízdě samozřejmě ve chvíli, kdy se objeví ve výsledcích s výsledkem první jízdy.)
+
 ## Post-implementace (po release)
 
 - [x] C123Provider - přímé TCP připojení (vyžaduje WebSocket proxy)
