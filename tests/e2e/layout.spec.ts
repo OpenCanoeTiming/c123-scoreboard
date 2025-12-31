@@ -68,12 +68,14 @@ for (const config of layoutConfigs) {
   test.describe(`Layout: ${config.name}`, () => {
     test('displays layout with correct components', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
-      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      // Need more messages for competitor to have dtStart (starts around message 190)
+      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
       await waitForDataLoad(page)
 
       // Main components should be visible
       await expect(page.getByTestId('topbar')).toBeVisible()
       await expect(page.getByTestId('title')).toBeVisible()
+      // oncourse is only visible when competitor has dtStart (actively racing)
       await expect(page.getByTestId('oncourse')).toBeVisible()
       await expect(page.getByTestId('results-list')).toBeVisible()
 
@@ -105,7 +107,8 @@ for (const config of layoutConfigs) {
 
     test('screenshot for reference', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
-      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      // Need more messages for competitor to have dtStart (starts around message 190)
+      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
       await waitForDataLoad(page)
       await page.waitForTimeout(1000)
 
@@ -254,7 +257,8 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
     const viewportWidth = 1920
     const viewportHeight = 1080
     await page.setViewportSize({ width: viewportWidth, height: viewportHeight })
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    // Need more messages for competitor to have dtStart (starts around message 190)
+    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that layout fills viewport height
@@ -312,7 +316,8 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('screenshot with displayRows=5 on 1920x1080', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    // Need more messages for competitor to have dtStart (starts around message 190)
+    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
     await waitForDataLoad(page)
     await page.waitForTimeout(1000)
 

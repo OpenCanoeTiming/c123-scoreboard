@@ -57,6 +57,12 @@ export function CurrentCompetitor({
     return null
   }
 
+  // Don't show competitor who hasn't started yet (unless departing)
+  // Competitors with dtStart=null and no valid time shouldn't be displayed
+  if (!isDeparting && !competitor.dtStart) {
+    return null
+  }
+
   // Container classes
   const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}${isDeparting ? ` ${styles.departing}` : ''}`
 

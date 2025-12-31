@@ -153,8 +153,10 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
  - [x] ledwall: když ledwall scrolluje (tedy neni závodník na trati) a přiběhne nový závodník na trať, tak se musí před (korektním) zastavením scrollování odjet úplně nahou, aby byl vidět TOP
    - **Oprava:** Přidána nová fáze `SCROLLING_TO_TOP_FOR_COMPETITOR` do useAutoScroll. Když přijde závodník na trať během scrollování, nejprve se odscrolluje nahoru a teprve poté se zastaví scroll.
- - [ ] když jsou dva závodníci na trati, tak STále!!!! problikávají oba v oncourse, tohle se ti nedaří opravit, soustřeď se na to, udělej to pořádně. 
- - [ ] mysli i na situaci, kdy na trati jsou závodníci ale nejedou, pak nemají být vidět nikdy a vůbec
+ - [x] když jsou dva závodníci na trati, tak STále!!!! problikávají oba v oncourse, tohle se ti nedaří opravit, soustřeď se na to, udělej to pořádně.
+   - **Oprava:** V reduceru SET_ON_COURSE se nyní zachovává dtStart a dtFinish z oncourse zprávy i při aktualizaci z comp zprávy (která tyto hodnoty neobsahuje). Takto se neztratí informace o tom, který závodník vyrazil dříve.
+ - [x] mysli i na situaci, kdy na trati jsou závodníci ale nejedou, pak nemají být vidět nikdy a vůbec
+   - **Oprava:** Přidána kontrola `dtStart` v CurrentCompetitor a OnCourseDisplay. Závodníci bez `dtStart` (nevyrazili na trať) se nezobrazují.
  - [ ] scrollování po stránkách ještě není ideální, na vertical např. v situaci, kdy při počátečním zobrazení končí seznam 22. pozicí, tak po prvním scrollu je nahoře 25., tedy scrolluje moc (zkoušel jsem i na jiných rozlišeních a vypadá to že čím větší rozlišení tím víc přescrolluje. na ledwall je problém opačný, na 384x768 (stejně i při 576x960 a displayrows=6) by to mohlo scrollovat o jeden řádek výsledků víc.
  - [ ] stále nefunguje správně highlight při dojetí, protože výsledky nascrollují a provede se highlight, když se závodníkovi zastaví čas, ne když má ve výsledcích svůj výsledek. Tady budeš asi muset naplánovat sem do checklistu pár podrobnějších kroků na analýzu stiuace třeba z nahraných dat a nějak líp to načasovat. Mysli na to, jaký je rozdíl mezi rozhraním CLI a C123, musí se to chovat stejně i bez "cukru". Možná tě mate to, že při druhé jízdě, kdy to testuji, už je závodník ve výsledcích s hodnotou první jízdy. My ho chceme ale vysvítit až když tam má výsledek (i) z druhé jízdy. (Při první jízdě samozřejmě ve chvíli, kdy se objeví ve výsledcích s výsledkem první jízdy.)
 

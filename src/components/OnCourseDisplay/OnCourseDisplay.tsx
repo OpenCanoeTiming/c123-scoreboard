@@ -21,9 +21,14 @@ interface OnCourseDisplayProps {
 const getGateClass = createGateClassGetter(styles)
 
 /**
- * Filter out competitors with zero/invalid time
+ * Check if competitor is actively racing (has started).
+ * Filters out competitors who are in the oncourse list but haven't started yet.
  */
-function hasValidTime(competitor: OnCourseCompetitor): boolean {
+function isActivelyRacing(competitor: OnCourseCompetitor): boolean {
+  // Must have a start time to be considered actively racing
+  if (!competitor.dtStart) return false
+
+  // Also check for valid running time
   const time = competitor.total || competitor.time
   if (!time) return false
   if (time === '0:00.00' || time === '0.00' || time === '0') return false
@@ -67,8 +72,8 @@ export function OnCourseDisplay({
     return competitors.filter((competitor) => {
       // Exclude the current competitor (shown separately)
       if (excludeBib && competitor.bib === excludeBib) return false
-      // Must have valid time
-      return hasValidTime(competitor)
+      // Must be actively racing (has started and has valid time)
+      return isActivelyRacing(competitor)
     })
   }, [competitors, excludeBib])
 

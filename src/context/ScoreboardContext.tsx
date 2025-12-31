@@ -187,9 +187,15 @@ function scoreboardReducer(
         // comp message - update existing competitor in onCourse list or add if not present
         const existingIndex = state.onCourse.findIndex(c => c.bib === action.current!.bib)
         if (existingIndex >= 0) {
-          // Update existing competitor's data
+          // Update existing competitor's data, preserving dtStart/dtFinish from oncourse
+          // (comp messages don't include these fields but oncourse messages do)
+          const existing = state.onCourse[existingIndex]
           newOnCourse = [...state.onCourse]
-          newOnCourse[existingIndex] = action.current
+          newOnCourse[existingIndex] = {
+            ...action.current,
+            dtStart: action.current.dtStart || existing.dtStart,
+            dtFinish: action.current.dtFinish || existing.dtFinish,
+          }
         } else {
           // New competitor - add to list
           newOnCourse = [...state.onCourse, action.current]

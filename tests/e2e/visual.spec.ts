@@ -49,6 +49,11 @@ test.describe('Vertical Layout', () => {
   })
 
   test('oncourse renders correctly', async ({ page }) => {
+    // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
+    await page.goto('/?type=vertical&speed=100&pauseAfter=250&disableScroll=true')
+    await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
+    await page.waitForTimeout(1000)
+
     const oncourse = page.getByTestId('oncourse')
     await expect(oncourse).toBeVisible()
     await expect(oncourse).toHaveScreenshot('vertical-oncourse.png')
@@ -105,6 +110,11 @@ test.describe('Ledwall Layout', () => {
   })
 
   test('oncourse renders correctly', async ({ page }) => {
+    // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
+    await page.goto('/?type=ledwall&speed=100&pauseAfter=250&disableScroll=true')
+    await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
+    await page.waitForTimeout(1000)
+
     const oncourse = page.getByTestId('oncourse')
     await expect(oncourse).toBeVisible()
     await expect(oncourse).toHaveScreenshot('ledwall-oncourse.png')

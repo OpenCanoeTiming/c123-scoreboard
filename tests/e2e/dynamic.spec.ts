@@ -68,7 +68,8 @@ test.describe('Highlight Behavior', () => {
 
 test.describe('Current Competitor', () => {
   test('shows current competitor data', async ({ page }) => {
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50')
+    // Need more messages for competitor to have dtStart (starts around message 190)
+    await page.goto('/?type=vertical&speed=100&pauseAfter=250')
 
     await page.waitForLoadState('domcontentloaded')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
@@ -84,7 +85,8 @@ test.describe('Current Competitor', () => {
   })
 
   test('running indicator pulses for active competitor', async ({ page }) => {
-    await page.goto('/?type=vertical&speed=100&pauseAfter=30')
+    // Need more messages for competitor to have dtStart (starts around message 190)
+    await page.goto('/?type=vertical&speed=100&pauseAfter=250')
 
     await page.waitForLoadState('domcontentloaded')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
