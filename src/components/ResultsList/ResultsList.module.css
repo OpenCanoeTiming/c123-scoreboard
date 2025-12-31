@@ -152,10 +152,10 @@
 }
 
 /* Ledwall layout - adjust grid for hidden behind column */
-/* Ledwall grid: 80px 40px 1fr 40px 130px (5 columns - behind hidden) */
-/* Time column wider (130px vs 100px) to fit 3-digit seconds like 120.45 at 36px font */
+/* Ledwall grid: 80px 40px 1fr 40px 150px (5 columns - behind hidden) */
+/* Time column 150px to fit 3-digit seconds like 353.91 at 36px font with padding */
 .row.ledwall {
-  grid-template-columns: 80px 40px 1fr 40px 130px;
+  grid-template-columns: 80px 40px 1fr 40px 150px;
   gap: var(--spacing-md);  /* Larger gap for ledwall visibility */
   height: 56px;
 }
@@ -165,6 +165,11 @@
 .row.ledwall .name,
 .row.ledwall .time {
   font-size: 36px;
+}
+
+/* Ledwall time - reduced padding to fit longer times (e.g., 353.91) */
+.row.ledwall .time {
+  padding: 0 8px;
 }
 
 /* Bib smaller to fit in box - matches original v1 */

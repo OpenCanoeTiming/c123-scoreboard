@@ -220,6 +220,114 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - penal
 </div>
 `;
 
+exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall highlighted 1`] = `
+<div>
+  <div
+    class="_row_ec9a59 _highlighted_ec9a59 _ledwall_ec9a59"
+    data-bib="42"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+      .
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      0
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      95.32
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall layout 1`] = `
+<div>
+  <div
+    class="_row_ec9a59 _ledwall_ec9a59"
+    data-bib="42"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+      .
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyClear_ec9a59"
+    >
+      0
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      95.32
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall with long time (>100s) 1`] = `
+<div>
+  <div
+    class="_row_ec9a59 _ledwall_ec9a59"
+    data-bib="42"
+  >
+    <div
+      class="_rank_ec9a59"
+    >
+      1
+      .
+    </div>
+    <div
+      class="_bib_ec9a59"
+    >
+      42
+    </div>
+    <div
+      class="_name_ec9a59"
+    >
+      NOVAK Jan
+    </div>
+    <div
+      class="_penalty_ec9a59 _penaltyMiss_ec9a59"
+    >
+      206
+    </div>
+    <div
+      class="_time_ec9a59"
+    >
+      353.91
+    </div>
+  </div>
+</div>
+`;
+
 exports[`ResultRow snapshots > name formatting > should match snapshot - long name 1`] = `
 <div>
   <div

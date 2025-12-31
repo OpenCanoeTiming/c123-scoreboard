@@ -123,4 +123,33 @@ describe('ResultRow snapshots', () => {
       expect(container).toMatchSnapshot()
     })
   })
+
+  describe('ledwall mode', () => {
+    it('should match snapshot - ledwall layout', () => {
+      const { container } = render(
+        <ResultRow result={baseResult} layoutMode="ledwall" showBehind={false} />
+      )
+      expect(container).toMatchSnapshot()
+    })
+
+    it('should match snapshot - ledwall with long time (>100s)', () => {
+      const result: Result = {
+        ...baseResult,
+        pen: 206,
+        total: '353.91',
+        behind: '+272.19',
+      }
+      const { container } = render(
+        <ResultRow result={result} layoutMode="ledwall" showBehind={false} />
+      )
+      expect(container).toMatchSnapshot()
+    })
+
+    it('should match snapshot - ledwall highlighted', () => {
+      const { container } = render(
+        <ResultRow result={baseResult} layoutMode="ledwall" showBehind={false} isHighlighted={true} />
+      )
+      expect(container).toMatchSnapshot()
+    })
+  })
 })
