@@ -164,9 +164,12 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
 
  - [x] results a current musí být zapnuté taky vždy, nezáviset na zapínání z CLI
    - **Oprava:** V `SET_VISIBILITY` reduceru se nyní forcují i `displayCurrent`, `displayTop` a `displayOnCourse` na `true`
- - [ ] ledwall: scrollování se zastaví i když je na trati závodník, co zatím nejede (a není tedy vidět na scoreboardu), m2lo by zastavit a6 kdy6 na tabuli skute4n2 n2co jede
- - [ ] ledwall: když se scrollování zastaví s příchdoem závodníka na trať, tak se nenascrolluje nahoru, zůstane to viset tam, kde se to zastavilo. tohle se ti nepovedlo opravit
- - [ ] highlight a nascrollování závodníka se STÁLE provádí moc brzo, nepovedlo se ti to vyřešit ani opravou v2! ultrathink!
+ - [x] ledwall: scrollování se zastaví i když je na trati závodník, co zatím nejede (a není tedy vidět na scoreboardu), mělo by zastavit až když na tabuli skutečně něco jede
+   - **Oprava:** Změněna podmínka `hasActiveCompetitor` na `hasActivelyRunningCompetitor` - nyní se kontroluje `dtStart && !dtFinish`, takže scroll se zastaví pouze když závodník skutečně běží, ne když jen čeká na startu.
+ - [x] ledwall: když se scrollování zastaví s příchodem závodníka na trať, tak se nenascrolluje nahoru, zůstane to viset tam, kde se to zastavilo
+   - **Oprava:** Logika v `useAutoScroll` při detekci přechodu `hasActivelyRunningCompetitor` nyní správně přepne do fáze `SCROLLING_TO_TOP_FOR_COMPETITOR` nebo přímo do `IDLE` (pokud už je nahoře).
+ - [x] highlight a nascrollování závodníka se STÁLE provádí moc brzo
+   - **Oprava (v3):** Kompletně přepracován mechanismus highlightu. Místo okamžitého nastavení highlightu při dtFinish přechodu se nyní nastaví pouze `pendingHighlightBib` a `pendingHighlightTotal`. Skutečný highlight se spustí teprve až `SET_RESULTS` přijme výsledky obsahující závodníka s odpovídajícím `total`. Tím je garantováno, že highlight/scroll proběhne ve správný okamžik - až když je výsledek skutečně v datech.
 
 ## Post-implementace (po release)
 

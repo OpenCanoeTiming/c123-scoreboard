@@ -107,8 +107,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Current row index for page-based scrolling
   const currentRowIndexRef = useRef(0)
 
-  // Track previous hasActiveCompetitor state for transition detection
-  const prevHasActiveCompetitorRef = useRef(false)
+  // Track previous hasActivelyRunningCompetitor state for transition detection
+  const prevHasActivelyRunningRef = useRef(false)
 
   // Get highlight state - auto-scroll stops during highlight
   const { isActive: isHighlightActive, highlightBib } = useHighlight()
@@ -116,9 +116,15 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Get layout for config
   const { layoutMode, rowHeight } = useLayout()
 
-  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is on course
-  const { currentCompetitor, onCourse } = useScoreboard()
-  const hasActiveCompetitor = layoutMode === 'ledwall' && (currentCompetitor !== null || onCourse.length > 0)
+  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is actively running
+  // A competitor is "actively running" if they have dtStart set (actually started)
+  // This prevents stopping scroll for competitors who are just waiting at start
+  const { onCourse } = useScoreboard()
+
+  // Check if any competitor is actively running (has dtStart but no dtFinish)
+  const hasActivelyRunningCompetitor = layoutMode === 'ledwall' && onCourse.some(
+    c => c.dtStart && !c.dtFinish
+  )
 
   // Track if we've already scrolled to the highlighted row
   const hasScrolledToHighlight = useRef(false)
@@ -161,9 +167,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
   /**
    * Determine if scrolling should be active
-   * Original v1: on ledwall, scroll pauses when competitor is on course
+   * Original v1: on ledwall, scroll pauses when competitor is actively running
+   * (not just waiting at start - must have dtStart set)
    */
-  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActiveCompetitor
+  const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActivelyRunningCompetitor
 
   // Reset scroll tracking when highlight bib changes
   useEffect(() => {
@@ -171,24 +178,28 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   }, [highlightBib])
 
   /**
-   * Handle competitor appearing on course during scroll
-   * When a competitor arrives on ledwall while scrolling, scroll to top first
+   * Handle competitor starting to run during scroll
+   * When a competitor starts running on ledwall while scrolling, scroll to top first
+   * Note: We only react when competitor actually STARTS (dtStart becomes set)
    */
   useEffect(() => {
-    const wasActive = prevHasActiveCompetitorRef.current
-    prevHasActiveCompetitorRef.current = hasActiveCompetitor
+    const wasActivelyRunning = prevHasActivelyRunningRef.current
+    prevHasActivelyRunningRef.current = hasActivelyRunningCompetitor
 
-    // Competitor just appeared and we were scrolling (not idle)
-    if (hasActiveCompetitor && !wasActive) {
+    // Competitor just started running and we were scrolling (not idle)
+    if (hasActivelyRunningCompetitor && !wasActivelyRunning) {
       // Only trigger scroll-to-top if we're in an active scrolling phase
       if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
         // Check if we're not already at top
         if (containerRef.current && containerRef.current.scrollTop > 0) {
           setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
+        } else {
+          // Already at top, just go to IDLE
+          setPhase('IDLE')
         }
       }
     }
-  }, [hasActiveCompetitor, phase])
+  }, [hasActivelyRunningCompetitor, phase])
 
   /**
    * Handle highlight - scroll to highlighted row

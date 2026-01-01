@@ -51,6 +51,11 @@ export interface ScoreboardState {
   departingCompetitor: OnCourseCompetitor | null
   departedAt: number | null
 
+  // Pending highlight - bib that just finished but waiting for results to update
+  // The actual highlight only triggers when results contain updated data for this bib
+  pendingHighlightBib: string | null
+  pendingHighlightTotal: string | null // The total time when they finished (from oncourse)
+
   // Visibility
   visibility: VisibilityState
 
@@ -113,6 +118,8 @@ const initialState: ScoreboardState = {
   onCourse: [],
   departingCompetitor: null,
   departedAt: null,
+  pendingHighlightBib: null,
+  pendingHighlightTotal: null,
   visibility: defaultVisibility,
   title: '',
   infoText: '',
@@ -148,17 +155,34 @@ function scoreboardReducer(
       return { ...state, providerErrors: [] }
 
     case 'SET_RESULTS': {
-      // Note: We intentionally ignore action.highlightBib from CLI.
-      // Highlight is triggered by dtFinish transition in SET_ON_COURSE instead.
-      // This makes the system protocol-agnostic (works with CLI, C123, Replay).
-      // The dtFinish detection in oncourse data is the source of truth for finish timing.
-      return {
+      // Check if we have a pending highlight that matches a result in the new results
+      // The highlight only triggers when the results actually contain the competitor's new total
+      const newState: ScoreboardState = {
         ...state,
         results: action.results,
         raceName: action.raceName,
         raceStatus: action.raceStatus,
         initialDataReceived: true,
       }
+
+      // If we have a pending highlight, check if results now contain the updated total
+      if (state.pendingHighlightBib && state.pendingHighlightTotal) {
+        const result = action.results.find(r => r.bib.trim() === state.pendingHighlightBib)
+        if (result && result.total === state.pendingHighlightTotal) {
+          // Results now contain the correct total - trigger actual highlight
+          newState.highlightBib = state.pendingHighlightBib
+          newState.highlightTimestamp = Date.now()
+          newState.pendingHighlightBib = null
+          newState.pendingHighlightTotal = null
+          // Clear departing if this was the departing competitor
+          if (state.departingCompetitor?.bib === state.pendingHighlightBib) {
+            newState.departingCompetitor = null
+            newState.departedAt = null
+          }
+        }
+      }
+
+      return newState
     }
 
     case 'SET_ON_COURSE': {
@@ -223,19 +247,20 @@ function scoreboardReducer(
       // Detect finish by dtFinish transition (null -> timestamp)
       // This works independently of CLI HighlightBib and is protocol-agnostic
       // (works with CLI, C123, and Replay providers)
+      //
+      // IMPORTANT: We don't trigger highlight immediately. Instead, we store
+      // the pending highlight info and wait for SET_RESULTS to contain the
+      // actual updated result for this competitor. This ensures the scroll
+      // and highlight happen at the right time.
       for (const curr of newOnCourse) {
         const prevComp = state.onCourse.find(c => c.bib === curr.bib)
         // Only trigger if we've seen this competitor before without dtFinish
         // This prevents false highlights on reconnect or initial load
-        if (prevComp && !prevComp.dtFinish && curr.dtFinish) {
-          // Competitor just finished - trigger highlight
-          newState.highlightBib = curr.bib
-          newState.highlightTimestamp = Date.now()
-          // Clear departing if this was the departing competitor
-          if (state.departingCompetitor?.bib === curr.bib) {
-            newState.departingCompetitor = null
-            newState.departedAt = null
-          }
+        if (prevComp && !prevComp.dtFinish && curr.dtFinish && curr.total) {
+          // Competitor just finished - set pending highlight
+          // Actual highlight will trigger in SET_RESULTS when results contain this total
+          newState.pendingHighlightBib = curr.bib
+          newState.pendingHighlightTotal = curr.total
           break // Only one competitor can finish at a time
         }
       }

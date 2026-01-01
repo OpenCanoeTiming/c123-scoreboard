@@ -198,13 +198,19 @@ describe('ScoreboardContext', () => {
   })
 
   describe('highlight activation via dtFinish transition', () => {
-    it('activates highlight when dtFinish transitions from null to timestamp', () => {
+    /**
+     * Note: After the fix for premature highlights, the highlight is now triggered
+     * in two steps:
+     * 1. SET_ON_COURSE with dtFinish transition sets pendingHighlightBib + pendingHighlightTotal
+     * 2. SET_RESULTS with matching total triggers the actual highlightBib
+     */
+    it('activates highlight when dtFinish transitions and results arrive with matching total', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor = createOnCourseCompetitor({ bib: '42', dtFinish: null })
+      const competitor = createOnCourseCompetitor({ bib: '42', total: '92.50', dtStart: '2025-12-28T10:00:00', dtFinish: null })
 
       // Set competitor on course (running)
       act(() => {
@@ -217,7 +223,7 @@ describe('ScoreboardContext', () => {
 
       expect(result.current.highlightBib).toBeNull()
 
-      // Competitor finishes - dtFinish transitions to timestamp
+      // Competitor finishes - dtFinish transitions to timestamp (sets pending highlight)
       act(() => {
         mockProvider.triggerOnCourse({
           current: { ...competitor, dtFinish: '2025-12-28T10:01:30', time: '90.50' },
@@ -226,7 +232,20 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Highlight SHOULD be active
+      // Still null - waiting for results
+      expect(result.current.highlightBib).toBeNull()
+
+      // Results arrive - triggers actual highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42', total: '92.50' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+        })
+      })
+
+      // Highlight SHOULD be active now
       expect(result.current.highlightBib).toBe('42')
       expect(result.current.highlightTimestamp).not.toBeNull()
     })
@@ -283,8 +302,8 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor42 = createOnCourseCompetitor({ bib: '42', dtStart: '2025-12-28T10:00:00', dtFinish: null })
-      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other', dtStart: '2025-12-28T10:01:00', dtFinish: null })
+      const competitor42 = createOnCourseCompetitor({ bib: '42', total: '92.50', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', total: '93.50', name: 'Other', dtStart: '2025-12-28T10:01:00', dtFinish: null })
 
       // Two competitors on course
       act(() => {
@@ -295,12 +314,22 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Competitor 42 finishes while 99 is still on course
+      // Competitor 42 finishes while 99 is still on course (sets pending highlight)
       act(() => {
         mockProvider.triggerOnCourse({
           current: { ...competitor42, dtFinish: '2025-12-28T10:01:30' },
           onCourse: [{ ...competitor42, dtFinish: '2025-12-28T10:01:30' }, competitor99],
           updateOnCourse: true,
+        })
+      })
+
+      // Results arrive - triggers actual highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42', total: '92.50' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
@@ -415,8 +444,8 @@ describe('ScoreboardContext', () => {
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
       // Two competitors on course - 42 started earlier
-      const competitor42 = createOnCourseCompetitor({ bib: '42', name: 'Test Athlete', dtStart: '2025-12-28T10:00:00', dtFinish: null })
-      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Other Athlete', dtStart: '2025-12-28T10:01:00', dtFinish: null })
+      const competitor42 = createOnCourseCompetitor({ bib: '42', total: '92.50', name: 'Test Athlete', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', total: '93.50', name: 'Other Athlete', dtStart: '2025-12-28T10:01:00', dtFinish: null })
 
       // Set both competitors on course
       act(() => {
@@ -429,13 +458,22 @@ describe('ScoreboardContext', () => {
 
       expect(result.current.currentCompetitor?.bib).toBe('42')
 
-      // Competitor 42 finishes - dtFinish transitions to timestamp
-      // This triggers highlight and clears any departing state for that bib
+      // Competitor 42 finishes - dtFinish transitions to timestamp (sets pending highlight)
       act(() => {
         mockProvider.triggerOnCourse({
           current: competitor42,
           onCourse: [{ ...competitor42, dtFinish: '2025-12-28T10:01:30' }, competitor99],
           updateOnCourse: true,
+        })
+      })
+
+      // Results arrive - triggers actual highlight and clears departing
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42', total: '92.50' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
@@ -454,8 +492,8 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const competitor = createOnCourseCompetitor({ bib: '42', dtFinish: null })
-      const competitor99 = createOnCourseCompetitor({ bib: '99', name: 'Current', dtStart: '2025-12-28T10:01:00' })
+      const competitor = createOnCourseCompetitor({ bib: '42', total: '92.50', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const competitor99 = createOnCourseCompetitor({ bib: '99', total: '93.50', name: 'Current', dtStart: '2025-12-28T10:01:00' })
 
       // Populate state with data - first set running, then finish
       act(() => {
@@ -466,6 +504,7 @@ describe('ScoreboardContext', () => {
         })
       })
 
+      // Competitor finishes (sets pending highlight)
       act(() => {
         mockProvider.triggerOnCourse({
           current: { ...competitor, dtFinish: '2025-12-28T10:01:30' },
@@ -474,13 +513,18 @@ describe('ScoreboardContext', () => {
         })
       })
 
+      // Results arrive - triggers actual highlight
       act(() => {
         mockProvider.triggerResults({
-          results: [createResult()],
+          results: [createResult({ bib: '42', total: '92.50' })],
           raceName: 'Test Race',
           raceStatus: 'Running',
           highlightBib: null,
         })
+      })
+
+      // Set another competitor
+      act(() => {
         mockProvider.triggerOnCourse({
           current: competitor99,
           onCourse: [competitor99],
@@ -632,15 +676,23 @@ describe('ScoreboardContext', () => {
   })
 
   describe('rapid highlight changes via dtFinish (edge cases)', () => {
+    /**
+     * Note: After the fix for premature highlights, the highlight is now triggered
+     * in two steps:
+     * 1. SET_ON_COURSE with dtFinish transition sets pendingHighlightBib + pendingHighlightTotal
+     * 2. SET_RESULTS with matching total triggers the actual highlightBib
+     *
+     * Tests must send both to trigger a highlight.
+     */
     it('handles multiple competitors finishing rapidly', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const comp1 = createOnCourseCompetitor({ bib: '1', dtStart: '2025-12-28T10:00:00', dtFinish: null })
-      const comp2 = createOnCourseCompetitor({ bib: '2', dtStart: '2025-12-28T10:00:30', dtFinish: null })
-      const comp3 = createOnCourseCompetitor({ bib: '3', dtStart: '2025-12-28T10:01:00', dtFinish: null })
+      const comp1 = createOnCourseCompetitor({ bib: '1', total: '90.00', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const comp2 = createOnCourseCompetitor({ bib: '2', total: '91.00', dtStart: '2025-12-28T10:00:30', dtFinish: null })
+      const comp3 = createOnCourseCompetitor({ bib: '3', total: '92.00', dtStart: '2025-12-28T10:01:00', dtFinish: null })
 
       // All three on course
       act(() => {
@@ -651,12 +703,22 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Competitor 1 finishes
+      // Competitor 1 finishes (dtFinish transition sets pending highlight)
       act(() => {
         mockProvider.triggerOnCourse({
           current: comp1,
           onCourse: [{ ...comp1, dtFinish: '2025-12-28T10:01:30' }, comp2, comp3],
           updateOnCourse: true,
+        })
+      })
+
+      // Results arrive with matching total - this triggers actual highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '1', total: '90.00' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
@@ -672,6 +734,15 @@ describe('ScoreboardContext', () => {
           current: comp2,
           onCourse: [{ ...comp1, dtFinish: '2025-12-28T10:01:30' }, { ...comp2, dtFinish: '2025-12-28T10:01:31' }, comp3],
           updateOnCourse: true,
+        })
+      })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '1', total: '90.00' }), createResult({ bib: '2', total: '91.00' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
@@ -694,6 +765,19 @@ describe('ScoreboardContext', () => {
         })
       })
 
+      act(() => {
+        mockProvider.triggerResults({
+          results: [
+            createResult({ bib: '1', total: '90.00' }),
+            createResult({ bib: '2', total: '91.00' }),
+            createResult({ bib: '3', total: '92.00' }),
+          ],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+        })
+      })
+
       expect(result.current.highlightBib).toBe('3')
     })
 
@@ -703,8 +787,8 @@ describe('ScoreboardContext', () => {
 
       const { result } = renderHook(() => useScoreboard(), { wrapper })
 
-      const comp42 = createOnCourseCompetitor({ bib: '42', dtStart: '2025-12-28T10:00:00', dtFinish: null })
-      const comp99 = createOnCourseCompetitor({ bib: '99', dtStart: '2025-12-28T10:00:30', dtFinish: null })
+      const comp42 = createOnCourseCompetitor({ bib: '42', total: '92.50', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+      const comp99 = createOnCourseCompetitor({ bib: '99', total: '93.50', dtStart: '2025-12-28T10:00:30', dtFinish: null })
 
       // Both on course
       act(() => {
@@ -715,12 +799,22 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Competitor 42 finishes
+      // Competitor 42 finishes (dtFinish transition)
       act(() => {
         mockProvider.triggerOnCourse({
           current: comp42,
           onCourse: [{ ...comp42, dtFinish: '2025-12-28T10:01:30' }, comp99],
           updateOnCourse: true,
+        })
+      })
+
+      // Results arrive - triggers actual highlight
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42', total: '92.50' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
@@ -737,6 +831,18 @@ describe('ScoreboardContext', () => {
           current: comp99,
           onCourse: [{ ...comp42, dtFinish: '2025-12-28T10:01:30' }, { ...comp99, dtFinish: '2025-12-28T10:01:31' }],
           updateOnCourse: true,
+        })
+      })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [
+            createResult({ bib: '42', total: '92.50' }),
+            createResult({ bib: '99', total: '93.50' }),
+          ],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
         })
       })
 
