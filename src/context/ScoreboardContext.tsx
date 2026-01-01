@@ -253,6 +253,9 @@ function scoreboardReducer(
           displayTopBar: true, // logos always visible
           displayTitle: true, // title always visible
           displayFooter: true, // footer always visible
+          displayCurrent: true, // current competitor always visible
+          displayTop: true, // results always visible
+          displayOnCourse: true, // on-course list always visible
         },
       }
 

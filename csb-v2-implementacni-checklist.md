@@ -162,6 +162,12 @@ CSS `transform: scale()` automaticky škáluje všechny komponenty proporčně:
  - [x] stále nefunguje správně highlight při dojetí, protože výsledky nascrollují a provede se highlight, když se závodníkovi zastaví čas, ne když má ve výsledcích svůj výsledek. Tady budeš asi muset naplánovat sem do checklistu pár podrobnějších kroků na analýzu stiuace třeba z nahraných dat a nějak líp to načasovat. Mysli na to, jaký je rozdíl mezi rozhraním CLI a C123, musí se to chovat stejně i bez "cukru". Možná tě mate to, že při druhé jízdě, kdy to testuji, už je závodník ve výsledcích s hodnotou první jízdy. My ho chceme ale vysvítit až když tam má výsledek (i) z druhé jízdy. (Při první jízdě samozřejmě ve chvíli, kdy se objeví ve výsledcích s výsledkem první jízdy.)
    - **Oprava (v2):** Highlight je nyní detekován pomocí přechodu `dtFinish` z `null` na timestamp v `oncourse` datech. Toto je **protokolově nezávislé řešení** - funguje s CLI, C123 i Replay providerem. Timeline z dat: `ts=62847` oncourse s `dtFinish=null` (závodník běží), `ts=63213` oncourse s `dtFinish="..."` (závodník dojel) → detekce přechodu spustí highlight. HighlightBib z CLI `top` zprávy je nyní ignorován - spoléháme výhradně na dtFinish.
 
+ - [x] results a current musí být zapnuté taky vždy, nezáviset na zapínání z CLI
+   - **Oprava:** V `SET_VISIBILITY` reduceru se nyní forcují i `displayCurrent`, `displayTop` a `displayOnCourse` na `true`
+ - [ ] ledwall: scrollování se zastaví i když je na trati závodník, co zatím nejede (a není tedy vidět na scoreboardu), m2lo by zastavit a6 kdy6 na tabuli skute4n2 n2co jede
+ - [ ] ledwall: když se scrollování zastaví s příchdoem závodníka na trať, tak se nenascrolluje nahoru, zůstane to viset tam, kde se to zastavilo. tohle se ti nepovedlo opravit
+ - [ ] highlight a nascrollování závodníka se STÁLE provádí moc brzo, nepovedlo se ti to vyřešit ani opravou v2! ultrathink!
+
 ## Post-implementace (po release)
 
 - [x] C123Provider - přímé TCP připojení (vyžaduje WebSocket proxy)

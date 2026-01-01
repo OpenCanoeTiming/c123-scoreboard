@@ -568,12 +568,13 @@ describe('ScoreboardContext', () => {
         })
       })
 
+      // All core display flags are always forced to true regardless of CLI
       expect(result.current.visibility.displayCurrent).toBe(true)
-      expect(result.current.visibility.displayTop).toBe(false)
-      // Footer, TopBar, and Title are always forced to true regardless of CLI
+      expect(result.current.visibility.displayTop).toBe(true)
       expect(result.current.visibility.displayFooter).toBe(true)
       expect(result.current.visibility.displayTopBar).toBe(true)
       expect(result.current.visibility.displayTitle).toBe(true)
+      expect(result.current.visibility.displayOnCourse).toBe(true)
     })
   })
 
