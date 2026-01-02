@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { ScoreboardProvider, useScoreboard } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
+import { C123Provider } from '@/providers/C123Provider'
 import type { DataProvider } from '@/providers/types'
 import { useLayout } from '@/hooks'
 import {
@@ -21,9 +22,9 @@ import {
  * Parse URL parameters for app configuration
  *
  * Supported parameters:
- * - source: 'replay' | 'cli' (default: 'replay')
+ * - source: 'replay' | 'cli' | 'c123' (default: 'replay')
  * - speed: number (replay speed multiplier, default: 10)
- * - host: string (CLI server address, default: '192.168.68.108:8081')
+ * - host: string (CLI/C123 server address, default: '192.168.68.108:8081')
  * - loop: 'true' | 'false' (replay loop, default: 'true')
  * - pauseAfter: number (pause playback after N messages, for testing)
  * - disableScroll: 'true' (disable auto-scroll, for screenshots)
@@ -31,7 +32,7 @@ import {
  * - displayRows: number (fixed row count for ledwall scaling, min: 3, max: 20)
  */
 function getUrlParams(): {
-  source: 'replay' | 'cli'
+  source: 'replay' | 'cli' | 'c123'
   speed: number
   host: string
   loop: boolean
@@ -40,7 +41,9 @@ function getUrlParams(): {
 } {
   const params = new URLSearchParams(window.location.search)
 
-  const source = params.get('source') === 'cli' ? 'cli' : 'replay'
+  const sourceParam = params.get('source')
+  const source: 'replay' | 'cli' | 'c123' =
+    sourceParam === 'cli' ? 'cli' : sourceParam === 'c123' ? 'c123' : 'replay'
   const speedParam = params.get('speed')
   const speed = speedParam ? parseFloat(speedParam) : 10.0
   const host = params.get('host') ?? '192.168.68.108:8081'
@@ -137,6 +140,14 @@ function App() {
   const provider = useMemo((): DataProvider => {
     if (urlParams.source === 'cli') {
       return new CLIProvider(urlParams.host, {
+        autoReconnect: true,
+        initialReconnectDelay: 1000,
+        maxReconnectDelay: 30000,
+      })
+    }
+
+    if (urlParams.source === 'c123') {
+      return new C123Provider(urlParams.host, {
         autoReconnect: true,
         initialReconnectDelay: 1000,
         maxReconnectDelay: 30000,

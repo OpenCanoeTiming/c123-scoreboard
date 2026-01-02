@@ -20,8 +20,8 @@
  *   - Supports multiple WebSocket clients
  */
 
-const net = require('net');
-const WebSocket = require('ws');
+import net from 'net';
+import { WebSocketServer, WebSocket } from 'ws';
 
 // Configuration
 const C123_HOST = process.argv[2] || '192.168.68.108';
@@ -36,7 +36,7 @@ let reconnectDelay = 1000;
 const MAX_RECONNECT_DELAY = 30000;
 
 // WebSocket server
-const wss = new WebSocket.Server({ port: WS_PORT });
+const wss = new WebSocketServer({ port: WS_PORT });
 const clients = new Set();
 
 console.log('');
