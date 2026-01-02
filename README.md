@@ -189,6 +189,22 @@ Replays recorded race sessions for development and testing.
 
 Recorded sessions are stored in `public/recordings/`.
 
+#### C123 Server (Recommended)
+
+C123 Server is a smart middleware that replaces `c123-proxy`. It auto-discovers Canoe123 on the network, merges BR1/BR2 results, and provides finish detection for competitor highlighting.
+
+```
+?source=cli&host=localhost:27084
+```
+
+Features over c123-proxy:
+- **Auto-discovery** - No manual IP configuration needed
+- **BR1/BR2 merging** - Combined results with best time calculation
+- **Finish detection** - Automatic competitor highlighting
+- **Admin dashboard** - Monitor connections at http://localhost:8084
+
+See [c123-server/README.md](../c123-server/README.md) for installation and usage.
+
 ## Deployment
 
 ### Web Server
