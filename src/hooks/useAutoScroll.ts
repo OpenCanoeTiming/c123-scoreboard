@@ -177,29 +177,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     hasScrolledToHighlight.current = false
   }, [highlightBib])
 
-  /**
-   * Handle competitor starting to run during scroll
-   * When a competitor starts running on ledwall while scrolling, scroll to top first
-   * Note: We only react when competitor actually STARTS (dtStart becomes set)
-   */
-  useEffect(() => {
-    const wasActivelyRunning = prevHasActivelyRunningRef.current
-    prevHasActivelyRunningRef.current = hasActivelyRunningCompetitor
-
-    // Competitor just started running and we were scrolling (not idle)
-    if (hasActivelyRunningCompetitor && !wasActivelyRunning) {
-      // Only trigger scroll-to-top if we're in an active scrolling phase
-      if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
-        // Check if we're not already at top
-        if (containerRef.current && containerRef.current.scrollTop > 0) {
-          setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
-        } else {
-          // Already at top, just go to IDLE
-          setPhase('IDLE')
-        }
-      }
-    }
-  }, [hasActivelyRunningCompetitor, phase])
+  // Note: Competitor-started-running logic is handled in main state machine effect
+  // to avoid React batching race conditions between multiple effects calling setPhase
 
   /**
    * Handle highlight - scroll to highlighted row
@@ -253,7 +232,11 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    * Main auto-scroll state machine
    */
   useEffect(() => {
-    // Special handling for SCROLLING_TO_TOP_FOR_COMPETITOR phase
+    // Track competitor state transition (must be in this effect to avoid React batching issues)
+    const wasActivelyRunning = prevHasActivelyRunningRef.current
+    prevHasActivelyRunningRef.current = hasActivelyRunningCompetitor
+
+    // Handle SCROLLING_TO_TOP_FOR_COMPETITOR phase
     // This phase runs even when hasActiveCompetitor is true (shouldScroll is false)
     if (phase === 'SCROLLING_TO_TOP_FOR_COMPETITOR') {
       scrollToTop()
@@ -263,6 +246,21 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         setPhase('IDLE')
       }, 500) // Wait for scroll animation
       return () => clearTimeout(timeoutId)
+    }
+
+    // Competitor just started running - scroll to top first if we're mid-scroll
+    // This must be checked BEFORE the shouldScroll check to trigger scroll-to-top
+    if (hasActivelyRunningCompetitor && !wasActivelyRunning) {
+      // Only scroll to top if we were in an active scrolling phase and not already at top
+      if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
+        if (containerRef.current && containerRef.current.scrollTop > 0) {
+          setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
+          return // Don't proceed - next render will handle the scroll-to-top phase
+        }
+      }
+      // Already at top or not scrolling, just go to IDLE
+      setPhase('IDLE')
+      return
     }
 
     // Don't run if disabled or highlight active
@@ -397,7 +395,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor])
 
   return {
     phase,
