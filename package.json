@@ -11,13 +11,16 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "c123-proxy": "node scripts/c123-proxy.js"
+    "c123-proxy": "node scripts/c123-proxy.js",
+    "mock:tcp": "npx tsx scripts/mock-c123-tcp.ts",
+    "mock:ws": "npx tsx scripts/mock-cli-ws.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.5.10",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -35,6 +38,8 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.16"
+    "tsx": "^4.19.0",
+    "vitest": "^4.0.16",
+    "ws": "^8.18.0"
   }
 }
