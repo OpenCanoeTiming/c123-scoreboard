@@ -183,7 +183,7 @@ describe('CLI vs C123Server Provider Comparison', () => {
 
     // Wait for C123 server to start and be ready
     // C123 server connects to mock TCP which triggers replay
-    await waitForOutput(c123Server, 'HTTP server', 8000).catch(() => {
+    await waitForOutput(c123Server, 'C123 Server started', 8000).catch(() => {
       // May not see this output, wait a bit anyway
       console.log('C123 Server startup timeout - continuing anyway')
     })

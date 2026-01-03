@@ -128,8 +128,10 @@ class MockC123TcpServer {
     });
 
     // Start replay when first client connects (if waiting)
+    // Add delay to allow C123 server to start and clients to connect to it
     if (this.options.waitForClient && !this.isReplaying) {
-      this.startReplay();
+      console.log('Client connected, waiting 3s before replay to allow downstream connections...');
+      setTimeout(() => this.startReplay(), 3000);
     }
   }
 
@@ -202,14 +204,17 @@ class MockC123TcpServer {
   private sendToClients(msg: RecordedMessage): void {
     if (this.clients.size === 0) return;
 
-    // Extract data string - Canoe123 sends raw XML
+    // Extract data string - Canoe123 sends raw XML followed by pipe delimiter
     const data =
       typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data);
+
+    // C123 protocol uses pipe (|) as message delimiter
+    const dataWithDelimiter = data + '|';
 
     for (const client of this.clients) {
       if (!client.destroyed) {
         try {
-          client.write(data);
+          client.write(dataWithDelimiter);
         } catch (err) {
           console.error('Error sending to client:', err);
         }
