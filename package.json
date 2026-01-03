@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "c123-proxy": "node scripts/c123-proxy.js",
     "mock:tcp": "npx tsx scripts/mock-c123-tcp.ts",
-    "mock:ws": "npx tsx scripts/mock-cli-ws.ts"
+    "mock:ws": "npx tsx scripts/mock-cli-ws.ts",
+    "test:providers": "vitest run src/__tests__/provider-comparison.test.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

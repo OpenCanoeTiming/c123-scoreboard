@@ -167,31 +167,301 @@ async function createProvider(): Promise<DataProvider> {
 - ✅ NOVÝ: `src/providers/utils/c123ServerApi.ts`
 **Commit:** ✅ `feat: add C123 Server mappers and REST API client`
 
-### Blok 3: C123ServerProvider + App.tsx (~60% kontextu)
+### Blok 3: C123ServerProvider + App.tsx (~60% kontextu) ✅ HOTOVO
 **Soubory:**
-- NOVÝ: `src/providers/C123ServerProvider.ts`
-- PŘEPSAT: `src/App.tsx` (nová logika: discovery → C123Server / fallback CLI)
-- SMAZAT: `src/providers/C123Provider.ts`
-- SMAZAT: `scripts/c123-proxy.js`
-**Commit:** `feat: add C123ServerProvider, refactor App.tsx, remove old C123Provider`
+- ✅ NOVÝ: `src/providers/C123ServerProvider.ts`
+- ✅ PŘEPSAT: `src/App.tsx` (nová logika: discovery → C123Server / fallback CLI)
+- ✅ SMAZAT: `src/providers/C123Provider.ts`
+- ✅ SMAZAT: `src/providers/__tests__/C123Provider.test.ts`
+- (scripts/c123-proxy.js neexistoval v V3)
+**Commit:** ✅ `feat: add C123ServerProvider with auto-discovery, replace old C123Provider`
 
-### Blok 4: Manuální testování
+---
+
+## FÁZE TESTOVÁNÍ - AUTOMATICKÉ SROVNÁNÍ CLI vs C123 Server
+
+Cíl: Automaticky ověřit, že scoreboard s C123ServerProvider produkuje **identické výstupy** jako s CLIProvider na stejné sadě vstupních dat.
+
+### Architektura testu
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     AUTOMATICKÝ TEST                                     │
+│                                                                         │
+│  Vstup: ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl            │
+│                                                                         │
+│  ┌─────────────────────┐        ┌─────────────────────┐                │
+│  │  CLI Replay         │        │  C123 Server Replay │                │
+│  │  (src: "ws")        │        │  (src: "tcp")       │                │
+│  │                     │        │                     │                │
+│  │  MockWSServer       │        │  C123 Server        │                │
+│  │  → CLIProvider      │        │  (replay mode)      │                │
+│  │                     │        │  → C123ServerProv.  │                │
+│  └──────────┬──────────┘        └──────────┬──────────┘                │
+│             │                              │                            │
+│             ▼                              ▼                            │
+│  ┌─────────────────────┐        ┌─────────────────────┐                │
+│  │  Event Collector    │        │  Event Collector    │                │
+│  │  - Results[]        │        │  - Results[]        │                │
+│  │  - OnCourse[]       │        │  - OnCourse[]       │                │
+│  │  - EventInfo[]      │        │  - EventInfo[]      │                │
+│  └──────────┬──────────┘        └──────────┬──────────┘                │
+│             │                              │                            │
+│             └──────────────┬───────────────┘                            │
+│                            ▼                                            │
+│                   ┌─────────────────┐                                   │
+│                   │   COMPARATOR    │                                   │
+│                   │                 │                                   │
+│                   │  Rozdíly?       │                                   │
+│                   │  → FAIL + diff  │                                   │
+│                   │  Shodné?        │                                   │
+│                   │  → PASS         │                                   │
+│                   └─────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Potřebné komponenty
+
+#### 1. Mock TCP Server - simuluje Canoe123
+**Soubor:** `scripts/mock-c123-tcp.ts`
+
+Jednoduchý TCP server, který čte nahrávku a posílá TCP data přesně jako Canoe123:
+
+```typescript
+// Načte JSONL nahrávku, filtruje src:"tcp", posílá data na TCP port
+class MockC123TcpServer {
+  constructor(port: number = 27333) {}
+
+  // Načte nahrávku a přehraje TCP zprávy
+  async replay(jsonlPath: string, options: {
+    speed?: number,      // 1 = realtime, 0 = instant, 10 = 10x faster
+    onMessage?: (msg) => void
+  }): Promise<void>
+
+  // Čeká až se klient připojí
+  waitForClient(): Promise<void>
+
+  // Signalizuje konec replay
+  waitForComplete(): Promise<void>
+
+  close(): void
+}
+```
+
+**Použití:**
+```bash
+# Spustit mock Canoe123
+npx ts-node scripts/mock-c123-tcp.ts --file ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl --speed 0
+
+# V jiném terminálu: C123 server se připojí automaticky k localhost:27333
+c123-server --host localhost
+```
+
+Výhoda: **Žádné změny v c123-server!** C123 server nepozná rozdíl mezi mock a reálným Canoe123.
+
+#### 2. Mock WebSocket Server pro CLI replay (v scoreboardu)
+**Soubor:** `scripts/mock-cli-ws.ts`
+
+```typescript
+class MockCLIWebSocketServer {
+  constructor(port: number = 8081) {}
+
+  // Načte nahrávku a přehraje ws zprávy
+  async replay(jsonlPath: string, speed: number): Promise<void>
+
+  // Pro synchronizaci s testem
+  onMessage(callback: (msg) => void): void
+  waitForAllMessages(): Promise<void>
+}
+```
+
+#### 3. Event Collector
+**Soubor:** `src/test-utils/EventCollector.ts`
+
+```typescript
+class EventCollector {
+  results: ResultsData[] = []
+  onCourse: OnCourseData[] = []
+  eventInfo: EventInfoData[] = []
+
+  attach(provider: DataProvider): void {
+    provider.onResults(r => this.results.push(r))
+    provider.onOnCourse(o => this.onCourse.push(o))
+    provider.onEventInfo(e => this.eventInfo.push(e))
+  }
+
+  // Normalizace pro porovnání (ignorovat timestampy, seřadit pole)
+  normalize(): NormalizedEvents
+}
+```
+
+#### 4. Comparator
+**Soubor:** `src/test-utils/EventComparator.ts`
+
+```typescript
+function compareEvents(cli: NormalizedEvents, c123: NormalizedEvents): ComparisonResult {
+  // Porovnat Results
+  // - Počet zpráv
+  // - Obsah každé zprávy (raceName, results array, highlightBib)
+
+  // Porovnat OnCourse
+  // - Počet zpráv
+  // - Obsah (competitors, jejich data)
+
+  // Porovnat EventInfo
+  // - TimeOfDay hodnoty
+  // - Title, InfoText
+}
+```
+
+### Bloky testování
+
+#### Blok T1: Mock servery (~40% kontextu) ✅ HOTOVO
+**Nové soubory:**
+- ✅ `scripts/mock-c123-tcp.ts` - TCP server simulující Canoe123 (čte nahrávku)
+- ✅ `scripts/mock-cli-ws.ts` - WS server simulující CLI (čte nahrávku)
+- ✅ `scripts/lib/recording-loader.ts` - sdílená knihovna pro načítání JSONL
+- ✅ `scripts/tsconfig.json` - TypeScript konfigurace pro skripty
+
+**Funkcionalita:**
+- ✅ Načíst JSONL nahrávku
+- ✅ Mock TCP: filtrovat `src: "tcp"`, posílat XML data na port 27333
+- ✅ Mock CLI WS: filtrovat `src: "ws"`, posílat JSON zprávy na port 8081
+- ✅ Podporovat speed parametr (0 = instant, 1 = realtime, N = Nx rychleji)
+- ✅ Signalizovat dokončení přehrávání
+
+**Spuštění:**
+```bash
+# Mock CLI WebSocket server
+npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+
+# Mock Canoe123 TCP server
+npm run mock:tcp -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+```
+
+**Test manuálně:**
+```bash
+# Terminal 1: Mock Canoe123
+npx tsx scripts/mock-c123-tcp.ts --file ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+
+# Terminal 2: C123 server (připojí se k mock TCP)
+cd ../c123-server && npm start -- --host localhost
+
+# Terminal 3: Scoreboard (připojí se k C123 server)
+npm run dev
+# Otevřít http://localhost:5173/?server=localhost:27123
+```
+
+**Commit:** ✅ `feat: add mock servers for replay testing`
+
+#### Blok T2: Test utilities ve scoreboardu (~35% kontextu) ✅ HOTOVO
+**Nové soubory:**
+- ✅ `src/test-utils/EventCollector.ts` - sbírá události z provideru
+- ✅ `src/test-utils/EventComparator.ts` - porovnává výstupy
+- ✅ `src/test-utils/TestOrchestrator.ts` - spouští mock servery a providery
+- ✅ `src/test-utils/index.ts` - exporty
+- ✅ `tsconfig.test.json` - TypeScript konfigurace pro testy
+
+**EventCollector API:**
+```typescript
+class EventCollector {
+  attach(provider: DataProvider): void
+  detach(): void
+  clear(): void
+  normalize(): NormalizedEvents  // pro porovnání
+  getUniqueResults(): NormalizedResult[]
+  getLastResultPerRace(): Map<string, NormalizedResult>
+  getLastOnCourse(): NormalizedOnCourse | null
+}
+```
+
+**EventComparator API:**
+```typescript
+compareEvents(expected, actual, options?): ComparisonResult
+formatComparisonResult(result): string
+```
+
+**TestOrchestrator API:**
+```typescript
+class TestOrchestrator {
+  setup(config): Promise<void>
+  teardown(): Promise<void>
+  getCliUrl(): string
+  getC123ServerUrl(): string
+  waitForReplayComplete(): Promise<void>
+}
+```
+
+**Commit:** ✅ `feat: add test utilities for provider comparison`
+
+#### Blok T3: Integrační test (~30% kontextu) ✅ HOTOVO
+**Nový soubor:** `src/__tests__/provider-comparison.test.ts`
+
+Test infrastruktura:
+- Spustí mock CLI WS server (port 8091), mock TCP server (port 27334), C123 server (port 27124)
+- Připojí CLIProvider a C123ServerProvider
+- Sbírá události pomocí EventCollector
+- Porovnává výstupy pomocí EventComparator
+
+Aktuální stav:
+- ✅ CLI provider správně sbírá data z mock WS serveru (34 results, 1042 onCourse, 2 eventInfo)
+- ✅ C123ServerProvider se připojuje k C123 serveru správně
+- ⚠️ C123 server aktuálně nesbírá data z mock TCP - potřebuje specifický formát XML streamu
+
+**Spuštění:**
+```bash
+npm run test:providers
+```
+
+**Commit:** ✅ `test: add CLI vs C123Server comparison test`
+
+### Pořadí implementace
+
+1. **Blok T1** - Mock servery (TCP pro Canoe123 simulaci, WS pro CLI simulaci)
+2. **Blok T2** - Test utilities (EventCollector, Comparator)
+3. **Blok T3** - Integrační test
+4. **Blok T4** - automatické vizuální otestování s playwright boardů V2 (CLI) a V3 (C123 server) vedle sebe s mock servery - to si tu ještě rozplánuj
+
+### Co testujeme
+
+| Aspekt | Jak porovnáváme |
+|--------|-----------------|
+| **Results** | Obsah `results[]`, `raceName`, `raceStatus` |
+| **OnCourse** | Obsah `competitors[]`, jejich `bib`, `name`, `time`, `pen` |
+| **Highlight** | Který závodník je zvýrazněn po dojetí (highlightBib / dtFinish) |
+| **TimeOfDay** | Hodnota času dne |
+| **Scroll behavior** | Pořadí a obsah scroll stavů (testuje se v UI testu) |
+
+### Co NE-testujeme (rozdíly jsou očekávané)
+
+| Aspekt | Proč se liší |
+|--------|--------------|
+| Timestampy zpráv | Různý formát |
+| Pořadí zpráv | C123 Server může slučovat |
+| Title/InfoText | CLI specifické |
+| Control/Visibility | CLI specifické |
+
+---
+
+## Fáze po testování
+
+### Blok 4: Opravy nalezených rozdílů
 **Akce:**
-- Spustit c123-server na stejných datech jako V2
-- Porovnat chování (results, scroll, highlight) s V2
-- Opravit případné rozdíly
-**Commit:** `fix: align C123ServerProvider behavior with V2`
+- Analyzovat výstupy testů
+- Opravit mappery v `c123ServerMapper.ts`
+- Opravit logiku v `C123ServerProvider.ts`
+- Re-run testy dokud PASS
+**Commit:** `fix: align C123ServerProvider output with CLI`
 
 ### Blok 5: REST sync a XmlChange (PO OVĚŘENÍ)
 **Soubory:** `src/providers/C123ServerProvider.ts` (update)
 **Commit:** `feat: add REST API sync and XmlChange handling`
 
-### Blok 6: Testy (~30% kontextu)
+### Blok 6: Unit testy (~30% kontextu)
 **Soubory:**
 - `src/providers/__tests__/C123ServerProvider.test.ts`
 - `src/providers/__tests__/c123ServerMapper.test.ts`
-- SMAZAT: `src/providers/__tests__/C123Provider.test.ts`
-**Commit:** `test: add C123 Server integration tests`
+**Commit:** `test: add C123 Server unit tests`
 
 ---
 
@@ -205,23 +475,6 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 1. Reset finish detector state
 2. Volat REST API pro sync (schedule, current race results)
 ```
-
----
-
-## Testování
-
-1. Unit testy pro mapper funkce
-2. Unit testy pro REST API klient (mock fetch)
-3. Integration testy pro provider (mock WebSocket)
-4. **Manuální testování proti c123-server:**
-   ```bash
-   # Terminal 1: Spustit c123-server
-   cd ../c123-server && npm start
-
-   # Terminal 2: Spustit scoreboard
-   npm run dev
-   # Otevřít: http://localhost:5173/?server=localhost:27123
-   ```
 
 ---
 
@@ -250,17 +503,67 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 
 ## Fáze implementace
 
-### Fáze A: Základní funkčnost (priority)
+### Fáze A: Základní funkčnost (priority) ✅ HOTOVO
 - WebSocket připojení k C123 Server
 - Zpracování OnCourse, Results, TimeOfDay zpráv
 - Správné zobrazení results, scroll, highlight dojetého závodníka
 - Auto-discovery + fallback na CLI
-- **Manuální ověření uživatelem** proti V2 na stejných datech
 
-### Fáze B: Rozšíření (po ověření Fáze A)
+### Fáze B: Automatické testování (AKTUÁLNÍ)
+- Replay mód v C123 serveru
+- Test utilities ve scoreboardu
+- Integrační test porovnávající CLI vs C123Server
+- Opravy nalezených rozdílů
+
+### Fáze C: Rozšíření (po ověření Fáze B)
 - REST API pro merged BR1/BR2 (ujasníme detaily)
 - XmlChange handling
 - Sync po reconnect
+
+---
+
+## Deníček vývoje
+
+### 2025-01-03 - Plán automatického testování
+- Analyzována struktura nahrávky: obsahuje `ws` (CLI), `tcp` (C123 raw), `udp` data
+- Navržena architektura pro automatické srovnání výstupů providerů
+- **Rozhodnutí:** Vytvořit mock TCP server simulující Canoe123 (čte nahrávku, posílá TCP data)
+- **Výhoda:** Žádné změny v C123 serveru - ten nepozná rozdíl mezi mock a reálným Canoe123
+- Mock WS server pro CLI replay - posílá ws zprávy z nahrávky
+- Bloky T1-T3 definovány pro implementaci testů:
+  - T1: Mock servery (TCP + WS)
+  - T2: Test utilities (EventCollector, Comparator)
+  - T3: Integrační test porovnávající výstupy
+
+### 2025-01-03 - Blok T1 hotový
+- ✅ Implementovány mock servery pro replay testování
+- `scripts/lib/recording-loader.ts` - JSONL loader s podporou filtrování a rychlosti
+- `scripts/mock-c123-tcp.ts` - TCP server simulující Canoe123 (1051 zpráv z nahrávky)
+- `scripts/mock-cli-ws.ts` - WebSocket server simulující CLI (1079 zpráv z nahrávky)
+- Oba servery otestovány, fungují správně
+- npm skripty: `npm run mock:tcp`, `npm run mock:ws`
+- Přidány deps: `ws`, `@types/ws`, `tsx`
+- **Další:** Blok T2 (EventCollector, Comparator)
+
+### 2025-01-03 - Blok T2 hotový
+- ✅ Implementovány test utilities pro srovnání providerů
+- `src/test-utils/EventCollector.ts` - sbírá a normalizuje události z provideru
+- `src/test-utils/EventComparator.ts` - porovnává normalizované události s detailním diffem
+- `src/test-utils/TestOrchestrator.ts` - orchestrace mock serverů jako child procesy
+- Přidán `tsconfig.test.json` pro Node.js test kód (odděleno od app kódu)
+- Build projde OK, všechny utility se kompilují
+- **Další:** Blok T3 (integrační test)
+
+### 2025-01-03 - Blok T3 hotový
+- ✅ Implementován integrační test `src/__tests__/provider-comparison.test.ts`
+- Test spouští mock servery jako child procesy a připojuje providery
+- CLI provider úspěšně sbírá data (34 results, 1042 onCourse, 2 eventInfo)
+- C123 server se připojuje správně ale nesbírá data - TCP stream v nahrávce není ve formátu, který C123 server očekává (raw XML chunky vs. Canoe123 protokol)
+- Přidán npm script `npm run test:providers`
+- **Poznámka:** Pro skutečné srovnání je třeba buď:
+  1. Použít živý C123 server připojený k reálnému Canoe123
+  2. Upravit mock TCP server aby generoval správný Canoe123 protokol
+  3. Přidat do C123 serveru replay mód
 
 ---
 
