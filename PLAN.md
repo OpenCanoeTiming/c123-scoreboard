@@ -159,13 +159,13 @@ async function createProvider(): Promise<DataProvider> {
 - ✅ ZKOPÍROVÁNO: `../c123-server/docs/discovery-client.ts` → `src/providers/utils/discovery-client.ts`
 - ✅ NOVÝ: `src/types/c123server.ts`
 - ✅ UPRAVEN: `src/types/index.ts` (přidány exporty)
-**Commit:** `feat: add C123 Server discovery client and message types` (NECOMMITOVÁNO)
+**Commit:** ✅ `feat: add C123 Server discovery client and message types`
 
-### Blok 2: Mapper + REST API klient (~40% kontextu)
+### Blok 2: Mapper + REST API klient (~40% kontextu) ✅ HOTOVO
 **Soubory:**
-- NOVÝ: `src/providers/utils/c123ServerMapper.ts`
-- NOVÝ: `src/providers/utils/c123ServerApi.ts`
-**Commit:** `feat: add C123 Server mappers and REST API client`
+- ✅ NOVÝ: `src/providers/utils/c123ServerMapper.ts`
+- ✅ NOVÝ: `src/providers/utils/c123ServerApi.ts`
+**Commit:** ✅ `feat: add C123 Server mappers and REST API client`
 
 ### Blok 3: C123ServerProvider + App.tsx (~60% kontextu)
 **Soubory:**
