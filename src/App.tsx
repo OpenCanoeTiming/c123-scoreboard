@@ -1,10 +1,15 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ScoreboardProvider, useScoreboard } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
-import { C123Provider } from '@/providers/C123Provider'
+import { C123ServerProvider } from '@/providers/C123ServerProvider'
 import type { DataProvider } from '@/providers/types'
 import { useLayout } from '@/hooks'
+import {
+  discoverC123Server,
+  isC123Server,
+  normalizeServerUrl,
+} from '@/providers/utils/discovery-client'
 import {
   ScoreboardLayout,
   TopBar,
@@ -22,9 +27,9 @@ import {
  * Parse URL parameters for app configuration
  *
  * Supported parameters:
- * - source: 'replay' | 'cli' | 'c123' (default: 'replay')
+ * - server: string (C123 Server address, e.g., "192.168.1.50:27123")
+ * - source: 'replay' (only for development/testing)
  * - speed: number (replay speed multiplier, default: 10)
- * - host: string (CLI/C123 server address, default: '192.168.68.108:8081')
  * - loop: 'true' | 'false' (replay loop, default: 'true')
  * - pauseAfter: number (pause playback after N messages, for testing)
  * - disableScroll: 'true' (disable auto-scroll, for screenshots)
@@ -32,27 +37,26 @@ import {
  * - displayRows: number (fixed row count for ledwall scaling, min: 3, max: 20)
  */
 function getUrlParams(): {
-  source: 'replay' | 'cli' | 'c123'
+  server: string | null
+  source: 'replay' | null
   speed: number
-  host: string
   loop: boolean
   pauseAfter: number | null
   disableScroll: boolean
 } {
   const params = new URLSearchParams(window.location.search)
 
+  const server = params.get('server')
   const sourceParam = params.get('source')
-  const source: 'replay' | 'cli' | 'c123' =
-    sourceParam === 'cli' ? 'cli' : sourceParam === 'c123' ? 'c123' : 'replay'
+  const source: 'replay' | null = sourceParam === 'replay' ? 'replay' : null
   const speedParam = params.get('speed')
   const speed = speedParam ? parseFloat(speedParam) : 10.0
-  const host = params.get('host') ?? '192.168.68.108:8081'
   const loop = params.get('loop') !== 'false'
   const pauseAfterParam = params.get('pauseAfter')
   const pauseAfter = pauseAfterParam ? parseInt(pauseAfterParam, 10) : null
   const disableScroll = params.get('disableScroll') === 'true'
 
-  return { source, speed, host, loop, pauseAfter, disableScroll }
+  return { server, source, speed, loop, pauseAfter, disableScroll }
 }
 
 /**
@@ -132,28 +136,26 @@ function ScoreboardContent() {
   )
 }
 
-function App() {
-  // Parse URL parameters for configuration
-  const urlParams = useMemo(() => getUrlParams(), [])
+/**
+ * Provider discovery states
+ */
+type DiscoveryState =
+  | { status: 'discovering' }
+  | { status: 'ready'; provider: DataProvider }
+  | { status: 'error'; message: string }
 
-  // Create DataProvider instance based on source parameter
-  const provider = useMemo((): DataProvider => {
-    if (urlParams.source === 'cli') {
-      return new CLIProvider(urlParams.host, {
-        autoReconnect: true,
-        initialReconnectDelay: 1000,
-        maxReconnectDelay: 30000,
-      })
-    }
-
-    if (urlParams.source === 'c123') {
-      return new C123Provider(urlParams.host, {
-        autoReconnect: true,
-        initialReconnectDelay: 1000,
-        maxReconnectDelay: 30000,
-      })
-    }
-
+/**
+ * Create provider based on URL params and discovery
+ *
+ * Priority:
+ * 1. source=replay -> ReplayProvider (development only)
+ * 2. server=host:port -> probe, use C123ServerProvider if c123-server, else CLIProvider
+ * 3. Auto-discovery -> scan network for C123 Server
+ * 4. Error -> show manual configuration
+ */
+async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promise<DataProvider> {
+  // 1. Replay mode (development/testing)
+  if (urlParams.source === 'replay') {
     return new ReplayProvider('/recordings/rec-2025-12-28T09-34-10.jsonl', {
       speed: urlParams.speed,
       sources: ['ws', 'tcp'],
@@ -161,10 +163,160 @@ function App() {
       loop: urlParams.loop,
       pauseAfter: urlParams.pauseAfter,
     })
+  }
+
+  // 2. Explicit server parameter
+  if (urlParams.server) {
+    const serverUrl = normalizeServerUrl(urlParams.server)
+
+    // Probe to check if it's C123 Server
+    if (await isC123Server(serverUrl)) {
+      console.log('Using C123ServerProvider:', serverUrl)
+      return new C123ServerProvider(serverUrl, {
+        autoReconnect: true,
+        initialReconnectDelay: 1000,
+        maxReconnectDelay: 30000,
+      })
+    }
+
+    // Fallback to CLI provider (server is not C123 Server)
+    console.log('Falling back to CLIProvider:', urlParams.server)
+    return new CLIProvider(urlParams.server, {
+      autoReconnect: true,
+      initialReconnectDelay: 1000,
+      maxReconnectDelay: 30000,
+    })
+  }
+
+  // 3. Auto-discovery
+  console.log('Starting C123 Server discovery...')
+  const discovered = await discoverC123Server({ ignoreUrlParam: true })
+
+  if (discovered) {
+    console.log('Discovered C123 Server:', discovered)
+    return new C123ServerProvider(discovered, {
+      autoReconnect: true,
+      initialReconnectDelay: 1000,
+      maxReconnectDelay: 30000,
+    })
+  }
+
+  // 4. No server found
+  throw new Error('No C123 Server found. Use ?server=host:port or ?source=replay')
+}
+
+/**
+ * Hook for provider discovery with loading state
+ */
+function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): DiscoveryState {
+  const [state, setState] = useState<DiscoveryState>({ status: 'discovering' })
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function discover() {
+      try {
+        const provider = await createProvider(urlParams)
+        if (!cancelled) {
+          setState({ status: 'ready', provider })
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : 'Unknown error'
+          setState({ status: 'error', message })
+        }
+      }
+    }
+
+    discover()
+
+    return () => {
+      cancelled = true
+    }
   }, [urlParams])
 
+  return state
+}
+
+/**
+ * Discovery loading screen
+ */
+function DiscoveryScreen() {
   return (
-    <ScoreboardProvider provider={provider}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      background: '#1a1a2e',
+      color: '#fff',
+      fontFamily: 'system-ui, sans-serif',
+    }}>
+      <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+        Canoe Scoreboard
+      </div>
+      <div style={{ fontSize: '1rem', opacity: 0.7 }}>
+        Searching for C123 Server...
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Error screen when no server found
+ */
+function ErrorScreen({ message }: { message: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      background: '#1a1a2e',
+      color: '#fff',
+      fontFamily: 'system-ui, sans-serif',
+      padding: '2rem',
+      textAlign: 'center',
+    }}>
+      <div style={{ fontSize: '2rem', marginBottom: '1rem', color: '#ff6b6b' }}>
+        Connection Error
+      </div>
+      <div style={{ fontSize: '1rem', opacity: 0.9, marginBottom: '2rem' }}>
+        {message}
+      </div>
+      <div style={{ fontSize: '0.9rem', opacity: 0.6 }}>
+        <p>Options:</p>
+        <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0 }}>
+          <li>?server=192.168.1.50:27123 - Connect to C123 Server</li>
+          <li>?server=192.168.1.50:8081 - Connect to CLI tool</li>
+          <li>?source=replay - Use recorded data (development)</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  // Parse URL parameters for configuration
+  const urlParams = useMemo(() => getUrlParams(), [])
+
+  // Discover and create provider
+  const discoveryState = useProviderDiscovery(urlParams)
+
+  // Show loading screen during discovery
+  if (discoveryState.status === 'discovering') {
+    return <DiscoveryScreen />
+  }
+
+  // Show error screen if no server found
+  if (discoveryState.status === 'error') {
+    return <ErrorScreen message={discoveryState.message} />
+  }
+
+  return (
+    <ScoreboardProvider provider={discoveryState.provider}>
       <ScoreboardContent />
     </ScoreboardProvider>
   )
