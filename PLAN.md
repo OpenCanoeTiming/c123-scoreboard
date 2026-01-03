@@ -565,6 +565,16 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
   2. Upravit mock TCP server aby generoval správný Canoe123 protokol
   3. Přidat do C123 serveru replay mód
 
+### 2026-01-03 - Oprava mock TCP protokolu
+- ✅ Opraven mock TCP server - přidán pipe delimiter (`|`) mezi XML zprávy (Canoe123 protokol)
+- ✅ Přidán 3s delay před replayem, aby se C123ServerProvider stihl připojit
+- ✅ Opraven test - čekání na správnou startup zprávu C123 serveru
+- **Test nyní úspěšně sbírá data z obou providerů:**
+  - CLI: 34 results, 1042 onCourse, 2 eventInfo
+  - C123: 8 results, 756 onCourse, 247 eventInfo
+- Rozdíly jsou očekávané (C123 server filtruje isCurrent, merguje BR1/BR2)
+- **Další:** Blok T4 (Playwright vizuální testy) nebo manuální ověření
+
 ---
 
 ## Poznámky
