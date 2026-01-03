@@ -1,0 +1,504 @@
+/**
+ * C123 Server Discovery Client
+ *
+ * Reference implementation for discovering C123 Server on a local network.
+ * Copied from c123-server/docs/discovery-client.ts
+ *
+ * Usage:
+ *   const serverUrl = await discoverC123Server();
+ *   if (serverUrl) {
+ *     const ws = new WebSocket(`${serverUrl.replace('http', 'ws')}/ws`);
+ *   }
+ */
+
+// =============================================================================
+// Configuration
+// =============================================================================
+
+/** Default C123 Server port */
+export const C123_PORT = 27123
+
+/** Timeout for discovery probe requests (ms) */
+export const DISCOVERY_TIMEOUT = 200
+
+/** LocalStorage key for caching discovered server */
+export const STORAGE_KEY = 'c123-server-url'
+
+// =============================================================================
+// Types
+// =============================================================================
+
+/** Response from /api/discover endpoint */
+export interface DiscoverResponse {
+  service: 'c123-server'
+  version: string
+  port: number
+  eventName?: string
+}
+
+/** Options for discovery */
+export interface DiscoveryOptions {
+  /** Override default port (27123) */
+  port?: number
+  /** Override probe timeout (200ms) */
+  timeout?: number
+  /** Disable localStorage caching */
+  noCache?: boolean
+  /** Skip URL parameter check */
+  ignoreUrlParam?: boolean
+  /** Custom subnets to scan (e.g., ['192.168.1', '10.0.0']) */
+  subnets?: string[]
+}
+
+// =============================================================================
+// Main Discovery Function
+// =============================================================================
+
+/**
+ * Discover C123 Server on the local network.
+ *
+ * Discovery priority:
+ * 1. URL parameter `?server=host:port` - explicit configuration
+ * 2. Cached server from localStorage - verify if still alive
+ * 3. Subnet scan - starting from hosting server IP
+ *
+ * @param options - Discovery configuration options
+ * @returns Server URL (e.g., "http://192.168.1.50:27123") or null if not found
+ *
+ * @example
+ * const server = await discoverC123Server();
+ * if (server) {
+ *   console.log('Found server:', server);
+ * } else {
+ *   console.log('No server found, show manual config UI');
+ * }
+ */
+export async function discoverC123Server(
+  options: DiscoveryOptions = {}
+): Promise<string | null> {
+  const port = options.port ?? C123_PORT
+  const timeout = options.timeout ?? DISCOVERY_TIMEOUT
+
+  // 1. Check URL parameter
+  if (!options.ignoreUrlParam) {
+    const urlParam = new URLSearchParams(location.search).get('server')
+    if (urlParam) {
+      const url = normalizeServerUrl(urlParam, port)
+      if (await isServerAlive(url, timeout)) {
+        if (!options.noCache) saveToCache(url)
+        return url
+      }
+    }
+  }
+
+  // 2. Check cached server
+  if (!options.noCache) {
+    const cached = localStorage.getItem(STORAGE_KEY)
+    if (cached && (await isServerAlive(cached, timeout))) {
+      return cached
+    }
+  }
+
+  // 3. Scan subnets
+  const subnets = options.subnets ?? getSubnetsToScan()
+  for (const subnet of subnets) {
+    const discovered = await scanSubnet(subnet, port, timeout)
+    if (discovered) {
+      if (!options.noCache) saveToCache(discovered)
+      return discovered
+    }
+  }
+
+  return null
+}
+
+// =============================================================================
+// IP Detection
+// =============================================================================
+
+/**
+ * Get IP address of the server hosting the scoreboard.
+ *
+ * If the scoreboard is served from an IP address (common in local networks),
+ * that IP is returned directly. Otherwise, falls back to common LAN patterns.
+ *
+ * @returns IP address string (e.g., "192.168.1.50")
+ */
+export function getHostingServerIP(): string {
+  const hostname = location.hostname
+
+  // If already an IP address, use it
+  if (isIPAddress(hostname)) {
+    return hostname
+  }
+
+  // Localhost - likely development
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return '127.0.0.1'
+  }
+
+  // Fallback: common local network gateway
+  return '192.168.1.1'
+}
+
+/**
+ * Get local IP address using WebRTC.
+ *
+ * This is a more reliable way to get the client's actual local IP,
+ * but requires WebRTC support and may not work in all browsers.
+ *
+ * @returns Promise resolving to IP address or null if detection fails
+ *
+ * @example
+ * const localIP = await getLocalIPViaWebRTC();
+ * if (localIP) {
+ *   console.log('My local IP:', localIP);
+ * }
+ */
+export async function getLocalIPViaWebRTC(): Promise<string | null> {
+  return new Promise((resolve) => {
+    // Timeout after 2 seconds
+    const timeoutId = setTimeout(() => resolve(null), 2000)
+
+    try {
+      const pc = new RTCPeerConnection({ iceServers: [] })
+      pc.createDataChannel('')
+
+      pc.onicecandidate = (event) => {
+        if (!event.candidate) return
+
+        const candidate = event.candidate.candidate
+        const ipMatch = candidate.match(/(\d+\.\d+\.\d+\.\d+)/)
+
+        if (ipMatch) {
+          const ip = ipMatch[1]
+          // Filter out non-local IPs
+          if (isPrivateIP(ip)) {
+            clearTimeout(timeoutId)
+            pc.close()
+            resolve(ip)
+          }
+        }
+      }
+
+      pc.createOffer()
+        .then((offer) => pc.setLocalDescription(offer))
+        .catch(() => {
+          clearTimeout(timeoutId)
+          resolve(null)
+        })
+    } catch {
+      clearTimeout(timeoutId)
+      resolve(null)
+    }
+  })
+}
+
+/**
+ * Get list of subnets to scan, ordered by likelihood.
+ *
+ * Starts with the hosting server's subnet, then adds common LAN subnets.
+ */
+export function getSubnetsToScan(): string[] {
+  const hostIP = getHostingServerIP()
+  const hostSubnet = hostIP.split('.').slice(0, 3).join('.')
+
+  const subnets = [hostSubnet]
+
+  // Add common subnets if not already included
+  const commonSubnets = ['192.168.1', '192.168.0', '10.0.0', '172.16.0']
+  for (const subnet of commonSubnets) {
+    if (!subnets.includes(subnet)) {
+      subnets.push(subnet)
+    }
+  }
+
+  return subnets
+}
+
+// =============================================================================
+// Subnet Scanning
+// =============================================================================
+
+/**
+ * Scan a subnet for C123 Server.
+ *
+ * Scans in an optimized order: starts from IP ending in .1 (common for servers),
+ * then .2, .10, .100, etc., followed by remaining addresses.
+ *
+ * @param subnet - Subnet prefix (e.g., "192.168.1")
+ * @param port - Port to probe (default: 27123)
+ * @param timeout - Probe timeout in ms (default: 200)
+ * @returns Server URL or null if not found
+ */
+export async function scanSubnet(
+  subnet: string,
+  port: number = C123_PORT,
+  timeout: number = DISCOVERY_TIMEOUT
+): Promise<string | null> {
+  // Generate IPs in optimized order
+  const priorityHosts = [1, 2, 10, 100, 50, 150, 200, 254]
+  const ipsToScan: string[] = []
+
+  // Add priority hosts first
+  for (const host of priorityHosts) {
+    ipsToScan.push(`${subnet}.${host}`)
+  }
+
+  // Add remaining hosts
+  for (let host = 3; host <= 254; host++) {
+    if (!priorityHosts.includes(host)) {
+      ipsToScan.push(`${subnet}.${host}`)
+    }
+  }
+
+  // Scan in batches for performance
+  const BATCH_SIZE = 20
+  for (let i = 0; i < ipsToScan.length; i += BATCH_SIZE) {
+    const batch = ipsToScan.slice(i, i + BATCH_SIZE)
+    const results = await Promise.all(
+      batch.map((ip) => probeServer(ip, port, timeout).catch(() => null))
+    )
+
+    const found = results.find((r) => r !== null)
+    if (found) return found
+  }
+
+  return null
+}
+
+/**
+ * Probe a single IP for C123 Server.
+ *
+ * @param ip - IP address to probe
+ * @param port - Port to probe
+ * @param timeout - Request timeout in ms
+ * @returns Server URL if found, null otherwise
+ */
+export async function probeServer(
+  ip: string,
+  port: number = C123_PORT,
+  timeout: number = DISCOVERY_TIMEOUT
+): Promise<string | null> {
+  const url = `http://${ip}:${port}`
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const response = await fetch(`${url}/api/discover`, {
+      signal: controller.signal,
+      // Prevent CORS preflight for faster probing
+      mode: 'cors',
+      credentials: 'omit',
+    })
+
+    if (response.ok) {
+      const data: DiscoverResponse = await response.json()
+      if (data.service === 'c123-server') {
+        return url
+      }
+    }
+  } catch {
+    // Timeout or network error - server not found at this IP
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  return null
+}
+
+// =============================================================================
+// Server Verification
+// =============================================================================
+
+/**
+ * Check if a server URL is responding.
+ *
+ * @param url - Server URL to check (e.g., "http://192.168.1.50:27123")
+ * @param timeout - Request timeout in ms
+ * @returns true if server responds correctly
+ */
+export async function isServerAlive(
+  url: string,
+  timeout: number = DISCOVERY_TIMEOUT
+): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    const response = await fetch(`${url}/api/discover`, {
+      signal: controller.signal,
+      mode: 'cors',
+      credentials: 'omit',
+    })
+
+    clearTimeout(timeoutId)
+
+    if (response.ok) {
+      const data: DiscoverResponse = await response.json()
+      return data.service === 'c123-server'
+    }
+
+    return false
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Check if a URL is a C123 Server.
+ * Alias for isServerAlive for clarity in fallback logic.
+ */
+export const isC123Server = isServerAlive
+
+/**
+ * Get server information.
+ *
+ * @param url - Server URL
+ * @param timeout - Request timeout in ms
+ * @returns Server info or null if not reachable
+ */
+export async function getServerInfo(
+  url: string,
+  timeout: number = DISCOVERY_TIMEOUT * 5
+): Promise<DiscoverResponse | null> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    const response = await fetch(`${url}/api/discover`, {
+      signal: controller.signal,
+      mode: 'cors',
+      credentials: 'omit',
+    })
+
+    clearTimeout(timeoutId)
+
+    if (response.ok) {
+      return await response.json()
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+// =============================================================================
+// URL Utilities
+// =============================================================================
+
+/**
+ * Normalize server URL (add protocol and port if missing).
+ *
+ * @param input - User input (e.g., "192.168.1.50", "server.local:8080")
+ * @param defaultPort - Port to use if not specified
+ * @returns Normalized URL (e.g., "http://192.168.1.50:27123")
+ */
+export function normalizeServerUrl(
+  input: string,
+  defaultPort: number = C123_PORT
+): string {
+  let url = input.trim()
+
+  // Add protocol if missing
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `http://${url}`
+  }
+
+  // Add port if missing
+  const protocolEnd = url.indexOf('//') + 2
+  const pathStart = url.indexOf('/', protocolEnd)
+  const hostPart =
+    pathStart === -1 ? url.slice(protocolEnd) : url.slice(protocolEnd, pathStart)
+
+  if (!hostPart.includes(':')) {
+    if (pathStart === -1) {
+      url = `${url}:${defaultPort}`
+    } else {
+      url = `${url.slice(0, pathStart)}:${defaultPort}${url.slice(pathStart)}`
+    }
+  }
+
+  return url
+}
+
+/**
+ * Extract WebSocket URL from HTTP server URL.
+ *
+ * @param httpUrl - HTTP server URL (e.g., "http://192.168.1.50:27123")
+ * @returns WebSocket URL (e.g., "ws://192.168.1.50:27123/ws")
+ */
+export function getWebSocketUrl(httpUrl: string): string {
+  return httpUrl.replace(/^http/, 'ws') + '/ws'
+}
+
+// =============================================================================
+// Cache Management
+// =============================================================================
+
+/**
+ * Save server URL to localStorage cache.
+ */
+export function saveToCache(url: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, url)
+  } catch {
+    // localStorage might be unavailable (private browsing, etc.)
+  }
+}
+
+/**
+ * Get cached server URL.
+ */
+export function getFromCache(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Clear cached server URL.
+ */
+export function clearCache(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // Ignore errors
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+/**
+ * Check if a string is a valid IPv4 address.
+ */
+function isIPAddress(str: string): boolean {
+  return /^\d+\.\d+\.\d+\.\d+$/.test(str)
+}
+
+/**
+ * Check if an IP is a private/local network address.
+ */
+function isPrivateIP(ip: string): boolean {
+  const parts = ip.split('.').map(Number)
+  if (parts.length !== 4) return false
+
+  // 10.0.0.0/8
+  if (parts[0] === 10) return true
+
+  // 172.16.0.0/12
+  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
+
+  // 192.168.0.0/16
+  if (parts[0] === 192 && parts[1] === 168) return true
+
+  // 127.0.0.0/8 (localhost)
+  if (parts[0] === 127) return true
+
+  return false
+}
