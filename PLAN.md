@@ -575,6 +575,18 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 - Rozdíly jsou očekávané (C123 server filtruje isCurrent, merguje BR1/BR2)
 - **Další:** Blok T4 (Playwright vizuální testy) nebo manuální ověření
 
+### 2026-01-03 - Oprava mapování raceName
+- ✅ Opraven `c123ServerMapper.ts` - `mapResults()` nyní konstruuje plný raceName
+- **Problém:** CLI posílá "K1m - střední trať - 2. jízda", C123 server měl jen "K1m - střední trať"
+- **Řešení:** Funkce `buildRaceName()` kombinuje `mainTitle` + suffix extrahovaný z `raceId`
+  - `K1M_ST_BR1_6` → " - 1. jízda"
+  - `K1M_ST_BR2_6` → " - 2. jízda"
+- **Test výsledky po opravě:**
+  - CLI races: `K1m - střední trať - 2. jízda`, `C1ž - střední trať - 2. jízda`
+  - C123 races: `K1m - střední trať - 2. jízda` ✓ (správně s jízdou!)
+- Zbývající rozdíly jsou očekávané (C123 filtruje `isCurrent: true`, proto nemá C1ž)
+- **Commit:** `fix: align C123Server raceName format with CLI output`
+
 ---
 
 ## Poznámky
