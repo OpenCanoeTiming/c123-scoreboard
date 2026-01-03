@@ -112,6 +112,39 @@ function mapRaceStatus(isCurrent: boolean): string {
 }
 
 /**
+ * Extract run suffix from raceId for full race name construction.
+ *
+ * RaceId format: {CLASS}_{COURSE}_{RUN}_{VERSION}
+ * Examples:
+ * - K1M_ST_BR1_6 → " - 1. jízda"
+ * - K1M_ST_BR2_6 → " - 2. jízda"
+ *
+ * CLI sends full race name like "K1m - střední trať - 2. jízda"
+ * C123 Server sends mainTitle="K1m - střední trať" and we need to add the run suffix.
+ */
+function getRunSuffixFromRaceId(raceId: string): string {
+  // Match BR1 or BR2 in the raceId
+  const match = raceId.match(/_BR([12])_/)
+  if (!match) return ''
+
+  const runNumber = match[1]
+  return ` - ${runNumber}. jízda`
+}
+
+/**
+ * Build full race name from mainTitle and raceId.
+ *
+ * CLI sends: "K1m - střední trať - 2. jízda"
+ * C123 Server sends: mainTitle="K1m - střední trať", raceId="K1M_ST_BR2_6"
+ *
+ * We need to combine them to match CLI format.
+ */
+function buildRaceName(mainTitle: string, raceId: string): string {
+  const suffix = getRunSuffixFromRaceId(raceId)
+  return mainTitle + suffix
+}
+
+/**
  * Map C123 Results message data to ResultsData
  *
  * Note: C123 Server doesn't provide highlightBib in Results messages.
@@ -123,7 +156,7 @@ function mapRaceStatus(isCurrent: boolean): string {
 export function mapResults(data: C123ResultsData): ResultsData {
   return {
     results: data.rows.map(mapResultRow),
-    raceName: data.mainTitle || data.raceId,
+    raceName: buildRaceName(data.mainTitle || '', data.raceId) || data.raceId,
     raceStatus: mapRaceStatus(data.isCurrent),
     highlightBib: null, // C123 Server doesn't provide this; finish detection uses dtFinish
   }
