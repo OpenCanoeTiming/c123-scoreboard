@@ -20,7 +20,7 @@ import type {
   EventInfoData,
   ProviderError,
 } from '@/providers/types'
-import { DEPARTING_TIMEOUT } from './constants'
+import { DEPARTING_TIMEOUT, FINISHED_GRACE_PERIOD } from './constants'
 
 /**
  * Scoreboard state interface
@@ -52,6 +52,11 @@ export interface ScoreboardState {
   // Competitors
   currentCompetitor: OnCourseCompetitor | null
   onCourse: OnCourseCompetitor[]
+
+  // Track when competitors finished (got dtFinish) for grace period removal
+  // Maps bib -> timestamp when dtFinish was first detected
+  // Competitors are removed from onCourse after FINISHED_GRACE_PERIOD
+  onCourseFinishedAt: Record<string, number>
 
   // Departing competitor (competitor who just left the course but hasn't been highlighted yet)
   departingCompetitor: OnCourseCompetitor | null
@@ -127,6 +132,7 @@ const initialState: ScoreboardState = {
   highlightTimestamp: null,
   currentCompetitor: null,
   onCourse: [],
+  onCourseFinishedAt: {},
   departingCompetitor: null,
   departedAt: null,
   pendingHighlightBib: null,
@@ -264,23 +270,57 @@ function scoreboardReducer(
           newOnCourse = [...state.onCourse, action.current]
         }
 
-        // For partial/merge messages: remove competitors who have finished (have dtFinish)
-        // In CLI this happens naturally when oncourse message replaces the list.
-        // For C123 partial messages, we need to explicitly remove finished competitors.
-        // Note: finish detection already captured above BEFORE this filter.
-        newOnCourse = newOnCourse.filter(c => !c.dtFinish)
+        // NOTE: Finished competitors (dtFinish) stay in list for grace period display
       } else {
         newOnCourse = state.onCourse
       }
 
+      // Track when competitors finished (got dtFinish) for grace period removal
+      const now = Date.now()
+      const newFinishedAt: Record<string, number> = { ...state.onCourseFinishedAt }
+
+      // Add newly finished competitors to tracking
+      for (const comp of newOnCourse) {
+        if (comp.dtFinish && !newFinishedAt[comp.bib]) {
+          // Just finished - record timestamp
+          newFinishedAt[comp.bib] = now
+        }
+      }
+
+      // Remove competitors whose grace period has expired
+      // Also clean up tracking for competitors no longer in list
+      const validBibs = new Set(newOnCourse.map(c => c.bib))
+      for (const bib of Object.keys(newFinishedAt)) {
+        if (!validBibs.has(bib)) {
+          // Competitor no longer in list - clean up tracking
+          delete newFinishedAt[bib]
+        } else if (now - newFinishedAt[bib] > FINISHED_GRACE_PERIOD) {
+          // Grace period expired - will be filtered out below
+        }
+      }
+
+      // Filter out finished competitors whose grace period has expired
+      newOnCourse = newOnCourse.filter(c => {
+        if (!c.dtFinish) return true // Not finished - keep
+        const finishedAt = newFinishedAt[c.bib]
+        if (!finishedAt) return true // No tracking - keep (shouldn't happen)
+        if (now - finishedAt <= FINISHED_GRACE_PERIOD) return true // Within grace period - keep
+        // Grace period expired - remove
+        delete newFinishedAt[c.bib]
+        return false
+      })
+
       // currentCompetitor is always the oldest (lowest dtStart) from onCourse
       // This ensures stable selection when multiple competitors are on course
+      // IMPORTANT: Filter out finished competitors (dtFinish) for current selection
+      // They stay in onCourse for display but shouldn't be "current"
+      const activeOnCourse = newOnCourse.filter(c => !c.dtFinish)
       let newCurrent: OnCourseCompetitor | null = null
-      if (newOnCourse.length === 1) {
-        newCurrent = newOnCourse[0]
-      } else if (newOnCourse.length > 1) {
+      if (activeOnCourse.length === 1) {
+        newCurrent = activeOnCourse[0]
+      } else if (activeOnCourse.length > 1) {
         // Sort by dtStart ascending (oldest first)
-        const sorted = [...newOnCourse].sort((a, b) => {
+        const sorted = [...activeOnCourse].sort((a, b) => {
           if (!a.dtStart && !b.dtStart) return 0
           if (!a.dtStart) return 1
           if (!b.dtStart) return -1
@@ -306,6 +346,7 @@ function scoreboardReducer(
         ...state,
         currentCompetitor: newCurrent,
         onCourse: newOnCourse,
+        onCourseFinishedAt: newFinishedAt,
         activeRaceId: newActiveRaceId,
         // Update lastActiveRaceId when we have a new active race
         // This preserves the last known race when no one is on course

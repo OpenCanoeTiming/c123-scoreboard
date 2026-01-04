@@ -90,10 +90,16 @@ export function mapOnCourse(data: C123OnCourseData): OnCourseData {
   // Detect partial messages: when total indicates more competitors than we received
   // C123 timing system sends updates alternately for each competitor
   // e.g., total=2 but only 1 competitor in message - this is a partial update
-  const isPartialMessage = data.total > activeCompetitors.length && activeCompetitors.length > 0
+  //
+  // IMPORTANT: Also treat as partial when activeCompetitors is empty but total > 0
+  // This happens when C123 sends a message about a competitor who hasn't started yet
+  // (filtered out by dtStart check). We don't want to replace the list with empty!
+  const isPartialMessage = data.total > activeCompetitors.length
 
   return {
-    current: isPartialMessage ? activeCompetitors[0] : findOldestOnCourse(activeCompetitors),
+    current: activeCompetitors.length > 0
+      ? (isPartialMessage ? activeCompetitors[0] : findOldestOnCourse(activeCompetitors))
+      : null,
     onCourse: activeCompetitors,
     // Partial messages should merge (like CLI comp), full messages should replace (like CLI oncourse)
     updateOnCourse: !isPartialMessage,

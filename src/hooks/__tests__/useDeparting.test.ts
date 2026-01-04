@@ -148,12 +148,19 @@ describe('useDeparting', () => {
 
   it('clears departing when dtFinish highlight arrives for that competitor', () => {
     let onCourseCallback: ((data: unknown) => void) | null = null
+    let resultsCallback: ((data: unknown) => void) | null = null
 
     const mockProvider = createMockProvider({
       onOnCourse: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
         onCourseCallback = callback
         return () => {
           onCourseCallback = null
+        }
+      }),
+      onResults: vi.fn((callback: (data: unknown) => void): Unsubscribe => {
+        resultsCallback = callback
+        return () => {
+          resultsCallback = null
         }
       }),
     })
@@ -163,8 +170,8 @@ describe('useDeparting', () => {
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
-    const comp42 = { bib: '42', name: 'Test Athlete', club: 'Test Club', dtStart: '2025-01-01T10:00:00Z', dtFinish: null }
-    const comp99 = { bib: '99', name: 'New Athlete', club: 'Other Club', dtStart: '2025-01-01T10:01:00Z', dtFinish: null }
+    const comp42 = { bib: '42', name: 'Test Athlete', club: 'Test Club', dtStart: '2025-01-01T10:00:00Z', dtFinish: null, raceId: 'R1' }
+    const comp99 = { bib: '99', name: 'New Athlete', club: 'Other Club', dtStart: '2025-01-01T10:01:00Z', dtFinish: null, raceId: 'R1' }
 
     // Set initial competitors - 42 is current (started earlier)
     act(() => {
@@ -177,20 +184,38 @@ describe('useDeparting', () => {
       }
     })
 
-    // Competitor 42 finishes - dtFinish transitions, highlight triggers
-    // Competitor 99 becomes current (older competitor finished)
+    // Competitor 42 finishes - dtFinish transitions, pending highlight is set
+    // Competitor 99 becomes current (finished competitor filtered from current selection)
+    // Note: comp42 with dtFinish stays in onCourse for display, but is not "current"
+    const comp42Finished = { ...comp42, dtFinish: '2025-01-01T10:01:30Z', time: '90.00' }
     act(() => {
       if (onCourseCallback) {
         onCourseCallback({
-          current: { ...comp42, dtFinish: '2025-01-01T10:01:30Z', time: '90.00' },
-          onCourse: [{ ...comp42, dtFinish: '2025-01-01T10:01:30Z', time: '90.00' }, comp99],
+          current: comp42Finished,
+          onCourse: [comp42Finished, comp99],
           updateOnCourse: true,
         })
       }
     })
 
-    // Departing should be cleared (42 triggered highlight via dtFinish)
-    // Note: In real flow, departing is cleared when dtFinish highlight is detected
+    // comp42 is now departing (switched from current to finished)
+    // Departing is cleared when Results arrive and highlight triggers
+    expect(result.current.departingCompetitor?.bib).toBe('42')
+
+    // Simulate Results arriving - this triggers highlight and clears departing
+    act(() => {
+      if (resultsCallback) {
+        resultsCallback({
+          results: [{ bib: '42', name: 'Test', total: '90.00', rank: 1 }],
+          raceName: 'Test Race',
+          raceStatus: 'Running',
+          highlightBib: null,
+          raceId: 'R1',
+        })
+      }
+    })
+
+    // Now departing should be cleared (highlight triggered via results)
     expect(result.current.departingCompetitor).toBeNull()
   })
 
