@@ -470,13 +470,15 @@ npx playwright test cli-vs-c123.spec.ts --project=vertical --workers=1
 
 ## Fáze po testování
 
-### Blok 4: Opravy nalezených rozdílů
+### Blok 4: Opravy nalezených rozdílů ✅ HOTOVO
 **Akce:**
-- Analyzovat výstupy testů
-- Opravit mappery v `c123ServerMapper.ts`
-- Opravit logiku v `C123ServerProvider.ts`
-- Re-run testy dokud PASS
-**Commit:** `fix: align C123ServerProvider output with CLI`
+- ✅ Analyzovat výstupy testů
+- ✅ Opravit mappery v `c123ServerMapper.ts` (raceName s BR1/BR2 suffix)
+- ✅ Opravit raceStatus mapping (isCurrent → "In Progress"/"Unofficial")
+- ✅ Re-run testy - PASS
+**Commity:**
+- ✅ `fix: align C123Server raceName format with CLI output`
+- ✅ `fix: use human-readable raceStatus values in C123 mapper`
 
 ### Blok 5: REST sync a XmlChange (~30% kontextu) ✅ HOTOVO
 **Soubory:**
@@ -554,16 +556,17 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 - Správné zobrazení results, scroll, highlight dojetého závodníka
 - Auto-discovery + fallback na CLI
 
-### Fáze B: Automatické testování (AKTUÁLNÍ)
-- Replay mód v C123 serveru
-- Test utilities ve scoreboardu
-- Integrační test porovnávající CLI vs C123Server
-- Opravy nalezených rozdílů
+### Fáze B: Automatické testování ✅ HOTOVO
+- ✅ Mock servery pro replay testování (TCP + WS)
+- ✅ Test utilities ve scoreboardu (EventCollector, Comparator, Orchestrator)
+- ✅ Integrační test porovnávající CLI vs C123Server
+- ✅ Playwright vizuální testy
+- ✅ Opravy nalezených rozdílů (raceName, raceStatus mapování)
 
-### Fáze C: Rozšíření (po ověření Fáze B)
-- REST API pro merged BR1/BR2 (ujasníme detaily)
-- XmlChange handling
-- Sync po reconnect
+### Fáze C: Rozšíření ✅ HOTOVO
+- ⏳ REST API pro merged BR1/BR2 (ujasníme detaily) - zatím nepotřeba
+- ✅ XmlChange handling (Blok 5)
+- ✅ Sync po reconnect (Blok 5)
 
 ---
 
@@ -690,6 +693,14 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 - ✅ 5 nových unit testů pro XmlChange a reconnect sync
 - **Celkem 31 testů** v C123ServerProvider.test.ts, **566 unit testů celkem**
 - **Commit:** `feat: add REST API sync and XmlChange handling`
+
+### 2026-01-04 - Fáze B a C dokončeny
+- ✅ Všechny bloky implementace dokončeny (Blok 1-6, T1-T4)
+- ✅ 566 unit testů prochází
+- ✅ Build prochází
+- ✅ Fáze A, B, C kompletní
+- Zbývá pouze REST API pro merged BR1/BR2 - bude implementováno dle potřeby
+- **Status:** Projekt je funkční a připravený k použití
 
 ---
 
