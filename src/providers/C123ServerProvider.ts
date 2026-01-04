@@ -32,7 +32,7 @@ import type {
   EventInfoData,
 } from './types'
 import { CallbackManager } from './utils/CallbackManager'
-import { getWebSocketUrl } from './utils/discovery-client'
+import { getWebSocketUrl, getServerInfo } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 
@@ -363,6 +363,22 @@ export class C123ServerProvider implements DataProvider {
     if (!data.c123Connected) {
       // C123 timing system not connected to server
       this.emitError('CONNECTION_ERROR', 'C123 Server is not connected to timing system')
+    }
+
+    // Fetch event name from discovery endpoint and emit as title
+    this.fetchEventName().catch(err => {
+      console.warn('C123Server: Failed to fetch event name:', err)
+    })
+  }
+
+  /**
+   * Fetch event name from /api/discover endpoint and emit as EventInfo
+   */
+  private async fetchEventName(): Promise<void> {
+    const serverInfo = await getServerInfo(this.httpUrl)
+    if (serverInfo?.eventName) {
+      console.log(`C123Server: Event name: ${serverInfo.eventName}`)
+      this.callbacks.emitEventInfo({ title: serverInfo.eventName })
     }
   }
 

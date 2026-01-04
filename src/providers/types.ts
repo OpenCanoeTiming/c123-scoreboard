@@ -33,11 +33,17 @@ export interface OnCourseData {
 
 /**
  * Event info data
+ *
+ * All fields are optional to allow partial updates.
+ * Each provider may only send a subset of fields depending on the message type:
+ * - TimeOfDay messages: only dayTime
+ * - Title messages: only title
+ * - InfoText messages: only infoText
  */
 export interface EventInfoData {
-  title: string
-  infoText: string
-  dayTime: string
+  title?: string
+  infoText?: string
+  dayTime?: string
 }
 
 /**

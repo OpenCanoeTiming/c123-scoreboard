@@ -295,6 +295,6 @@ export class EventCollector {
   private extractDayTimes(): string[] {
     return this._eventInfo
       .map((e) => e.data.dayTime)
-      .filter((dt) => dt && dt.length > 0)
+      .filter((dt): dt is string => dt !== undefined && dt.length > 0)
   }
 }

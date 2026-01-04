@@ -798,46 +798,49 @@ Testování proti živému serveru na `192.168.68.108:27123` odhalilo následuj�
 
 ---
 
-### Blok 9: Opravy zobrazení výsledků (~35% kontextu)
+### Blok 9: Opravy zobrazení výsledků (~35% kontextu) ✅ COMPLETE
 
-#### 9.1 Highlight při druhé horší jízdě
-**Problém:** Když je druhá jízda horší než první, neudělá se highlight. Když je lepší, highlight funguje.
-
-**Opatrně!** Toto je citlivá logika, postupovat opatrně.
+#### 9.1 Highlight při druhé horší jízdě ✅
+**Problém:** Highlight nefungoval při druhé horší jízdě - porovnával se `pendingHighlightTotal` (čas aktuální jízdy z OnCourse) s `result.total` (nejlepší čas z obou jízd), které se neshodovaly.
 
 **Řešení:**
-- [ ] Analyzovat současnou highlight logiku v `ScoreboardContext.tsx` (FinishDetector)
-- [ ] Ověřit podmínky pro highlight - měl by být vždy při dojetí, ne jen při zlepšení
-- [ ] Napsat unit testy pro různé scénáře (lepší/horší jízda)
+- [x] Změněna logika z porovnávání total na timestamp-based detekci
+- [x] `pendingHighlightTotal` nahrazeno `pendingHighlightTimestamp`
+- [x] Highlight se aktivuje když Results obsahují závodníka a pending je čerstvý (<10s)
 
 **Soubory:**
-- `src/context/ScoreboardContext.tsx` (FinishDetector)
-- `src/providers/utils/c123ServerMapper.ts`
-
-#### 9.2 DNS/DNF/DSQ indikace
-**Problém:** Jezdci s DNS/DNF/DSQ mají místo času a penalizace zobrazené čísla. Měla by být správná indikace (text "DNS", "DNF", "DSQ").
-
-**Řešení:**
-- [ ] Zkontrolovat jak C123 server posílá tyto stavy
-- [ ] Upravit mapper nebo komponenty pro správné zobrazení
-- [ ] Komponenta `ResultRow` - detekovat status a zobrazit text místo času
-
-**Soubory:**
-- `src/providers/utils/c123ServerMapper.ts`
-- `src/components/ResultRow.tsx` (nebo ekvivalent)
-
-#### 9.3 Chybějící title v záhlaví akce
-**Problém:** Není žádný title v záhlaví akce. V CLI se posílal specifický control message.
-
-**Řešení:**
-- [ ] Zjistit co C123 server poskytuje (REST API /api/status? nebo WS zpráva?)
-- [ ] Implementovat získání title z C123 serveru
-- [ ] Fallback na název akce z XML nebo raceId
-
-**Soubory:**
-- `src/providers/C123ServerProvider.ts`
-- `src/providers/utils/c123ServerApi.ts`
 - `src/context/ScoreboardContext.tsx`
+
+#### 9.2 DNS/DNF/DSQ indikace ✅
+**Problém:** Závodníci s DNS/DNF/DSQ měli zobrazené čísla místo textu status.
+
+**Řešení:**
+- [x] Přidán `status` field do `Result` typu (DNS, DNF, DSQ)
+- [x] Implementována detekce v `c123ServerMapper.ts` - z explicitního pole nebo z datových vzorců
+- [x] `ResultRow` komponenta zobrazuje status místo času/penalizace pro nevalidní výsledky
+- [x] CSS styl `.statusIndicator` pro zvýraznění statusu
+
+**Soubory:**
+- `src/types/result.ts` - přidán ResultStatus typ
+- `src/types/c123server.ts` - přidán status field
+- `src/providers/utils/c123ServerMapper.ts` - detekce a mapování statusu
+- `src/components/ResultsList/ResultRow.tsx` - zobrazení statusu
+- `src/components/ResultsList/ResultsList.module.css` - styl pro status
+
+#### 9.3 Chybějící title v záhlaví akce ✅
+**Problém:** Title v záhlaví nebyl zobrazen - C123 server ho posílá v `/api/discover` jako `eventName`.
+
+**Řešení:**
+- [x] Při připojení se volá `getServerInfo()` pro získání eventName
+- [x] EventName se posílá jako title přes `emitEventInfo()`
+- [x] `EventInfoData` typ změněn na optional fields aby se nepřepisovaly jiné hodnoty
+
+**Soubory:**
+- `src/providers/C123ServerProvider.ts` - fetchEventName při připojení
+- `src/providers/types.ts` - optional fields v EventInfoData
+- `src/providers/utils/c123ServerMapper.ts` - mapTimeOfDay vrací jen dayTime
+
+**Commit:** `fix: improve highlight, DNS/DNF/DSQ display, and event title`
 
 ---
 

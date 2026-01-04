@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import styles from './ResultsList.module.css'
-import type { Result } from '@/types'
+import type { Result, ResultStatus } from '@/types'
 import { formatName } from '@/utils/formatName'
 
 /**
@@ -38,6 +38,13 @@ function formatBehind(behind: string): string {
 }
 
 /**
+ * Check if result has invalid status (DNS, DNF, DSQ)
+ */
+function isInvalidResult(status?: ResultStatus): status is 'DNS' | 'DNF' | 'DSQ' {
+  return status === 'DNS' || status === 'DNF' || status === 'DSQ'
+}
+
+/**
  * ResultRow component
  *
  * Displays a single result in the results list with:
@@ -45,7 +52,7 @@ function formatBehind(behind: string): string {
  * - Bib (start number)
  * - Name (competitor name)
  * - Penalty (always shown on both layouts)
- * - Time (total time)
+ * - Time (total time) - or status for invalid results (DNS, DNF, DSQ)
  * - Behind (hidden on ledwall)
  *
  * @example
@@ -63,20 +70,25 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     ref
   ) {
     const rowClasses = `${styles.row}${isHighlighted ? ` ${styles.highlighted}` : ''}${layoutMode === 'ledwall' ? ` ${styles.ledwall}` : ''}`
+    const hasInvalidStatus = isInvalidResult(result.status)
 
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
-        <div className={styles.rank}>{result.rank}.</div>
+        <div className={styles.rank}>{hasInvalidStatus ? '-' : `${result.rank}.`}</div>
         <div className={styles.bib}>{result.bib}</div>
         <div className={styles.name}>{formatName(result.name)}</div>
         {showPenalty && (
-          <div className={`${styles.penalty} ${getPenaltyClass(result.pen)}`}>
-            {result.pen}
+          <div className={`${styles.penalty} ${hasInvalidStatus ? '' : getPenaltyClass(result.pen)}`}>
+            {hasInvalidStatus ? '' : result.pen}
           </div>
         )}
-        <div className={styles.time}>{result.total}</div>
+        <div className={`${styles.time} ${hasInvalidStatus ? styles.statusIndicator : ''}`}>
+          {hasInvalidStatus ? result.status : result.total}
+        </div>
         {showBehind && (
-          <div className={styles.behind}>{formatBehind(result.behind)}</div>
+          <div className={styles.behind}>
+            {hasInvalidStatus ? '' : formatBehind(result.behind)}
+          </div>
         )}
       </div>
     )

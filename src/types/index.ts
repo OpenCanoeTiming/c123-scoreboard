@@ -1,6 +1,6 @@
 // Re-export all types
 export type { OnCourseCompetitor } from './competitor'
-export type { Result } from './result'
+export type { Result, ResultStatus } from './result'
 export type { RaceConfig } from './config'
 export type { VisibilityState } from './visibility'
 export { defaultVisibility } from './visibility'

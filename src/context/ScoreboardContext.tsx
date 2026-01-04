@@ -58,9 +58,10 @@ export interface ScoreboardState {
   departedAt: number | null
 
   // Pending highlight - bib that just finished but waiting for results to update
-  // The actual highlight only triggers when results contain updated data for this bib
+  // The actual highlight triggers when results contain updated data for this bib
   pendingHighlightBib: string | null
-  pendingHighlightTotal: string | null // The total time when they finished (from oncourse)
+  // Timestamp when the pending highlight was set, used for timeout-based fallback
+  pendingHighlightTimestamp: number | null
 
   // Visibility
   visibility: VisibilityState
@@ -129,7 +130,7 @@ const initialState: ScoreboardState = {
   departingCompetitor: null,
   departedAt: null,
   pendingHighlightBib: null,
-  pendingHighlightTotal: null,
+  pendingHighlightTimestamp: null,
   visibility: defaultVisibility,
   title: '',
   infoText: '',
@@ -181,7 +182,7 @@ function scoreboardReducer(
       }
 
       // Check if we have a pending highlight that matches a result in the new results
-      // The highlight only triggers when the results actually contain the competitor's new total
+      // The highlight triggers when results contain the competitor who just finished
       const newState: ScoreboardState = {
         ...state,
         results: action.results,
@@ -191,20 +192,34 @@ function scoreboardReducer(
         initialDataReceived: true,
       }
 
-      // If we have a pending highlight, check if results now contain the updated total
-      if (state.pendingHighlightBib && state.pendingHighlightTotal) {
+      // If we have a pending highlight, check if results contain this competitor
+      // We trigger highlight when:
+      // 1. Results contain the competitor who just finished
+      // 2. The pending was set recently (within 10 seconds) to avoid stale highlights
+      if (state.pendingHighlightBib && state.pendingHighlightTimestamp) {
         const result = action.results.find(r => r.bib.trim() === state.pendingHighlightBib)
-        if (result && result.total === state.pendingHighlightTotal) {
-          // Results now contain the correct total - trigger actual highlight
+        const pendingAge = Date.now() - state.pendingHighlightTimestamp
+
+        // Only trigger if pending is fresh (within 10 seconds) and result exists
+        // This prevents stale pending highlights from triggering on unrelated result updates
+        if (result && pendingAge < 10000) {
+          // Results contain the competitor - trigger highlight
+          // Note: We don't compare totals because in BR2 the result.total is the best
+          // of both runs, while OnCourse total is just the current run's time.
+          // This fixes highlight not working when second run is worse.
           newState.highlightBib = state.pendingHighlightBib
           newState.highlightTimestamp = Date.now()
           newState.pendingHighlightBib = null
-          newState.pendingHighlightTotal = null
+          newState.pendingHighlightTimestamp = null
           // Clear departing if this was the departing competitor
           if (state.departingCompetitor?.bib === state.pendingHighlightBib) {
             newState.departingCompetitor = null
             newState.departedAt = null
           }
+        } else if (pendingAge >= 10000) {
+          // Pending expired without getting results - clear it
+          newState.pendingHighlightBib = null
+          newState.pendingHighlightTimestamp = null
         }
       }
 
@@ -299,11 +314,13 @@ function scoreboardReducer(
         const prevComp = state.onCourse.find(c => c.bib === curr.bib)
         // Only trigger if we've seen this competitor before without dtFinish
         // This prevents false highlights on reconnect or initial load
-        if (prevComp && !prevComp.dtFinish && curr.dtFinish && curr.total) {
-          // Competitor just finished - set pending highlight
-          // Actual highlight will trigger in SET_RESULTS when results contain this total
+        if (prevComp && !prevComp.dtFinish && curr.dtFinish) {
+          // Competitor just finished - set pending highlight with timestamp
+          // Actual highlight will trigger in SET_RESULTS when results contain this bib
+          // Note: We don't store curr.total because in BR2 the Results total differs
+          // from OnCourse total (Results has best of both runs, OnCourse has current run)
           newState.pendingHighlightBib = curr.bib
-          newState.pendingHighlightTotal = curr.total
+          newState.pendingHighlightTimestamp = Date.now()
           break // Only one competitor can finish at a time
         }
       }

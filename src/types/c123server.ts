@@ -112,6 +112,7 @@ export interface C123ResultRow {
   time: string // time in seconds: "79.99"
   total: string // time + penalty: "78.99"
   behind: string // difference to first: "" for winner, "+1.50" for others
+  status?: string // IRM field: "DNS", "DNF", "DSQ", or empty for valid results
 }
 
 export interface C123ResultsData {

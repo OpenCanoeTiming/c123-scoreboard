@@ -9,8 +9,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - highlighte
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -28,7 +27,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - highlighte
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -48,8 +47,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - leader (no
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -67,7 +65,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - leader (no
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -87,8 +85,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - with behin
     <div
       class="_rank_ec9a59"
     >
-      2
-      .
+      2.
     </div>
     <div
       class="_bib_ec9a59"
@@ -106,7 +103,7 @@ exports[`ResultRow snapshots > basic states > should match snapshot - with behin
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       97.45
     </div>
@@ -128,8 +125,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - behin
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -147,7 +143,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - behin
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -164,8 +160,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - both 
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -178,7 +173,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - both 
       NOVAK Jan
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -195,8 +190,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - penal
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -209,7 +203,7 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - penal
       NOVAK Jan
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -229,8 +223,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall hi
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -248,7 +241,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall hi
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -265,8 +258,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall la
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -284,7 +276,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall la
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -301,8 +293,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall wi
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -320,7 +311,7 @@ exports[`ResultRow snapshots > ledwall mode > should match snapshot - ledwall wi
       206
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       353.91
     </div>
@@ -337,8 +328,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - long na
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -356,7 +346,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - long na
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -376,8 +366,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - short n
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -395,7 +384,7 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - short n
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>
@@ -415,8 +404,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 2s touch
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -434,7 +422,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 2s touch
       2
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       97.32
     </div>
@@ -454,8 +442,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 4s doubl
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -473,7 +460,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 4s doubl
       4
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       99.32
     </div>
@@ -493,8 +480,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 50s miss
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -512,7 +498,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 50s miss
       50
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       145.32
     </div>
@@ -532,8 +518,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 52s comb
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -551,7 +536,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 52s comb
       52
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       147.32
     </div>
@@ -571,8 +556,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 100s mul
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -590,7 +574,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 100s mul
       100
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       195.32
     </div>
@@ -610,8 +594,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - zero pen
     <div
       class="_rank_ec9a59"
     >
-      1
-      .
+      1.
     </div>
     <div
       class="_bib_ec9a59"
@@ -629,7 +612,7 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - zero pen
       0
     </div>
     <div
-      class="_time_ec9a59"
+      class="_time_ec9a59 "
     >
       95.32
     </div>

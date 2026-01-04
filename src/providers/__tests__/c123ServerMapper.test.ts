@@ -376,8 +376,9 @@ describe('mapTimeOfDay', () => {
     const result = mapTimeOfDay(data)
 
     expect(result.dayTime).toBe('19:04:20')
-    expect(result.title).toBe('')
-    expect(result.infoText).toBe('')
+    // title and infoText are not included to prevent overwriting
+    expect(result.title).toBeUndefined()
+    expect(result.infoText).toBeUndefined()
   })
 
   it('handles different time formats', () => {
