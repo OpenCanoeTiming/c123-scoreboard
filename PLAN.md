@@ -478,13 +478,21 @@ npx playwright test cli-vs-c123.spec.ts --project=vertical --workers=1
 - Re-run testy dokud PASS
 **Commit:** `fix: align C123ServerProvider output with CLI`
 
-### Blok 5: REST sync a XmlChange (PO OVĚŘENÍ)
-**Soubory:** `src/providers/C123ServerProvider.ts` (update)
-**Commit:** `feat: add REST API sync and XmlChange handling`
+### Blok 5: REST sync a XmlChange (~30% kontextu) ✅ HOTOVO
+**Soubory:**
+- ✅ `src/providers/C123ServerProvider.ts` (update) - XmlChange handler, sync po reconnect
+- ✅ `src/providers/__tests__/C123ServerProvider.test.ts` (update) - 5 nových testů
+**Commit:** ✅ `feat: add REST API sync and XmlChange handling`
+
+**Implementováno:**
+- XmlChange message handling s checksum deduplication
+- Sync state po reconnect přes REST API
+- Konfigurovatelné možnosti: `syncOnReconnect`, `apiTimeout`
+- Unit testy pro XmlChange a reconnect sync
 
 ### Blok 6: Unit testy (~30% kontextu) ✅ HOTOVO
 **Soubory:**
-- ✅ `src/providers/__tests__/C123ServerProvider.test.ts` (26 testů)
+- ✅ `src/providers/__tests__/C123ServerProvider.test.ts` (31 testů)
 - ✅ `src/providers/__tests__/c123ServerMapper.test.ts` (21 testů)
 **Commit:** ✅ `test: add C123 Server unit tests`
 
@@ -496,8 +504,9 @@ npx playwright test cli-vs-c123.spec.ts --project=vertical --workers=1
 - C123ServerProvider:
   - Connection lifecycle (connect, disconnect)
   - Auto-reconnection s exponential backoff
-  - Message handling (Results, OnCourse, TimeOfDay, Connected, Error)
+  - Message handling (Results, OnCourse, TimeOfDay, Connected, Error, XmlChange)
   - Invalid message handling
+  - Sync on reconnect (enabled/disabled)
 
 ---
 
@@ -669,6 +678,18 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
   - Invalid messages: invalid JSON, missing type, unknown types
 - **Fix:** Opraven `mapResults()` fallback na `raceId` když `mainTitle` je prázdný
 - **Commit:** `test: add C123 Server unit tests`
+
+### 2026-01-04 - Blok 5 hotový (REST sync a XmlChange)
+- ✅ Implementován XmlChange message handling v C123ServerProvider
+  - Checksum deduplication - ignoruje duplicitní XmlChange se stejným checksum
+  - Při změně Results sekce volá REST API pro sync
+- ✅ Implementován sync state po reconnect
+  - Po znovupřipojení (ne při prvním connect) volá REST API pro aktuální stav
+  - Konfigurovatelné přes `syncOnReconnect` option (default: true)
+- ✅ Přidány nové options: `apiTimeout`, `syncOnReconnect`
+- ✅ 5 nových unit testů pro XmlChange a reconnect sync
+- **Celkem 31 testů** v C123ServerProvider.test.ts, **566 unit testů celkem**
+- **Commit:** `feat: add REST API sync and XmlChange handling`
 
 ---
 
