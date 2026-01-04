@@ -236,21 +236,27 @@ npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 ### 2026-01-04 - Blok 10.4 VYŘEŠENO
 **Problém:** C123 server posílá OnCourse zprávy střídavě (bib 10, pak bib 11) - každá zpráva jen jeden závodník.
 
-**Předchozí neúspěšné pokusy:**
-1. Timeout-based cleanup - rozbilo highlight
-2. Jednoduchý merge - selhalo bez správné detekce partial messages
+**Tři opravené problémy:**
 
-**Klíčový insight:** Zprávy mají `total: 2` ale `competitors.length: 1` → partial message.
+1. **Poblikávání s neodstartovaným závodníkem:**
+   - Zpráva o neodstartovaném (bez dtStart) způsobovala `updateOnCourse: true`
+   - Fix: `isPartialMessage = total > activeCompetitors.length` (i pro prázdné)
 
-**Úspěšné řešení:**
-1. **c123ServerMapper.ts:** Detekce partial messages `total > competitors.length`
-   - Partial: `updateOnCourse: false` (merge jako CLI comp)
-   - Full: `updateOnCourse: true` (nahradit jako CLI oncourse)
-2. **ScoreboardContext.tsx:**
-   - Pro partial messages: merge závodníka do existujícího seznamu
-   - Filtrovat závodníky s `dtFinish` po merge (odebrat dokončené)
-   - Detekce finish PŘED filtrací (zachovat highlight)
-   - Přidána proměnná `partialFinishBib` pro správné spuštění highlight
+2. **Okamžité zmizení dojetého závodníka:**
+   - Závodník s dtFinish zmizel okamžitě bez grace period
+   - Fix: dtFinish filtrováno jen pro výběr `current`, ne pro `onCourse` seznam
+
+3. **Závodník nikdy nezmizí (3+ na trati):**
+   - S partial messages závodník s dtFinish zůstal navždy
+   - Fix: Grace period tracking (`onCourseFinishedAt: Record<bib, timestamp>`)
+   - Po 5 sekundách od dtFinish závodník odstraněn
+
+**Klíčový insight:** Rozdíl mezi 2→1 (full message) a 3→2 (partial messages).
+
+**Soubory:**
+- `constants.ts`: `FINISHED_GRACE_PERIOD = 5000`
+- `c123ServerMapper.ts`: Opravená detekce partial messages
+- `ScoreboardContext.tsx`: Grace period logika + filtrování pro current
 
 ---
 
