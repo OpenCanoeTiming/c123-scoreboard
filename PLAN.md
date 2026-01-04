@@ -56,38 +56,43 @@ Zajistit stabilitu, kvalitu kódu a komplexní pokrytí testy před nasazením d
 
 ---
 
-### Blok 12: Doplnění testů
+### Blok 12: Doplnění testů ✅
 
-#### 12.1 Testy pro partial OnCourse messages (C123)
-**Stav:** [ ] TODO
+#### 12.1 Testy pro partial OnCourse messages (C123) ✅
+**Stav:** [x] Hotovo
 
-**Scénáře k pokrytí:**
-- [ ] `mapOnCourse` - partial message (`total > competitors.length`) vrací `updateOnCourse: false`
-- [ ] `mapOnCourse` - prázdný competitors s `total > 0` je partial
-- [ ] `ScoreboardContext` - merge partial message do existujícího seznamu
-- [ ] `ScoreboardContext` - grace period pro dokončené závodníky
+**Scénáře pokryty:**
+- [x] `mapOnCourse` - partial message (`total > competitors.length`) vrací `updateOnCourse: false`
+- [x] `mapOnCourse` - prázdný competitors s `total > 0` je partial
+- [x] `ScoreboardContext` - merge partial message do existujícího seznamu
+- [x] `ScoreboardContext` - detekce finish z partial message
 
-#### 12.2 Testy pro DNS/DNF/DSQ
-**Stav:** [ ] TODO
+#### 12.2 Testy pro DNS/DNF/DSQ ✅
+**Stav:** [x] Hotovo
 
-**Scénáře:**
-- [ ] `mapResults` - status jen když není validní total
-- [ ] `mapResults` - ignoruje status když má validní čas
-- [ ] `ResultRow` - nevýrazný styl pro DNS/DNF/DSQ
+**Scénáře pokryty:**
+- [x] `mapResults` - status jen když není validní total
+- [x] `mapResults` - ignoruje status když má validní čas
+- [x] `mapResults` - normalizace lowercase na uppercase
+- [x] `mapResults` - total "0" a "0.00" jako invalid
 
-#### 12.3 Testy pro category change flow
-**Stav:** [ ] TODO
+#### 12.3 Testy pro category change flow ✅
+**Stav:** [x] Hotovo
 
-**Scénáře:**
-- [ ] `ScoreboardContext` - vymaže results při změně activeRaceId
-- [ ] `ScoreboardContext` - filtruje Results podle targetRaceId
+**Scénáře pokryty:**
+- [x] `ScoreboardContext` - vymaže results při změně activeRaceId
+- [x] `ScoreboardContext` - filtruje Results podle targetRaceId
+- [x] `ScoreboardContext` - použije lastActiveRaceId když nikdo není na trati
 
-#### 12.4 Testy pro title display
-**Stav:** [ ] TODO
+#### 12.4 Testy pro title display ✅
+**Stav:** [x] Hotovo
 
-**Scénáře:**
-- [ ] `Title` komponenta - zobrazí "TITLE: CATEGORY"
-- [ ] `Title` komponenta - fallback na jen CATEGORY když chybí title
+**Scénáře pokryty:**
+- [x] `Title` komponenta - zobrazí "TITLE: CATEGORY"
+- [x] `Title` komponenta - fallback na jen CATEGORY když chybí title
+- [x] `Title` komponenta - extrakce kategorie z raceName
+
+**Commit:** `test: add tests for Block 12` (39f77ef)
 
 ---
 
