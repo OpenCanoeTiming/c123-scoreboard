@@ -482,11 +482,22 @@ npx playwright test cli-vs-c123.spec.ts --project=vertical --workers=1
 **Soubory:** `src/providers/C123ServerProvider.ts` (update)
 **Commit:** `feat: add REST API sync and XmlChange handling`
 
-### Blok 6: Unit testy (~30% kontextu)
+### Blok 6: Unit testy (~30% kontextu) ✅ HOTOVO
 **Soubory:**
-- `src/providers/__tests__/C123ServerProvider.test.ts`
-- `src/providers/__tests__/c123ServerMapper.test.ts`
-**Commit:** `test: add C123 Server unit tests`
+- ✅ `src/providers/__tests__/C123ServerProvider.test.ts` (26 testů)
+- ✅ `src/providers/__tests__/c123ServerMapper.test.ts` (21 testů)
+**Commit:** ✅ `test: add C123 Server unit tests`
+
+**Pokryté testy:**
+- c123ServerMapper: mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig
+  - Race name construction (BR1/BR2 suffix)
+  - Race status mapping (isCurrent → "In Progress"/"Unofficial")
+  - Competitor selection (oldest dtStart as current)
+- C123ServerProvider:
+  - Connection lifecycle (connect, disconnect)
+  - Auto-reconnection s exponential backoff
+  - Message handling (Results, OnCourse, TimeOfDay, Connected, Error)
+  - Invalid message handling
 
 ---
 
@@ -642,6 +653,22 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
   4. **onCourseBibs** - timing rozdíl v momentě ukončení nahrávky
 - **Všechny rozdíly jsou očekávané** - nejsou chybou, pouze odrážejí rozdílné chování providerů
 - **Commit:** `fix: use human-readable raceStatus values in C123 mapper`
+
+### 2026-01-04 - Blok 6 hotový (Unit testy)
+- ✅ Vytvořeny unit testy pro C123 Server komponenty
+- `src/providers/__tests__/c123ServerMapper.test.ts` - 21 testů
+  - mapOnCourse: empty list, single/multiple competitors, oldest dtStart selection
+  - mapResults: race name construction, BR1/BR2 suffix, raceStatus mapping
+  - mapTimeOfDay: time format
+  - mapRaceConfig: gate count, status mapping
+- `src/providers/__tests__/C123ServerProvider.test.ts` - 26 testů
+  - Constructor: URL conversion (http→ws, https→wss)
+  - Connection lifecycle: connect, disconnect, status transitions
+  - Auto-reconnection: exponential backoff (1s→2s→4s), max delay cap, reset on success
+  - Message handling: Results, OnCourse, TimeOfDay, Connected, Error
+  - Invalid messages: invalid JSON, missing type, unknown types
+- **Fix:** Opraven `mapResults()` fallback na `raceId` když `mainTitle` je prázdný
+- **Commit:** `test: add C123 Server unit tests`
 
 ---
 
