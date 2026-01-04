@@ -231,12 +231,23 @@ function scoreboardReducer(
       // comp messages set updateOnCourse=false to preserve existing onCourse list
       const shouldUpdateOnCourse = action.updateOnCourse !== false
 
+      // For partial/merge messages (C123), detect finish BEFORE filtering
+      // This allows us to catch the dtFinish transition before removing finished competitors
+      let partialFinishBib: string | null = null
+      if (!shouldUpdateOnCourse && action.current?.dtFinish) {
+        const prevComp = state.onCourse.find(c => c.bib === action.current!.bib)
+        if (prevComp && !prevComp.dtFinish) {
+          // Competitor just finished - remember for highlight detection later
+          partialFinishBib = action.current.bib
+        }
+      }
+
       let newOnCourse: OnCourseCompetitor[]
       if (shouldUpdateOnCourse) {
         // Full list from oncourse message
         newOnCourse = action.onCourse
       } else if (action.current) {
-        // comp message - update existing competitor in onCourse list or add if not present
+        // comp/partial message - update existing competitor in onCourse list or add if not present
         const existingIndex = state.onCourse.findIndex(c => c.bib === action.current!.bib)
         if (existingIndex >= 0) {
           // Update existing competitor's data, preserving dtStart/dtFinish from oncourse
@@ -252,6 +263,12 @@ function scoreboardReducer(
           // New competitor - add to list
           newOnCourse = [...state.onCourse, action.current]
         }
+
+        // For partial/merge messages: remove competitors who have finished (have dtFinish)
+        // In CLI this happens naturally when oncourse message replaces the list.
+        // For C123 partial messages, we need to explicitly remove finished competitors.
+        // Note: finish detection already captured above BEFORE this filter.
+        newOnCourse = newOnCourse.filter(c => !c.dtFinish)
       } else {
         newOnCourse = state.onCourse
       }
@@ -321,18 +338,28 @@ function scoreboardReducer(
       // the pending highlight info and wait for SET_RESULTS to contain the
       // actual updated result for this competitor. This ensures the scroll
       // and highlight happen at the right time.
-      for (const curr of newOnCourse) {
-        const prevComp = state.onCourse.find(c => c.bib === curr.bib)
-        // Only trigger if we've seen this competitor before without dtFinish
-        // This prevents false highlights on reconnect or initial load
-        if (prevComp && !prevComp.dtFinish && curr.dtFinish) {
-          // Competitor just finished - set pending highlight with timestamp
-          // Actual highlight will trigger in SET_RESULTS when results contain this bib
-          // Note: We don't store curr.total because in BR2 the Results total differs
-          // from OnCourse total (Results has best of both runs, OnCourse has current run)
-          newState.pendingHighlightBib = curr.bib
-          newState.pendingHighlightTimestamp = Date.now()
-          break // Only one competitor can finish at a time
+      //
+      // For partial messages (C123), finish is detected earlier (partialFinishBib)
+      // because finished competitors are filtered out of newOnCourse.
+      if (partialFinishBib) {
+        // Finish detected from partial message before filtering
+        newState.pendingHighlightBib = partialFinishBib
+        newState.pendingHighlightTimestamp = Date.now()
+      } else {
+        // For full list messages (CLI oncourse), scan the list for finish transitions
+        for (const curr of newOnCourse) {
+          const prevComp = state.onCourse.find(c => c.bib === curr.bib)
+          // Only trigger if we've seen this competitor before without dtFinish
+          // This prevents false highlights on reconnect or initial load
+          if (prevComp && !prevComp.dtFinish && curr.dtFinish) {
+            // Competitor just finished - set pending highlight with timestamp
+            // Actual highlight will trigger in SET_RESULTS when results contain this bib
+            // Note: We don't store curr.total because in BR2 the Results total differs
+            // from OnCourse total (Results has best of both runs, OnCourse has current run)
+            newState.pendingHighlightBib = curr.bib
+            newState.pendingHighlightTimestamp = Date.now()
+            break // Only one competitor can finish at a time
+          }
         }
       }
 

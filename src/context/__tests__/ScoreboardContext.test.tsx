@@ -514,12 +514,14 @@ describe('ScoreboardContext', () => {
       })
 
       // Results arrive - triggers actual highlight
+      // Note: raceId must match competitors' raceId to prevent category-change clearing
       act(() => {
         mockProvider.triggerResults({
           results: [createResult({ bib: '42', total: '92.50' })],
           raceName: 'Test Race',
           raceStatus: 'Running',
           highlightBib: null,
+          raceId: 'R1', // Match competitors' default raceId
         })
       })
 

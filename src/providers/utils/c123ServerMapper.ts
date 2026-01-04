@@ -69,6 +69,12 @@ function findOldestOnCourse(competitors: OnCourseCompetitor[]): OnCourseCompetit
  * This prevents "ghost" competitors from appearing in the on-course display
  * when they're in the start list but haven't actually started.
  *
+ * C123 server may send partial messages where total > competitors.length.
+ * This happens when Canoe123 timing system sends updates for individual
+ * competitors alternately. In this case, we treat the message like CLI's
+ * "comp" message (updateOnCourse: false) to merge into existing list
+ * rather than replacing it.
+ *
  * @param data - C123 OnCourse message data
  * @returns OnCourseData for scoreboard
  */
@@ -81,10 +87,16 @@ export function mapOnCourse(data: C123OnCourseData): OnCourseData {
   // the start queue but haven't started yet
   const activeCompetitors = allCompetitors.filter(c => c.dtStart !== null && c.dtStart !== '')
 
+  // Detect partial messages: when total indicates more competitors than we received
+  // C123 timing system sends updates alternately for each competitor
+  // e.g., total=2 but only 1 competitor in message - this is a partial update
+  const isPartialMessage = data.total > activeCompetitors.length && activeCompetitors.length > 0
+
   return {
-    current: findOldestOnCourse(activeCompetitors),
+    current: isPartialMessage ? activeCompetitors[0] : findOldestOnCourse(activeCompetitors),
     onCourse: activeCompetitors,
-    updateOnCourse: true,
+    // Partial messages should merge (like CLI comp), full messages should replace (like CLI oncourse)
+    updateOnCourse: !isPartialMessage,
   }
 }
 

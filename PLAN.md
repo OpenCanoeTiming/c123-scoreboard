@@ -13,7 +13,7 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 | Fáze A: Základní funkčnost | ✅ Hotovo |
 | Fáze B: Automatické testování | ✅ Hotovo |
 | Fáze C: REST sync a XmlChange | ✅ Hotovo |
-| Fáze D: Opravy z live testování | 🔄 Probíhá |
+| Fáze D: Opravy z live testování | ✅ Hotovo |
 
 ---
 
@@ -36,14 +36,22 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 
 **Řešení:** V SET_ON_COURSE reducer se vymaže results při změně activeRaceId.
 
-#### 10.4 OnCourse: Blikání jezdce na trati
-**Problém:** Jeden jezdec na trati jede (má start čas), druhý ještě nejede (nemá start čas) → jezdec na trati poblikává, protože se střídá se závodníkem co je na trati ale ještě nejede.
+#### 10.4 OnCourse: Blikání jezdce na trati ✅
+**Problém:** Když jsou dva závodníci na trati, blikají/střídají se. Jeden závodník "pohasíná".
 
-**Požadavek:** Zobrazovat jen toho, kdo má **nejblíže do cíle** (vyjel jako první). Tento princip byl řešen vícekrát - dodržet konzistentně.
+**Příčina (zjištěná analýzou):** C123 server posílá OnCourse zprávy střídavě pro jednotlivé závodníky:
+- Zpráva 1: `{total: 2, competitors: [závodník A]}`
+- Zpráva 2: `{total: 2, competitors: [závodník B]}`
+- Zpráva 3: `{total: 2, competitors: [závodník A]}` ...atd.
 
-**Soubory:**
-- `src/providers/utils/c123ServerMapper.ts` - `mapOnCourse()` filtrovat/řadit správně
-- `src/context/ScoreboardContext.tsx` - případně stabilizovat výběr
+Každá zpráva obsahuje `total: 2` (dva na trati), ale pole `competitors` má jen jednoho závodníka.
+Mapper vracel `updateOnCourse: true`, což nahrazovalo celý seznam → blikání.
+
+**Řešení:**
+- `c123ServerMapper.ts`: Detekce partial messages (`total > competitors.length`) → vrací `updateOnCourse: false` místo `true`
+- `ScoreboardContext.tsx`: Pro partial messages merguje závodníka do existujícího seznamu (jako CLI `comp` zprávy)
+- Přidáno filtrování závodníků s `dtFinish` (dokončili jízdu) při merge
+- Detekce finish pro partial messages před filtrací (zachován highlight)
 
 #### 10.5 Title v záhlaví akce ✅
 **Problém:** Title v záhlaví nebyl zobrazen když chyběl eventName.
@@ -155,7 +163,7 @@ npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 - WebSocket a connection logika (Blok 7) ✅
 - OnCourse a Results flow (Blok 8) ✅
 - Highlight, DNS/DNF/DSQ, title (Blok 9) ✅
-- Vizuální a UX opravy (Blok 10) ⏳
+- Vizuální a UX opravy (Blok 10) ✅
 
 ---
 
@@ -224,6 +232,25 @@ npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 ### 2026-01-04 - Blok 10.5 (title v záhlaví)
 - **10.5:** Title komponenta zobrazí kategorii jako fallback když chybí eventName
 - Formát: "TITLE: CATEGORY" nebo jen "CATEGORY" pokud není title
+
+### 2026-01-04 - Blok 10.4 VYŘEŠENO
+**Problém:** C123 server posílá OnCourse zprávy střídavě (bib 10, pak bib 11) - každá zpráva jen jeden závodník.
+
+**Předchozí neúspěšné pokusy:**
+1. Timeout-based cleanup - rozbilo highlight
+2. Jednoduchý merge - selhalo bez správné detekce partial messages
+
+**Klíčový insight:** Zprávy mají `total: 2` ale `competitors.length: 1` → partial message.
+
+**Úspěšné řešení:**
+1. **c123ServerMapper.ts:** Detekce partial messages `total > competitors.length`
+   - Partial: `updateOnCourse: false` (merge jako CLI comp)
+   - Full: `updateOnCourse: true` (nahradit jako CLI oncourse)
+2. **ScoreboardContext.tsx:**
+   - Pro partial messages: merge závodníka do existujícího seznamu
+   - Filtrovat závodníky s `dtFinish` po merge (odebrat dokončené)
+   - Detekce finish PŘED filtrací (zachovat highlight)
+   - Přidána proměnná `partialFinishBib` pro správné spuštění highlight
 
 ---
 
