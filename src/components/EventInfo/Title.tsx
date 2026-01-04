@@ -37,7 +37,11 @@ function extractCategory(raceName: string): string {
  * Title component
  *
  * Displays the event/race title with category. Font size adapts based on layout mode.
- * Format: "TITLE: CATEGORY" (all uppercase)
+ * Format depends on available data:
+ * - Title + category: "TITLE: CATEGORY"
+ * - Title only: "TITLE"
+ * - Category only (no title): "CATEGORY"
+ * - Neither: nothing displayed
  *
  * @example
  * ```tsx
@@ -51,17 +55,31 @@ function extractCategory(raceName: string): string {
 export function Title({ title, raceName = '', visible = true }: TitleProps) {
   const { layoutMode } = useLayout()
 
-  if (!visible || !title) {
+  if (!visible) {
+    return null
+  }
+
+  const category = extractCategory(raceName)
+
+  // Build display text based on available data:
+  // - Title + category: "TITLE: CATEGORY"
+  // - Title only: "TITLE"
+  // - Category only: "CATEGORY" (fallback when no title/eventName)
+  // - Neither: return null
+  let displayTitle: string
+  if (title && category) {
+    displayTitle = `${title.toUpperCase()}: ${category}`
+  } else if (title) {
+    displayTitle = title.toUpperCase()
+  } else if (category) {
+    // Fallback: show just category when no event title is available
+    displayTitle = category
+  } else {
+    // Nothing to display
     return null
   }
 
   const layoutClass = layoutMode === 'ledwall' ? styles.ledwall : ''
-  const category = extractCategory(raceName)
-
-  // Combine title and category, uppercase
-  const displayTitle = category
-    ? `${title.toUpperCase()}: ${category}`
-    : title.toUpperCase()
 
   return (
     <div

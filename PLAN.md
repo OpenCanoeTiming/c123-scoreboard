@@ -45,17 +45,13 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 - `src/providers/utils/c123ServerMapper.ts` - `mapOnCourse()` filtrovat/řadit správně
 - `src/context/ScoreboardContext.tsx` - případně stabilizovat výběr
 
-#### 10.5 Title v záhlaví akce
-**Problém:** Title v záhlaví stále není správně zobrazen.
+#### 10.5 Title v záhlaví akce ✅
+**Problém:** Title v záhlaví nebyl zobrazen když chyběl eventName.
 
-**Akce:**
-1. [ ] **C123 Server TODO:** Zkontrolovat naplnění eventName v API, případně přidat manuální management
-2. [ ] **Scoreboard:** Ověřit, že se správně přidává kategorie k titlu (jako při CLI)
-3. [ ] Pokud není eventName, zobrazit alespoň kategorii
-
-**Soubory:**
-- `src/providers/C123ServerProvider.ts` - fetchEventName
-- `src/App.tsx` nebo `Header` - zobrazení title + kategorie
+**Řešení:**
+- [x] Kategorie se správně přidává k titlu (formát "TITLE: CATEGORY")
+- [x] Fallback: pokud není eventName, zobrazí se jen kategorie
+- [ ] C123 Server TODO: Naplnění eventName v API (řeší se separátně)
 
 ---
 
@@ -224,6 +220,10 @@ npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 - **10.1:** Styl DNS/DNF/DSQ změněn na nevýrazný (šedá, italic, opacity)
 - **10.2:** Odstraněna inference statusu, prázdný čas = `---`
 - **10.3:** Results se mažou při změně kategorie (activeRaceId)
+
+### 2026-01-04 - Blok 10.5 (title v záhlaví)
+- **10.5:** Title komponenta zobrazí kategorii jako fallback když chybí eventName
+- Formát: "TITLE: CATEGORY" nebo jen "CATEGORY" pokud není title
 
 ---
 
