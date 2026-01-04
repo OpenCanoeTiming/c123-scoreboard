@@ -65,15 +65,25 @@ function findOldestOnCourse(competitors: OnCourseCompetitor[]): OnCourseCompetit
 /**
  * Map C123 OnCourse message data to OnCourseData
  *
+ * Filters out competitors without a valid dtStart (not yet on course).
+ * This prevents "ghost" competitors from appearing in the on-course display
+ * when they're in the start list but haven't actually started.
+ *
  * @param data - C123 OnCourse message data
  * @returns OnCourseData for scoreboard
  */
 export function mapOnCourse(data: C123OnCourseData): OnCourseData {
-  const competitors = data.competitors.map(mapOnCourseCompetitor)
+  // Map all competitors first
+  const allCompetitors = data.competitors.map(mapOnCourseCompetitor)
+
+  // Filter to only competitors who have actually started (have valid dtStart)
+  // This fixes the issue where competitors appear/disappear when they're in
+  // the start queue but haven't started yet
+  const activeCompetitors = allCompetitors.filter(c => c.dtStart !== null && c.dtStart !== '')
 
   return {
-    current: findOldestOnCourse(competitors),
-    onCourse: competitors,
+    current: findOldestOnCourse(activeCompetitors),
+    onCourse: activeCompetitors,
     updateOnCourse: true,
   }
 }
@@ -166,6 +176,7 @@ export function mapResults(data: C123ResultsData): ResultsData {
     raceName,
     raceStatus: mapRaceStatus(data.isCurrent),
     highlightBib: null, // C123 Server doesn't provide this; finish detection uses dtFinish
+    raceId: data.raceId, // Include raceId for active category tracking
   }
 }
 

@@ -38,6 +38,12 @@ export interface ScoreboardState {
   results: Result[]
   raceName: string
   raceStatus: string
+  raceId: string // Current race ID being displayed
+
+  // Active race tracking for Results filtering
+  // This ensures we display results for the race that's actually running
+  activeRaceId: string | null // Race ID from current on-course competitors
+  lastActiveRaceId: string | null // Last known active race (for when no one is on course)
 
   // Highlight state (timestamp-based expiration)
   highlightBib: string | null
@@ -89,6 +95,7 @@ type ScoreboardAction =
       raceName: string
       raceStatus: string
       highlightBib: string | null
+      raceId: string | null
     }
   | {
       type: 'SET_ON_COURSE'
@@ -112,6 +119,9 @@ const initialState: ScoreboardState = {
   results: [],
   raceName: '',
   raceStatus: '',
+  raceId: '',
+  activeRaceId: null,
+  lastActiveRaceId: null,
   highlightBib: null,
   highlightTimestamp: null,
   currentCompetitor: null,
@@ -155,6 +165,21 @@ function scoreboardReducer(
       return { ...state, providerErrors: [] }
 
     case 'SET_RESULTS': {
+      // Determine which race we should display results for:
+      // 1. If someone is on course → their race (activeRaceId)
+      // 2. If no one is on course → last active race (lastActiveRaceId)
+      // 3. If no history → accept any results
+      const targetRaceId = state.activeRaceId || state.lastActiveRaceId
+
+      // Filter results: only update if they match the target race
+      // This prevents random category results from appearing when they shouldn't
+      // But if we have no target race yet, accept any results (initial state)
+      if (targetRaceId && action.raceId && action.raceId !== targetRaceId) {
+        // Results are for a different race than what's currently active - ignore
+        // This fixes the issue where C123 sends rotated results for all categories
+        return state
+      }
+
       // Check if we have a pending highlight that matches a result in the new results
       // The highlight only triggers when the results actually contain the competitor's new total
       const newState: ScoreboardState = {
@@ -162,6 +187,7 @@ function scoreboardReducer(
         results: action.results,
         raceName: action.raceName,
         raceStatus: action.raceStatus,
+        raceId: action.raceId || state.raceId,
         initialDataReceived: true,
       }
 
@@ -231,10 +257,27 @@ function scoreboardReducer(
         newCurrent = sorted[0]
       }
 
+      // Determine active race from on-course competitors
+      // This is used to filter Results to show only the current race
+      let newActiveRaceId: string | null = null
+      if (newCurrent?.raceId) {
+        newActiveRaceId = newCurrent.raceId
+      } else if (newOnCourse.length > 0) {
+        // Use first competitor's raceId if current is not set
+        const firstWithRaceId = newOnCourse.find(c => c.raceId)
+        if (firstWithRaceId) {
+          newActiveRaceId = firstWithRaceId.raceId || null
+        }
+      }
+
       const newState: ScoreboardState = {
         ...state,
         currentCompetitor: newCurrent,
         onCourse: newOnCourse,
+        activeRaceId: newActiveRaceId,
+        // Update lastActiveRaceId when we have a new active race
+        // This preserves the last known race when no one is on course
+        lastActiveRaceId: newActiveRaceId || state.lastActiveRaceId,
       }
 
       // Atomic departing update - if previous competitor exists and bib differs
@@ -353,6 +396,7 @@ export function ScoreboardProvider({
       raceName: data.raceName,
       raceStatus: data.raceStatus,
       highlightBib: data.highlightBib ?? null,
+      raceId: data.raceId ?? null,
     })
   }, [])
 

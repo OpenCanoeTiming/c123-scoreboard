@@ -24,6 +24,10 @@ export interface TransformOptions {
 
 /**
  * Transform a top message payload to ResultsData
+ *
+ * Note: CLI doesn't provide RaceId in top messages. The raceId field
+ * will be undefined, which means Results filtering by race won't apply
+ * to CLI provider (backwards compatible behavior).
  */
 export function transformTopMessage(
   payload: TopPayload,
@@ -34,6 +38,8 @@ export function transformTopMessage(
     raceName: safeString(payload.RaceName),
     raceStatus: safeString(payload.RaceStatus),
     highlightBib: payload.HighlightBib ? safeString(payload.HighlightBib) : null,
+    // CLI doesn't provide RaceId - filtering by race won't apply
+    raceId: payload.RaceId ? safeString(payload.RaceId) : undefined,
   }
 }
 

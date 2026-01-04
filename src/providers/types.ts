@@ -13,6 +13,8 @@ export interface ResultsData {
   raceName: string
   raceStatus: string
   highlightBib: string | null
+  /** Race ID for tracking active category (e.g., "K1M_ST_BR2_6") */
+  raceId?: string
 }
 
 /**
