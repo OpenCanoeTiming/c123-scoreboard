@@ -9,6 +9,7 @@ import {
   discoverC123Server,
   isC123Server,
   normalizeServerUrl,
+  PROBE_TIMEOUT,
 } from '@/providers/utils/discovery-client'
 import {
   ScoreboardLayout,
@@ -165,12 +166,12 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
     })
   }
 
-  // 2. Explicit server parameter
+  // 2. Explicit server parameter (URL has highest priority)
   if (urlParams.server) {
     const serverUrl = normalizeServerUrl(urlParams.server)
 
-    // Probe to check if it's C123 Server
-    if (await isC123Server(serverUrl)) {
+    // Probe to check if it's C123 Server (with longer timeout)
+    if (await isC123Server(serverUrl, PROBE_TIMEOUT)) {
       console.log('Using C123ServerProvider:', serverUrl)
       return new C123ServerProvider(serverUrl, {
         autoReconnect: true,
@@ -179,7 +180,30 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
       })
     }
 
-    // Fallback to CLI provider (server is not C123 Server)
+    // Check if server responds at all (any HTTP response)
+    // If not, throw error - don't fallback to CLI for unreachable server
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), PROBE_TIMEOUT)
+      const response = await fetch(`${serverUrl}/api/discover`, {
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit',
+      }).catch(() => null)
+      clearTimeout(timeoutId)
+
+      if (!response) {
+        // Server doesn't respond at all - throw error
+        throw new Error(`Server ${serverUrl} is not reachable`)
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('not reachable')) {
+        throw err
+      }
+      // Other error - server might be reachable but not C123 server
+    }
+
+    // Fallback to CLI provider (server responds but is not C123 Server)
     console.log('Falling back to CLIProvider:', urlParams.server)
     return new CLIProvider(urlParams.server, {
       autoReconnect: true,
@@ -239,61 +263,180 @@ function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): Disco
 }
 
 /**
- * Discovery loading screen
+ * Discovery loading screen - styled as basic scoreboard layout
  */
 function DiscoveryScreen() {
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      background: '#1a1a2e',
-      color: '#fff',
-      fontFamily: 'system-ui, sans-serif',
+      minHeight: '100vh',
+      backgroundColor: 'var(--color-bg-primary, #000)',
+      color: 'var(--color-text-primary, #fff)',
+      fontFamily: 'var(--font-family-primary, system-ui, sans-serif)',
     }}>
-      <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-        Canoe Scoreboard
-      </div>
-      <div style={{ fontSize: '1rem', opacity: 0.7 }}>
-        Searching for C123 Server...
-      </div>
+      {/* Header area - matches scoreboard header */}
+      <header style={{
+        height: 'var(--header-height, 80px)',
+        backgroundColor: 'var(--color-bg-secondary, #111)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <img
+          src="/assets/logo.svg"
+          alt="Logo"
+          style={{ height: '60%', opacity: 0.8 }}
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
+      </header>
+
+      {/* Main content area - centered message */}
+      <main style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+      }}>
+        {/* Loading spinner */}
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid rgba(255, 255, 255, 0.2)',
+          borderTopColor: 'var(--color-text-highlight, #4CAF50)',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '1.5rem',
+        }} />
+
+        <div style={{
+          fontSize: '1.5rem',
+          fontWeight: 500,
+          marginBottom: '0.5rem',
+          textAlign: 'center',
+        }}>
+          Hledám výsledkový systém...
+        </div>
+
+        <div style={{
+          fontSize: '0.9rem',
+          opacity: 0.6,
+          textAlign: 'center',
+        }}>
+          Prohledávám síť pro C123 Server
+        </div>
+      </main>
+
+      {/* Footer area - matches scoreboard footer */}
+      <footer style={{
+        height: 'var(--footer-height, 60px)',
+        backgroundColor: 'var(--color-bg-secondary, #111)',
+      }} />
+
+      {/* Keyframe animation for spinner */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }
 
 /**
- * Error screen when no server found
+ * Error screen when no server found - styled as basic scoreboard layout
  */
 function ErrorScreen({ message }: { message: string }) {
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      background: '#1a1a2e',
-      color: '#fff',
-      fontFamily: 'system-ui, sans-serif',
-      padding: '2rem',
-      textAlign: 'center',
+      minHeight: '100vh',
+      backgroundColor: 'var(--color-bg-primary, #000)',
+      color: 'var(--color-text-primary, #fff)',
+      fontFamily: 'var(--font-family-primary, system-ui, sans-serif)',
     }}>
-      <div style={{ fontSize: '2rem', marginBottom: '1rem', color: '#ff6b6b' }}>
-        Connection Error
-      </div>
-      <div style={{ fontSize: '1rem', opacity: 0.9, marginBottom: '2rem' }}>
-        {message}
-      </div>
-      <div style={{ fontSize: '0.9rem', opacity: 0.6 }}>
-        <p>Options:</p>
-        <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0 }}>
-          <li>?server=192.168.1.50:27123 - Connect to C123 Server</li>
-          <li>?server=192.168.1.50:8081 - Connect to CLI tool</li>
-          <li>?source=replay - Use recorded data (development)</li>
-        </ul>
-      </div>
+      {/* Header area */}
+      <header style={{
+        height: 'var(--header-height, 80px)',
+        backgroundColor: 'var(--color-bg-secondary, #111)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <img
+          src="/assets/logo.svg"
+          alt="Logo"
+          style={{ height: '60%', opacity: 0.8 }}
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
+      </header>
+
+      {/* Main content area */}
+      <main style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        textAlign: 'center',
+      }}>
+        {/* Error icon */}
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(255, 107, 107, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1.5rem',
+          fontSize: '1.5rem',
+        }}>
+          ⚠
+        </div>
+
+        <div style={{
+          fontSize: '1.5rem',
+          fontWeight: 500,
+          marginBottom: '0.5rem',
+          color: '#ff6b6b',
+        }}>
+          Chyba připojení
+        </div>
+
+        <div style={{
+          fontSize: '1rem',
+          opacity: 0.9,
+          marginBottom: '2rem',
+          maxWidth: '400px',
+        }}>
+          {message}
+        </div>
+
+        <div style={{
+          fontSize: '0.85rem',
+          opacity: 0.6,
+          textAlign: 'left',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          padding: '1rem 1.5rem',
+          borderRadius: '8px',
+        }}>
+          <div style={{ marginBottom: '0.5rem', fontWeight: 500 }}>Možnosti:</div>
+          <div style={{ marginBottom: '0.3rem' }}>• ?server=192.168.1.50:27123 - C123 Server</div>
+          <div style={{ marginBottom: '0.3rem' }}>• ?server=192.168.1.50:8081 - CLI nástroj</div>
+          <div>• ?source=replay - Testovací data</div>
+        </div>
+      </main>
+
+      {/* Footer area */}
+      <footer style={{
+        height: 'var(--footer-height, 60px)',
+        backgroundColor: 'var(--color-bg-secondary, #111)',
+      }} />
     </div>
   )
 }

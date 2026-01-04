@@ -79,6 +79,7 @@ export class C123ServerProvider implements DataProvider {
   private isManualDisconnect = false
   private syncOnReconnect: boolean
   private isReconnect = false
+  private connectPromise: Promise<void> | null = null
 
   // REST API client for sync operations
   private api: C123ServerApi
@@ -128,12 +129,25 @@ export class C123ServerProvider implements DataProvider {
   }
 
   async connect(): Promise<void> {
-    if (this._status === 'connected' || this._status === 'connecting') {
+    // If already connected, nothing to do
+    if (this._status === 'connected') {
       return
     }
 
+    // If connect is already in progress, return the existing promise
+    // This prevents double-connect issues with React StrictMode
+    if (this._status === 'connecting' && this.connectPromise) {
+      return this.connectPromise
+    }
+
     this.isManualDisconnect = false
-    return this.doConnect()
+    this.connectPromise = this.doConnect()
+
+    try {
+      await this.connectPromise
+    } finally {
+      this.connectPromise = null
+    }
   }
 
   disconnect(): void {
@@ -141,8 +155,17 @@ export class C123ServerProvider implements DataProvider {
     this.cancelReconnect()
 
     if (this.ws) {
-      this.ws.onclose = null // Prevent reconnect attempt
-      this.ws.close()
+      // Remove handlers to prevent any callbacks after disconnect
+      this.ws.onopen = null
+      this.ws.onclose = null
+      this.ws.onerror = null
+      this.ws.onmessage = null
+
+      // Only close if WebSocket is OPEN or CONNECTING
+      // Avoid error "WebSocket is closed before the connection is established"
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        this.ws.close()
+      }
       this.ws = null
     }
 

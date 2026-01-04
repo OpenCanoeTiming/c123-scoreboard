@@ -18,8 +18,11 @@
 /** Default C123 Server port */
 export const C123_PORT = 27123
 
-/** Timeout for discovery probe requests (ms) */
+/** Timeout for discovery probe requests (ms) - subnet scan */
 export const DISCOVERY_TIMEOUT = 200
+
+/** Timeout for cached/explicit server probe (ms) - longer for reliability */
+export const PROBE_TIMEOUT = 3000
 
 /** LocalStorage key for caching discovered server */
 export const STORAGE_KEY = 'c123-server-url'
@@ -77,32 +80,38 @@ export async function discoverC123Server(
   options: DiscoveryOptions = {}
 ): Promise<string | null> {
   const port = options.port ?? C123_PORT
-  const timeout = options.timeout ?? DISCOVERY_TIMEOUT
+  const scanTimeout = options.timeout ?? DISCOVERY_TIMEOUT
+  const probeTimeout = PROBE_TIMEOUT // Longer timeout for explicit/cached servers
 
-  // 1. Check URL parameter
+  // 1. Check URL parameter (with longer timeout)
   if (!options.ignoreUrlParam) {
     const urlParam = new URLSearchParams(location.search).get('server')
     if (urlParam) {
       const url = normalizeServerUrl(urlParam, port)
-      if (await isServerAlive(url, timeout)) {
+      if (await isServerAlive(url, probeTimeout)) {
         if (!options.noCache) saveToCache(url)
         return url
       }
     }
   }
 
-  // 2. Check cached server
+  // 2. Check cached server (with longer timeout)
+  // If cache fails, fall through to subnet scan (autodiscover)
   if (!options.noCache) {
     const cached = localStorage.getItem(STORAGE_KEY)
-    if (cached && (await isServerAlive(cached, timeout))) {
-      return cached
+    if (cached) {
+      if (await isServerAlive(cached, probeTimeout)) {
+        return cached
+      }
+      // Cache server not responding - clear cache and continue to autodiscover
+      clearCache()
     }
   }
 
-  // 3. Scan subnets
+  // 3. Scan subnets (autodiscover with short timeout for speed)
   const subnets = options.subnets ?? getSubnetsToScan()
   for (const subnet of subnets) {
-    const discovered = await scanSubnet(subnet, port, timeout)
+    const discovered = await scanSubnet(subnet, port, scanTimeout)
     if (discovered) {
       if (!options.noCache) saveToCache(discovered)
       return discovered

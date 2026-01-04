@@ -704,6 +704,141 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 
 ---
 
+## Fáze D: Opravy z live testování
+
+Testování proti živému serveru na `192.168.68.108:27123` odhalilo následující problémy.
+
+### Blok 7: Opravy WebSocket a connection logiky (~30% kontextu) ✅ HOTOVO
+
+#### 7.1 WebSocket chyba po startu (React StrictMode) ✅
+**Problém:** Po startu aplikace jedna chyba v konzoli - WebSocket se zavírá před dokončením připojení.
+
+**Řešení:**
+- ✅ V `C123ServerProvider.disconnect()` kontrola stavu WebSocket před voláním `close()`
+- ✅ Přidán `connectPromise` pro deduplikaci concurrent connect volání
+- ✅ Odstranění všech event handlerů před close pro prevenci race conditions
+
+#### 7.2 Priorita připojení: URL > localStorage > autodiscover ✅
+**Problém:** Při selhání cache serveru se nespouštěl autodiscover, timeout byl příliš krátký.
+
+**Řešení:**
+- ✅ Přidán `PROBE_TIMEOUT = 3000ms` pro explicitní/cached servery (vs 200ms pro scan)
+- ✅ Při selhání cache serveru se volá `clearCache()` a pokračuje autodiscover
+- ✅ URL param: pokud server neodpovídá, zobrazí se chyba (ne fallback na CLI)
+- ✅ URL param: pokud odpovídá ale není C123 → fallback na CLI
+
+#### 7.3 Autodiscover obrazovka - vylepšení UX ✅
+**Problém:** Autodiscover obrazovka byla ošklivá.
+
+**Řešení:**
+- ✅ Nový design DiscoveryScreen - černý layout jako normální scoreboard
+- ✅ Loading spinner s textem "Hledám výsledkový systém..."
+- ✅ Header/footer oblasti pro konzistentní vzhled
+- ✅ ErrorScreen také přepracována pro konzistenci
+
+**Soubory:**
+- `src/providers/C123ServerProvider.ts`
+- `src/providers/utils/discovery-client.ts`
+- `src/App.tsx`
+
+---
+
+### Blok 8: Opravy OnCourse a flow závodu (~40% kontextu)
+
+#### 8.1 Jezdci na trati - mizení a přepisování
+**Problém:**
+- Jeden jezdec na trati (má start čas) a druhý ještě nejede (nemá start čas) → jezdec na trati se objevuje a mizí
+- Dva jezdci na trati se přepisují
+
+**Řešení:**
+- [ ] Zkontrolovat `mapOnCourse()` v `c123ServerMapper.ts` - správné filtrování jezdců bez dtStart
+- [ ] Zkontrolovat `ScoreboardContext.tsx` - OnCourse state management
+- [ ] Debug: logovat příchozí OnCourse zprávy vs. zobrazený stav
+
+**Soubory:**
+- `src/providers/utils/c123ServerMapper.ts`
+- `src/context/ScoreboardContext.tsx`
+
+#### 8.2 Results ignorují OnCourse flow (KRITICKÉ!)
+**Problém:** Scoreboard zobrazuje results, které přijdou zespodu, bez ohledu na to co se děje na trati - porušení základního požadavku.
+
+**Kontext:** C123 patrně posílá do TCP kanálu celé výsledky, když se daný výsledkový set změní (např. opravy penalizací v předchozí kategorii). C123 server admin zobrazuje "Event" pole kde se mění kategorie - ale to asi není korektní chování.
+
+**Požadavek:** Zobrazovat výsledky kategorie, která **zrovna jede** (ta kde je závodník na trati), nebo když nikdo nejede, tu co poslední dojela.
+
+**Řešení:**
+- [ ] Přidat logiku do ScoreboardContext:
+  - Sledovat `currentRaceId` z OnCourse dat (raceId jezdce na trati)
+  - Results filtrovat/prioritizovat podle `currentRaceId`
+  - Pokud nikdo na trati → zobrazit poslední aktivní kategorii
+- [ ] Možná potřeba úpravy v C123 server (viz TODO.md)
+
+**Soubory:**
+- `src/context/ScoreboardContext.tsx`
+- `src/providers/C123ServerProvider.ts` (možná přidat raceId tracking)
+
+**Viz také:** `../c123-server/TODO.md` - požadavek na správné Event pole
+
+---
+
+### Blok 9: Opravy zobrazení výsledků (~35% kontextu)
+
+#### 9.1 Highlight při druhé horší jízdě
+**Problém:** Když je druhá jízda horší než první, neudělá se highlight. Když je lepší, highlight funguje.
+
+**Opatrně!** Toto je citlivá logika, postupovat opatrně.
+
+**Řešení:**
+- [ ] Analyzovat současnou highlight logiku v `ScoreboardContext.tsx` (FinishDetector)
+- [ ] Ověřit podmínky pro highlight - měl by být vždy při dojetí, ne jen při zlepšení
+- [ ] Napsat unit testy pro různé scénáře (lepší/horší jízda)
+
+**Soubory:**
+- `src/context/ScoreboardContext.tsx` (FinishDetector)
+- `src/providers/utils/c123ServerMapper.ts`
+
+#### 9.2 DNS/DNF/DSQ indikace
+**Problém:** Jezdci s DNS/DNF/DSQ mají místo času a penalizace zobrazené čísla. Měla by být správná indikace (text "DNS", "DNF", "DSQ").
+
+**Řešení:**
+- [ ] Zkontrolovat jak C123 server posílá tyto stavy
+- [ ] Upravit mapper nebo komponenty pro správné zobrazení
+- [ ] Komponenta `ResultRow` - detekovat status a zobrazit text místo času
+
+**Soubory:**
+- `src/providers/utils/c123ServerMapper.ts`
+- `src/components/ResultRow.tsx` (nebo ekvivalent)
+
+#### 9.3 Chybějící title v záhlaví akce
+**Problém:** Není žádný title v záhlaví akce. V CLI se posílal specifický control message.
+
+**Řešení:**
+- [ ] Zjistit co C123 server poskytuje (REST API /api/status? nebo WS zpráva?)
+- [ ] Implementovat získání title z C123 serveru
+- [ ] Fallback na název akce z XML nebo raceId
+
+**Soubory:**
+- `src/providers/C123ServerProvider.ts`
+- `src/providers/utils/c123ServerApi.ts`
+- `src/context/ScoreboardContext.tsx`
+
+---
+
+### Blok 10: Testování proti živému serveru
+
+**Server:** `192.168.68.108:27123`
+
+Po opravách v blocích 7-9:
+- [ ] Spustit scoreboard proti živému serveru
+- [ ] Ověřit WebSocket připojení (jedna connection, žádné chyby)
+- [ ] Ověřit OnCourse - správné zobrazení jezdců na trati
+- [ ] Ověřit Results flow - zobrazuje se správná kategorie
+- [ ] Ověřit highlight - funguje i při horší druhé jízdě
+- [ ] Ověřit DNS/DNF/DSQ zobrazení
+- [ ] Ověřit title v záhlaví
+
+---
+
 ## Poznámky
 
 - Finish detection funguje stejně (dtFinish tracking v ScoreboardContext)
