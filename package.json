@@ -14,7 +14,8 @@
     "c123-proxy": "node scripts/c123-proxy.js",
     "mock:tcp": "npx tsx scripts/mock-c123-tcp.ts",
     "mock:ws": "npx tsx scripts/mock-cli-ws.ts",
-    "test:providers": "vitest run src/__tests__/provider-comparison.test.ts"
+    "test:providers": "vitest run src/__tests__/provider-comparison.test.ts",
+    "test:visual": "playwright test cli-vs-c123.spec.ts --project=vertical"
   },
   "dependencies": {
     "react": "^19.2.0",

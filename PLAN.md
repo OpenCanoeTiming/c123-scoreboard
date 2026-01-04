@@ -420,7 +420,32 @@ npm run test:providers
 1. **Blok T1** - Mock servery (TCP pro Canoe123 simulaci, WS pro CLI simulaci)
 2. **Blok T2** - Test utilities (EventCollector, Comparator)
 3. **Blok T3** - Integrační test
-4. **Blok T4** - automatické vizuální otestování s playwright boardů V2 (CLI) a V3 (C123 server) vedle sebe s mock servery - to si tu ještě rozplánuj
+4. **Blok T4** - Playwright vizuální srovnání CLI vs C123 Server ✅ HOTOVO
+
+#### Blok T4: Playwright vizuální testy ✅ HOTOVO
+**Nové soubory:**
+- ✅ `tests/e2e/cli-vs-c123.spec.ts` - vizuální srovnání scoreboardů
+
+**Funkcionalita:**
+- Spustí mock servery (CLI WS na portu 8091, TCP na 27334)
+- Spustí C123 Server (port 27124) připojený k mock TCP
+- Porovná scoreboard s CLI providerem vs C123ServerProvider
+- Vytvoří screenshoty: `cli-vertical.png`, `c123-vertical.png`, `cli-ledwall.png`, `c123-ledwall.png`
+- Porovná oncourse a results list komponenty
+
+**Spuštění:**
+```bash
+npm run test:visual
+# nebo přímo:
+npx playwright test cli-vs-c123.spec.ts --project=vertical --workers=1
+```
+
+**Výsledky testu:**
+- CLI: 20 rows, race: "JARNÍ SLALOMY: C1Ž" (scrollující výběr výsledků)
+- C123: 105 rows, race: N/A (všechny výsledky)
+- Rozdíly jsou očekávané - CLI zobrazuje scrollující výběr, C123 má všechny výsledky
+
+**Commit:** ✅ `test: add Playwright visual comparison CLI vs C123 Server`
 
 ### Co testujeme
 
@@ -586,6 +611,20 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
   - C123 races: `K1m - střední trať - 2. jízda` ✓ (správně s jízdou!)
 - Zbývající rozdíly jsou očekávané (C123 filtruje `isCurrent: true`, proto nemá C1ž)
 - **Commit:** `fix: align C123Server raceName format with CLI output`
+
+### 2026-01-04 - Blok T4 hotový (Playwright vizuální testy)
+- ✅ Vytvořen `tests/e2e/cli-vs-c123.spec.ts` - vizuální srovnání scoreboardů
+- Test spouští mock servery + C123 Server jako child procesy
+- Porovnává scoreboard s CLI provider vs C123ServerProvider
+- **Výsledky testu:**
+  - CLI: 20 rows, race: "JARNÍ SLALOMY: C1Ž" (scrollující výběr)
+  - C123: 105 rows, race: N/A (všechny výsledky, title se nezobrazuje)
+- Screenshoty uloženy do `tests/e2e/cli-vs-c123-screenshots/`
+- Přidán npm script `npm run test:visual`
+- **Očekávané rozdíly:**
+  - CLI zobrazuje scrollující výběr (20 řádků), C123 zobrazuje všechny výsledky
+  - CLI má title z control zprávy, C123 zatím nemá title
+- **Commit:** `test: add Playwright visual comparison CLI vs C123 Server`
 
 ---
 
