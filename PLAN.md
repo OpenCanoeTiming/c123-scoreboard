@@ -14,7 +14,7 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 | Fáze B: Automatické testování | ✅ Hotovo |
 | Fáze C: REST sync a XmlChange | ✅ Hotovo |
 | Fáze D: Opravy z live testování | ✅ Hotovo |
-| Fáze E: Opevnění a stabilizace | 🔄 V průběhu |
+| Fáze E: Opevnění a stabilizace | ✅ Hotovo |
 
 ---
 
@@ -138,31 +138,31 @@ Zajistit stabilitu, kvalitu kódu a komplexní pokrytí testy před nasazením d
 
 ---
 
-### Blok 14: Dokumentace a finalizace
+### Blok 14: Dokumentace a finalizace ✅
 
-#### 14.1 Aktualizace CLAUDE.md
-**Stav:** [ ] TODO
-
-**Akce:**
-- [ ] Přidat sekci o architektuře C123 vs CLI provideru
-- [ ] Dokumentovat klíčové konstanty a jejich význam
-- [ ] Přidat troubleshooting sekci
-
-#### 14.2 Aktualizace deníčku
-**Stav:** [ ] TODO
+#### 14.1 Aktualizace CLAUDE.md ✅
+**Stav:** [x] Hotovo
 
 **Akce:**
-- [ ] Shrnout Fázi E
-- [ ] Zaznamenat naučené lekce
+- [x] Přidat sekci o architektuře C123 vs CLI provideru
+- [x] Dokumentovat klíčové konstanty a jejich význam
+- [x] Přidat troubleshooting sekci
 
-#### 14.3 Finální testy
-**Stav:** [ ] TODO
+#### 14.2 Aktualizace deníčku ✅
+**Stav:** [x] Hotovo
 
 **Akce:**
-- [ ] Spustit `npm test` - všechny testy prochází
-- [ ] Spustit `npm run lint` - žádné errory
-- [ ] Spustit `npm run build` - build prochází
-- [ ] Manuální test proti nahrávce
+- [x] Shrnout Fázi E
+- [x] Zaznamenat naučené lekce
+
+#### 14.3 Finální testy ✅
+**Stav:** [x] Hotovo
+
+**Akce:**
+- [x] Spustit `npm test` - všechny testy prochází
+- [x] Spustit `npm run lint` - žádné errory
+- [x] Spustit `npm run build` - build prochází
+- [ ] Manuální test proti nahrávce (uživatel)
 
 ---
 
@@ -406,6 +406,26 @@ npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 - `constants.ts`: `FINISHED_GRACE_PERIOD = 5000`
 - `c123ServerMapper.ts`: Opravená detekce partial messages
 - `ScoreboardContext.tsx`: Grace period logika + filtrování pro current
+
+### 2026-01-04 - Fáze E dokončena (Bloky 11-14)
+**Shrnutí Fáze E - Opevnění a stabilizace:**
+
+- **Blok 11:** Commitnutí změn + ESLint opravy (queueMicrotask pro sync setState)
+- **Blok 12:** 37 nových testů pro partial OnCourse, DNS/DNF/DSQ, category flow, Title
+- **Blok 13:** Code review - všechny soubory čisté, žádný mrtvý kód, konzistentní typy
+- **Blok 14:** Dokumentace - CLAUDE.md rozšířen o architekturu, konstanty, troubleshooting
+
+**Celkový stav po Fázi E:**
+- 603 testů prochází
+- 0 ESLint errors (3 warnings - fast refresh, neovlivňuje produkci)
+- Build úspěšný
+- Dokumentace aktuální
+
+**Naučené lekce:**
+1. Partial messages z C123 serveru vyžadují merge logiku, ne nahrazení
+2. Grace period pro dtFinish je klíčová pro UX při více závodníkách na trati
+3. Timestamp-based highlight je robustnější než diff-based
+4. React StrictMode double-mount vyžaduje deduplikaci connect volání
 
 ---
 

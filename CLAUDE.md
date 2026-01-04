@@ -34,7 +34,96 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 
 ## Architektura
 
-Stávající, Vychází z V2
+### Provider systém
+
+Scoreboard používá abstraktní `DataProvider` interface s automatickým výběrem:
+
+```
+URL ?server=host:port
+         │
+         ▼
+1. Probe server → /api/discover
+    ├── ANO (C123 Server): C123ServerProvider (primární)
+    └── NE: CLIProvider (fallback)
+
+2. Pokud URL nezadáno:
+    ├── localStorage cache
+    ├── Autodiscover na síti
+    └── Manuální konfigurace
+```
+
+**Klíčové soubory:**
+| Soubor | Účel |
+|--------|------|
+| `src/providers/C123ServerProvider.ts` | Primární - WebSocket k C123 Server |
+| `src/providers/CLIProvider.ts` | Fallback - legacy CLI protokol |
+| `src/providers/utils/c123ServerMapper.ts` | Mapování C123 → scoreboard typy |
+| `src/providers/utils/discovery-client.ts` | Auto-discovery C123 serveru |
+| `src/context/ScoreboardContext.tsx` | State management, flow logika |
+
+### Data flow
+
+```
+C123 Server (WebSocket)          CLI (WebSocket)
+         │                              │
+         ▼                              ▼
+  c123ServerMapper.ts            cliMapper.ts
+         │                              │
+         └──────────┬──────────────────┘
+                    ▼
+          ScoreboardContext (reducer)
+                    │
+                    ▼
+         React komponenty (Results, OnCourse, Title...)
+```
+
+---
+
+## Timing konstanty
+
+Soubor: `src/context/constants.ts`
+
+| Konstanta | Hodnota | Účel |
+|-----------|---------|------|
+| `HIGHLIGHT_DURATION` | 5 000 ms | Jak dlouho je výsledek zvýrazněn (žlutý řádek) |
+| `DEPARTING_TIMEOUT` | 3 000 ms | Jak dlouho se zobrazuje "odcházející" závodník |
+| `FINISHED_GRACE_PERIOD` | 5 000 ms | Jak dlouho závodník s dtFinish zůstane v onCourse |
+
+Další timing v `src/hooks/useAutoScroll.ts`:
+- `pendingHighlightTimeout`: 10 000 ms - max čekání na Results po detekci dtFinish
+- `highlightViewTime`: 5 000 ms - doba zobrazení highlighted row
+- `pageInterval` (vertical): 12 000 ms - interval mezi scroll stránkami
+- `pageInterval` (ledwall): 3 000 ms - rychlejší scroll pro LED wall
+
+---
+
+## Troubleshooting
+
+### Scoreboard se nepřipojí k serveru
+1. Zkontrolujte že C123 server běží: `curl http://host:port/api/discover`
+2. Zkontrolujte CORS nastavení na serveru
+3. Ověřte WebSocket port (typicky stejný jako HTTP)
+
+### Závodník na trati bliká/mizí
+- Problém partial messages: C123 server posílá OnCourse po jednom závodníkovi
+- Řešení v `c123ServerMapper.ts`: detekce `total > competitors.length`
+- Context merguje partial do existujícího seznamu místo nahrazení
+
+### Výsledky se nezobrazují
+1. Zkontrolujte `activeRaceId` - Results jsou filtrovány podle aktuální kategorie
+2. Ověřte že Results message obsahuje správný `raceId`
+3. Při změně kategorie se Results mažou (očekávané chování)
+
+### Highlight nefunguje po dojetí
+- Highlight je timestamp-based, ne diff-based
+- Flow: dtFinish → pendingHighlightBib → čeká na Results → highlightBib
+- Timeout 10s pokud Results nepřijdou
+- Zkontrolujte `onCourseFinishedAt` v dev tools
+
+### DNS/DNF/DSQ zobrazení
+- Zobrazuje se pouze explicitní status z dat (ne inference)
+- Prázdný čas bez statusu = `---`
+- Styl: šedá, italic, opacity 0.7
 
 ---
 
