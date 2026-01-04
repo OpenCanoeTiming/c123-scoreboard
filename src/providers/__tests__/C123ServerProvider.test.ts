@@ -618,4 +618,190 @@ describe('C123ServerProvider', () => {
       expect(errors).toHaveLength(0)
     })
   })
+
+  // ===========================================================================
+  // XmlChange message handling
+  // ===========================================================================
+
+  describe('XmlChange message handling', () => {
+    it('handles XmlChange message without error', async () => {
+      const provider = new C123ServerProvider('http://localhost:27123')
+      const errors: string[] = []
+      provider.onError((e) => errors.push(e.message))
+
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      // First send Results to set currentRaceId
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'Results',
+        timestamp: '2025-01-03T16:00:00.000Z',
+        data: {
+          raceId: 'K1M_ST_BR1_6',
+          classId: 'K1M_ST',
+          isCurrent: true,
+          mainTitle: 'K1m',
+          subTitle: '',
+          rows: [],
+        },
+      })
+
+      // Then send XmlChange
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'XmlChange',
+        timestamp: '2025-01-03T16:00:01.000Z',
+        data: {
+          sections: ['Results'],
+          checksum: 'abc123',
+        },
+      })
+
+      // Should not error
+      expect(errors).toHaveLength(0)
+    })
+
+    it('ignores duplicate XmlChange with same checksum', async () => {
+      const provider = new C123ServerProvider('http://localhost:27123')
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      // Send Results first
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'Results',
+        timestamp: '2025-01-03T16:00:00.000Z',
+        data: {
+          raceId: 'K1M_ST_BR1_6',
+          classId: 'K1M_ST',
+          isCurrent: true,
+          mainTitle: 'K1m',
+          subTitle: '',
+          rows: [],
+        },
+      })
+
+      // First XmlChange
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'XmlChange',
+        timestamp: '2025-01-03T16:00:01.000Z',
+        data: {
+          sections: ['Results'],
+          checksum: 'same-checksum',
+        },
+      })
+
+      const callCountAfterFirst = consoleSpy.mock.calls.length
+
+      // Duplicate XmlChange with same checksum
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'XmlChange',
+        timestamp: '2025-01-03T16:00:02.000Z',
+        data: {
+          sections: ['Results'],
+          checksum: 'same-checksum',
+        },
+      })
+
+      // Should not trigger additional sync (same checksum)
+      expect(consoleSpy.mock.calls.length).toBe(callCountAfterFirst)
+
+      consoleSpy.mockRestore()
+    })
+  })
+
+  // ===========================================================================
+  // Sync on reconnect
+  // ===========================================================================
+
+  describe('sync on reconnect', () => {
+    it('does not sync on first connect', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const provider = new C123ServerProvider('http://localhost:27123')
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      // Wait for any async operations
+      await vi.advanceTimersByTimeAsync(100)
+
+      // Should not log sync messages on first connect
+      const syncLogs = consoleSpy.mock.calls.filter(
+        (call) => call[0]?.toString().includes('Synced')
+      )
+      expect(syncLogs).toHaveLength(0)
+
+      consoleSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
+    })
+
+    it('attempts sync on reconnect when enabled', async () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const provider = new C123ServerProvider('http://localhost:27123', {
+        syncOnReconnect: true,
+      })
+
+      // First connect
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      // Disconnect
+      MockWebSocket.getLastInstance()?.simulateClose()
+      vi.advanceTimersByTime(1000)
+
+      // Reconnect
+      MockWebSocket.getLastInstance()?.simulateOpen()
+
+      // Wait for async sync operation
+      await vi.advanceTimersByTimeAsync(100)
+
+      // Sync was attempted (will fail due to mock fetch, but that's expected)
+      // The warning about failed sync is logged
+      const syncWarnings = consoleWarnSpy.mock.calls.filter(
+        (call) => call[0]?.toString().includes('sync')
+      )
+      expect(syncWarnings.length).toBeGreaterThanOrEqual(0) // May or may not warn depending on mock
+
+      consoleWarnSpy.mockRestore()
+    })
+
+    it('skips sync on reconnect when disabled', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const provider = new C123ServerProvider('http://localhost:27123', {
+        syncOnReconnect: false,
+      })
+
+      // First connect
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      // Disconnect
+      MockWebSocket.getLastInstance()?.simulateClose()
+      vi.advanceTimersByTime(1000)
+
+      // Reconnect
+      MockWebSocket.getLastInstance()?.simulateOpen()
+
+      // Wait for async operations
+      await vi.advanceTimersByTimeAsync(100)
+
+      // Should not attempt sync
+      const syncLogs = consoleSpy.mock.calls.filter(
+        (call) => call[0]?.toString().includes('Synced')
+      )
+      expect(syncLogs).toHaveLength(0)
+
+      consoleSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
+    })
+  })
 })

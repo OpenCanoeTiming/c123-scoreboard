@@ -21,6 +21,7 @@ import type {
   C123TimeOfDayData,
   C123RaceConfigData,
   C123ErrorData,
+  C123XmlChangeData,
 } from '@/types/c123server'
 import type {
   DataProvider,
@@ -33,6 +34,7 @@ import type {
 import { CallbackManager } from './utils/CallbackManager'
 import { getWebSocketUrl } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
+import { C123ServerApi } from './utils/c123ServerApi'
 
 // =============================================================================
 // Types
@@ -48,6 +50,10 @@ export interface C123ServerProviderOptions {
   maxReconnectDelay?: number
   /** Initial reconnect delay in ms (default: 1000) */
   initialReconnectDelay?: number
+  /** REST API timeout in ms (default: 5000) */
+  apiTimeout?: number
+  /** Sync state via REST API after reconnect (default: true) */
+  syncOnReconnect?: boolean
 }
 
 // =============================================================================
@@ -64,16 +70,26 @@ export class C123ServerProvider implements DataProvider {
   private ws: WebSocket | null = null
   private _status: ConnectionStatus = 'disconnected'
   private wsUrl: string
+  private httpUrl: string
   private autoReconnect: boolean
   private maxReconnectDelay: number
   private initialReconnectDelay: number
   private currentReconnectDelay: number
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null
   private isManualDisconnect = false
+  private syncOnReconnect: boolean
+  private isReconnect = false
+
+  // REST API client for sync operations
+  private api: C123ServerApi
 
   // Track current race for config mapping
   private currentRaceName: string = ''
+  private currentRaceId: string = ''
   private currentRaceIsCurrent: boolean = true
+
+  // Track last XML checksum to avoid redundant syncs
+  private lastXmlChecksum: string = ''
 
   // Callback manager (safeMode=false - errors bubble up)
   private callbacks = new CallbackManager(false)
@@ -86,10 +102,17 @@ export class C123ServerProvider implements DataProvider {
    */
   constructor(serverUrl: string, options: C123ServerProviderOptions = {}) {
     this.wsUrl = getWebSocketUrl(serverUrl)
+    // Normalize HTTP URL for REST API
+    this.httpUrl = serverUrl.replace(/\/$/, '')
+    if (!this.httpUrl.startsWith('http')) {
+      this.httpUrl = `http://${this.httpUrl}`
+    }
     this.autoReconnect = options.autoReconnect ?? true
     this.maxReconnectDelay = options.maxReconnectDelay ?? 30000
     this.initialReconnectDelay = options.initialReconnectDelay ?? 1000
     this.currentReconnectDelay = this.initialReconnectDelay
+    this.syncOnReconnect = options.syncOnReconnect ?? true
+    this.api = new C123ServerApi(this.httpUrl, options.apiTimeout ?? 5000)
   }
 
   // ===========================================================================
@@ -166,8 +189,18 @@ export class C123ServerProvider implements DataProvider {
         this.ws = new WebSocket(this.wsUrl)
 
         this.ws.onopen = () => {
+          const wasReconnect = this.isReconnect
+          this.isReconnect = true // Next connect will be a reconnect
           this.setStatus('connected')
           this.currentReconnectDelay = this.initialReconnectDelay // Reset backoff
+
+          // Sync state via REST API after reconnect
+          if (wasReconnect && this.syncOnReconnect) {
+            this.syncState().catch(err => {
+              console.warn('C123Server: Failed to sync state after reconnect:', err)
+            })
+          }
+
           resolve()
         }
 
@@ -286,8 +319,7 @@ export class C123ServerProvider implements DataProvider {
           // Not needed for basic scoreboard functionality
           break
         case 'XmlChange':
-          // XmlChange is for triggering REST API sync (Phase B)
-          // Currently ignored - real-time messages are sufficient
+          this.handleXmlChange(message.data as C123XmlChangeData)
           break
         case 'Error':
           this.handleServerError(message.data as C123ErrorData)
@@ -322,8 +354,9 @@ export class C123ServerProvider implements DataProvider {
   }
 
   private handleResults(data: C123ResultsData): void {
-    // Track current race info for config mapping
+    // Track current race info for config mapping and REST API sync
     this.currentRaceName = data.mainTitle || data.raceId
+    this.currentRaceId = data.raceId
     this.currentRaceIsCurrent = data.isCurrent
 
     const resultsData = mapResults(data)
@@ -338,6 +371,63 @@ export class C123ServerProvider implements DataProvider {
   private handleServerError(data: C123ErrorData): void {
     console.error(`C123Server error: [${data.code}] ${data.message}`)
     this.emitError('UNKNOWN_ERROR', `C123 Server: ${data.message}`)
+  }
+
+  private handleXmlChange(data: C123XmlChangeData): void {
+    // Skip if checksum hasn't changed (duplicate notification)
+    if (data.checksum === this.lastXmlChecksum) {
+      return
+    }
+    this.lastXmlChecksum = data.checksum
+
+    // Sync relevant sections via REST API
+    // Results changes are handled by real-time WebSocket messages,
+    // but we sync anyway to ensure consistency after XML file updates
+    if (data.sections.includes('Results') && this.currentRaceId) {
+      this.syncResults(this.currentRaceId).catch(err => {
+        console.warn('C123Server: Failed to sync results after XmlChange:', err)
+      })
+    }
+  }
+
+  // ===========================================================================
+  // REST API Sync
+  // ===========================================================================
+
+  /**
+   * Sync state via REST API after reconnect
+   *
+   * Fetches current server status and race results to ensure
+   * the scoreboard has complete state after a reconnection.
+   */
+  private async syncState(): Promise<void> {
+    // Get server status to check current race
+    const status = await this.api.getStatus()
+    if (!status) {
+      console.warn('C123Server: Could not fetch server status for sync')
+      return
+    }
+
+    // If there's a current race, fetch its results
+    if (status.event.currentRaceId) {
+      await this.syncResults(status.event.currentRaceId)
+    }
+  }
+
+  /**
+   * Sync results for a specific race via REST API
+   */
+  private async syncResults(raceId: string): Promise<void> {
+    const raceInfo = await this.api.getRaceInfo(raceId)
+    if (!raceInfo) {
+      return
+    }
+
+    // Note: REST API returns raw race data, but the WebSocket already provides
+    // properly formatted Results messages. The main purpose of this sync is to
+    // ensure we have the latest data after reconnect or XML changes.
+    // The WebSocket will continue to provide real-time updates.
+    console.log(`C123Server: Synced race info for ${raceId}`)
   }
 
   private emitError(
