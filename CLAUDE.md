@@ -1,8 +1,8 @@
-# Claude Code Instructions - Canoe Scoreboard V2
+# Claude Code Instructions - Canoe Scoreboard V3 - native Canoe123 support
 
 ## Projekt
 
-Real-time scoreboard pro kanoistické slalomové závody. Reimplementace původního projektu s čistou architekturou.
+Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracující plnohodnotně s daty poskytované vrstvou C123 server.
 
 ---
 
@@ -10,19 +10,18 @@ Real-time scoreboard pro kanoistické slalomové závody. Reimplementace původn
 
 | Účel | Cesta |
 |------|-------|
-| **Tento projekt** | `/workspace/csb-v2/canoe-scoreboard-v2/` |
-| **Checklist** | `./csb-v2-implementacni-checklist.md` |
-| **Analýza** | `../analysis/` (READONLY) |
-| **Originál** | `../canoe-scoreboard-original/` (READONLY) |
-| **Prototyp** | `../canoe-scoreboard-v2-prototype/` (reference pro styly) |
+| **Tento projekt** | `/workspace/csb-v2/canoe-scoreboard-v3/` - na startu kopie V2 včetně GIT atd |
+| **Implementační plán** | `./PLAN.md` |
+| **Scoreboard projekt s podporou CLI** | `../canoe-scoreboard-v2/` (READONLY - reference) |
+| **Starý projekt V1** | `../canoe-scoreboard-original/` (READONLY - reference) |
+| **Analýza** | `../analysis/` (důležitá reference, zápis změn jen po explicitním souhlasu od uživatele) |
+| **C123 Server** | `../c123-server/` (důležitá reference, zápis změn jen po explicitním souhlasu od uživatele) |
 
-### Klíčové dokumenty v analýze
+### Klíčové reference
 
-- **`08-plan-reimplementace.md`** - architektura, DataProvider, edge cases, fáze
-- **`07-sitova-komunikace.md`** - CLI/C123 protokoly, detekce dojetí
-- **`06-styly.md`** - CSS variables, layouty, **ověřené computed styles**
-- **`03-state-management.md`** - WebSocket, Layout, ScrollManager principy
-- **`04-display-komponenty.md`** - ResultsList, CurrentCompetitor, atd.
+- **`../c123-server/docs`** - dokumentace C123 rozhraní, interace do scoreboardu a další, DULEZITE!
+- **`../analysis`** - složka s rozsáhlou dokumentací k implementaci V2
+- **`../analysis/captures/xboardtest02_jarni_v1.xml`** - XML struktura, BR1/BR2 formát
 
 ---
 
@@ -33,106 +32,54 @@ Real-time scoreboard pro kanoistické slalomové závody. Reimplementace původn
 
 ---
 
-## Implementační rozhodnutí (odlišnosti od analýzy)
+## Architektura
 
-Tato rozhodnutí platí pro tento projekt a mohou se lišit od doporučení v analýze:
-
-### 1. ReplayProvider jako primární zdroj během vývoje
-
-Celý vývoj probíhá na nahraných datech (`../analysis/recordings/rec-2025-12-28T09-34-10.jsonl`).
-CLIProvider a případně C123Provider se přidají až když je grafika a interakce ověřená.
-
-**Výhody:**
-- Opakovatelné testování stejných scénářů
-- Nezávislost na běžícím serveru
-- Možnost testovat edge cases (rychlé dojezdy, reconnect)
-
-### 2. Skutečná responsivita od začátku (ne transform: scale)
-
-**Cíl:** Ledwall na jakékoliv rozlišení - více pixelů = více řádků, ne větší pixely.
-
-**Implementace:**
-- `useLayout` hook počítá dynamický počet řádků podle skutečné výšky viewportu
-- CSS Variables nastavované JavaScriptem (`--visible-rows`, `--row-height`)
-- Žádné `transform: scale()` - komponenty v nativním rozlišení
-- Breakpointy pro strukturální změny (počet sloupců), kontinuální pro velikosti
-
-**Příklad:**
-```typescript
-function useLayout() {
-  const { width, height } = useViewport();
-  const headerHeight = 60;
-  const minRowHeight = 32;
-  const maxRowHeight = 56;
-
-  const availableHeight = height - headerHeight;
-  const visibleRows = Math.floor(availableHeight / 45);
-  const rowHeight = Math.min(maxRowHeight, Math.max(minRowHeight, availableHeight / visibleRows));
-
-  return {
-    visibleRows,
-    rowHeight,
-    showBehind: width > 600,
-    showPenalty: width > 400,
-    layoutMode: height > width * 1.5 ? 'vertical' : 'ledwall',
-  };
-}
-```
-
-### 3. Průběžné testy
-
-Testy se píší průběžně pro každou dokončenou část, ne až na konci.
-- Unit testy pro utility funkce ihned po jejich vytvoření
-- Integration testy pro providery ihned po implementaci
-- Vitest jako testovací framework
-
-### 4. Timestamp-based highlight expiration
-
-Žádné `setTimeout` pro highlight - pouze timestamp a výpočet v renderovací logice.
-(Detailně v analýze `08-plan-reimplementace.md`)
+Stávající, Vychází z V2
 
 ---
 
-## Workflow
+## Vývoj a testování
 
-1. Zkontrolovat checklist `csb-v2-implementacni-checklist.md`
-2. Najít aktuální krok (první `[ ]`)
-3. Implementovat podle dokumentace v `../analysis/`
-4. **Napsat testy** pro dokončenou část
-5. Testovat na ReplayProvider s nahranými daty
-6. Označit v checklistu `[x]`
-7. Pokračovat dalším krokem
 
-Rozhodnuti z manualniho testovani mohou prebit puvodni projektove zamery a implementacni rozhodnuti, protoze se jedna o zjisteni na zaklade testovani skutecneho produktu behem vyvoje.
+Proces: Vždy, zejména u dodatečných požadavků a změn, nejprve aktualizovat dokumentaci jako plán a záměr, doplnit případné kroky do plánu a ty pak postupně realizovat. Snažit se plánované úkoly dělit do bloků, které jdou zvládnout pomocí claude code s opus 4.5 do cca 70% použitého kontextu, protože budeme pouštět na bloky postupně čerstvé instance. Commit nejpozději po každém bloku. Nedělat víc než jeden blok před clear nebo compact.
 
----
+Změny do C123 Server jsou možné - zejména optimalizovat API pro využití ve scoreboardu. Udělá se to tak, že se vyhodí seznam požadavků na vedlejší projekt a v tom to provedeme. 
 
-## Testovací data
+Výrazně doporučujeme testovat V3 scoreboard proti V2 na stejné sadě vstupních dat (třeba nahrávce). Kromě zobrazování výsledků dvou jízd musí být obsah, chování a logika ZCELA STEJNÁ (tedy je vhodné nejprve replikovat chování na jednu jízd a pak doručit zbytek - až po manuálním otestování uživatelem!). Pro soubežné testování je možné si pustit C123 server proti nahrávce, nebo jednotázově obohatit nahrávku o data přehraná přes C123 server ... to nějak vyřešíš. 
+
+Pokud se zjistí nějaká odchylka od požadovaného chování, nebo se nedaří nějaký problém vyřešit nebo se ukáže že je větší, tak další postup je takový, že aktualizuješ plán o nové sekce a kroky dle potřeby a skončíš a necháš další práci na čerstvé instance.
+
+Vývoj běží proti **nahraným datům z analýzy**:
 
 ```bash
-# Nahrávka ~4 min, obsahuje dojezdy, přechody kategorií, penalizace
+# Úvodní Nahrávka obsahuje nativní TCP (Canoe123) i WS (CLI) data, ale ne C123-server data
 ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 ```
 
-**Použití:**
-```typescript
-const provider = new ReplayProvider({
-  source: '../analysis/recordings/rec-2025-12-28T09-34-10.jsonl',
-  speed: 1.0,  // nebo 2.0 pro rychlejší playback
-});
-```
+Je ale možné testovat po domluvě i proti živému systému, ale vždy až nakonec, až je vše ostatní hotové. 
+
+Piš si deníček vývoje - co šlo, co nešlo, co se zkusilo, atd. Ať se neprozkoumávají slepé uličky.
+
+---
+
+## Klíčové kvality
+
+1. **Sledování flow závodu** - zobrazovat výsledky kategorie, která zrovna jede - tedy ta kde jede závodník, nebo když závodník nejede tak tu co poslední dojela.
+2. **Zachování architektury a vzhledu SB** - V2 je dostatečně vyladěný, změny architektury by měly být spíš vzácné
+3. **XML je živá databáze** - obsah se průběžně mění, je třeba reagvat přes api
+4. **CLI necháváme** - jako sekundární rozhraní pro zpětnou kompatibilitu a specifické případy, C123 bude primární, může mít bohatší obsah a chování, CLI ale musí chovat tak jako V2
+
 
 ---
 
 ## Commit message formát
 
 ```
-feat: add ResultsList component with highlight
-fix: correct highlight expiration timing
-test: add unit tests for formatTime
+feat: add TcpSource with reconnect logic
+fix: correct XML parsing for Results
+test: add unit tests for FinishDetector
 ```
 
 ---
 
-*Detaily implementace → viz `../analysis/08-plan-reimplementace.md`*
-*Styly a hodnoty → viz `../analysis/06-styly.md` (sekce Ověřené styly)*
+*Detailní plán implementace → viz `./PLAN.md`*

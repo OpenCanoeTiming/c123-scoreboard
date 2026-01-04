@@ -104,11 +104,13 @@ function mapResultRow(row: C123ResultRow): Result {
  * Map C123 race status to scoreboard raceStatus string.
  *
  * C123 Server uses isCurrent boolean:
- * - isCurrent: true → race is running → "3"
- * - isCurrent: false → race is finished → "5"
+ * - isCurrent: true → race is running → "In Progress"
+ * - isCurrent: false → race is finished → "Unofficial"
+ *
+ * These match CLI format for consistency in UI display.
  */
 function mapRaceStatus(isCurrent: boolean): string {
-  return isCurrent ? '3' : '5'
+  return isCurrent ? 'In Progress' : 'Unofficial'
 }
 
 /**
@@ -201,7 +203,7 @@ export function mapRaceConfig(
 ): RaceConfig {
   return {
     raceName: currentRaceName,
-    raceStatus: isCurrent ? '3' : '5',
+    raceStatus: mapRaceStatus(isCurrent),
     gateCount: data.nrGates,
   }
 }

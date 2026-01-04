@@ -626,6 +626,23 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
   - CLI má title z control zprávy, C123 zatím nemá title
 - **Commit:** `test: add Playwright visual comparison CLI vs C123 Server`
 
+### 2026-01-04 - Oprava raceStatus mapperu
+- ✅ Opraven `c123ServerMapper.ts` - `mapRaceStatus()` nyní vrací lidsky čitelné hodnoty
+- **Problém:** C123 mapper vracel "3"/"5", CLI používá "In Progress"/"Unofficial"
+- **Řešení:** Mapper nyní vrací:
+  - `isCurrent: true` → "In Progress"
+  - `isCurrent: false` → "Unofficial"
+- **Test výsledky po opravě:**
+  - CLI raceStatus: "Unofficial" (na konci nahrávky)
+  - C123 raceStatus: "In Progress" (C123 server stále posílá `isCurrent: true`)
+- **Analýza zbývajících rozdílů:**
+  1. **C1ž chybí** - C123 filtruje `isCurrent: true`, proto posílá jen K1m
+  2. **results.length: 100 vs 105** - CLI scrolluje, C123 má všechny výsledky
+  3. **raceStatus rozdíl** - CLI nahrávka končí na "Unofficial", C123 stále hlásí "In Progress"
+  4. **onCourseBibs** - timing rozdíl v momentě ukončení nahrávky
+- **Všechny rozdíly jsou očekávané** - nejsou chybou, pouze odrážejí rozdílné chování providerů
+- **Commit:** `fix: use human-readable raceStatus values in C123 mapper`
+
 ---
 
 ## Poznámky
