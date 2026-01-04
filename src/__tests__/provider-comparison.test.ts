@@ -91,14 +91,18 @@ describe('CLI vs C123Server Provider Comparison', () => {
     console.log(`\nUsing recording: ${recordingPath}`)
 
     // Helper to wait for a string in process output
-    const waitForOutput = (proc: ChildProcess, searchStr: string, timeoutMs: number = 5000): Promise<void> => {
+    // Accumulates all output so we don't miss early messages
+    const waitForOutput = (proc: ChildProcess, searchStr: string, timeoutMs: number = 10000): Promise<void> => {
       return new Promise((resolve, reject) => {
+        let output = ''
         const timeout = setTimeout(() => {
+          console.log(`Timeout waiting for "${searchStr}". Output so far: ${output.slice(0, 500)}`)
           reject(new Error(`Timeout waiting for "${searchStr}"`))
         }, timeoutMs)
 
         const check = (data: Buffer) => {
-          if (data.toString().includes(searchStr)) {
+          output += data.toString()
+          if (output.includes(searchStr)) {
             clearTimeout(timeout)
             proc.stdout?.off('data', check)
             resolve()
@@ -107,7 +111,12 @@ describe('CLI vs C123Server Provider Comparison', () => {
 
         proc.stdout?.on('data', check)
         proc.stderr?.on('data', (data) => {
-          console.error(`Process stderr: ${data}`)
+          output += data.toString()
+          // Also check stderr for the message
+          if (output.includes(searchStr)) {
+            clearTimeout(timeout)
+            resolve()
+          }
         })
       })
     }
@@ -133,6 +142,9 @@ describe('CLI vs C123Server Provider Comparison', () => {
       }
     )
 
+    // Register listener immediately after spawn
+    const cliReady = waitForOutput(mockCliWs, 'Waiting for scoreboard to connect')
+
     // Start mock Canoe123 TCP server (waits for client before replay)
     console.log('Starting Mock Canoe123 TCP server...')
     mockTcp = spawn(
@@ -154,11 +166,11 @@ describe('CLI vs C123Server Provider Comparison', () => {
       }
     )
 
+    // Register listener immediately after spawn
+    const tcpReady = waitForOutput(mockTcp, 'Waiting for C123 Server to connect')
+
     // Wait for mock servers to be ready
-    await Promise.all([
-      waitForOutput(mockCliWs, 'Waiting for'),
-      waitForOutput(mockTcp, 'Waiting for'),
-    ])
+    await Promise.all([cliReady, tcpReady])
     console.log('Mock servers ready')
 
     // Start C123 Server - connects to mock TCP and provides HTTP/WS API
