@@ -172,7 +172,7 @@ export async function replayMessages(
  * Sleep helper with abort signal support
  */
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (signal?.aborted) {
       resolve();
       return;

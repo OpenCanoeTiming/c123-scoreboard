@@ -16,8 +16,8 @@
  * Note: This test requires C123 Server to be available. If not, it skips.
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { spawn, ChildProcess, execSync } from 'child_process'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { spawn, ChildProcess } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
 import { WebSocket } from 'ws'
@@ -59,8 +59,8 @@ function isRecordingAvailable(): boolean {
 
 // Make WebSocket available globally for providers (they expect browser WebSocket)
 declare global {
-  // eslint-disable-next-line no-var
-  var WebSocket: typeof import('ws').WebSocket
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let WebSocket: any
 }
 globalThis.WebSocket = WebSocket as unknown as typeof globalThis.WebSocket
 
