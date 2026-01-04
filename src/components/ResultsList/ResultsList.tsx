@@ -54,10 +54,12 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   // within the scaled layout (otherwise content expands and no scroll is needed)
   const containerStyle = useMemo((): CSSProperties => {
     if (displayRows === null) return {}
-    // Fixed height = displayRows * rowHeight (in unscaled pixels)
+    // Row margin is 2px top + 2px bottom = 4px per row (from ResultsList.module.css)
+    const ROW_MARGIN = 4
+    const rowWithMargin = rowHeight + ROW_MARGIN
     return {
-      height: `${displayRows * rowHeight}px`,
-      maxHeight: `${displayRows * rowHeight}px`,
+      height: `${displayRows * rowWithMargin}px`,
+      maxHeight: `${displayRows * rowWithMargin}px`,
       overflow: 'hidden auto', // hidden horizontal, auto vertical
     }
   }, [displayRows, rowHeight])

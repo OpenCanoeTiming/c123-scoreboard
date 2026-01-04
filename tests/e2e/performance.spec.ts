@@ -47,7 +47,6 @@ test.describe('Performance Metrics', () => {
       return new Promise((resolve) => {
         const frameTimes: number[] = []
         let lastTime = performance.now()
-        let frameCount = 0
         const duration = 5000 // 5 seconds of measurement
 
         const measureFrame = () => {
@@ -55,7 +54,6 @@ test.describe('Performance Metrics', () => {
           const delta = now - lastTime
           frameTimes.push(delta)
           lastTime = now
-          frameCount++
 
           if (now - frameTimes[0] < duration) {
             requestAnimationFrame(measureFrame)
@@ -263,8 +261,8 @@ test.describe('Performance Metrics', () => {
         paintCount: number
       }>((resolve) => {
         let layoutCount = 0
-        let recalcStyleCount = 0
-        let paintCount = 0
+        const recalcStyleCount = 0
+        const paintCount = 0
 
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {

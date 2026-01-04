@@ -53,6 +53,7 @@ async function getVisibleRowBibs(page: Page): Promise<string[]> {
 }
 
 // Helper to get first visible row bib
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getFirstVisibleRowBib(page: Page): Promise<string | null> {
   const bibs = await getVisibleRowBibs(page)
   return bibs.length > 0 ? bibs[0] : null

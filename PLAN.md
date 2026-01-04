@@ -14,10 +14,153 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 | Fáze B: Automatické testování | ✅ Hotovo |
 | Fáze C: REST sync a XmlChange | ✅ Hotovo |
 | Fáze D: Opravy z live testování | ✅ Hotovo |
+| Fáze E: Opevnění a stabilizace | 🔄 V průběhu |
 
 ---
 
-## TODO: Opravy z live testování
+## TODO: Fáze E - Opevnění a stabilizace
+
+### Cíle fáze E
+
+Zajistit stabilitu, kvalitu kódu a komplexní pokrytí testy před nasazením do produkce.
+
+---
+
+### Blok 11: Commitnutí a linting opravy
+
+#### 11.1 Commitnutí necommitovaných změn
+**Stav:** [ ] TODO
+
+**Změny k commitnutí:**
+- `src/components/ResultsList/ResultsList.module.css` - `position: relative` pro správný výpočet offsetTop
+- `src/components/ResultsList/ResultsList.tsx` - oprava výpočtu výšky řádků (ROW_MARGIN)
+- `src/hooks/useAutoScroll.ts` - ledwall overlap fix, přidán `layoutMode` do dependency array
+
+**Akce:**
+- [ ] Review změn
+- [ ] Commit: `fix: improve scroll calculation and ledwall overlap handling`
+
+#### 11.2 Oprava ESLint errorů
+**Stav:** [ ] TODO
+
+**Chyby:**
+- `useAutoScroll.ts:195` - `setState` voláno synchronně v effectu
+- `useAutoScroll.ts:257` - totéž
+
+**Řešení:**
+- [ ] Refaktorizovat highlight scroll effect aby používal callback pattern nebo useLayoutEffect
+- [ ] Ověřit že scroll funguje správně po refaktorizaci
+
+#### 11.3 ESLint warnings (nízká priorita)
+**Stav:** [ ] Volitelné
+
+**Warnings:**
+- `ErrorBoundary.tsx:112` - fast refresh warning
+- `ScoreboardContext.tsx:456, 632` - fast refresh warning (context v jednom souboru)
+
+**Poznámka:** Tyto warnings neovlivňují produkční build, pouze dev hot reload. Lze ignorovat nebo opravit přesunutím kontextu do separátního souboru.
+
+---
+
+### Blok 12: Doplnění testů
+
+#### 12.1 Testy pro partial OnCourse messages (C123)
+**Stav:** [ ] TODO
+
+**Scénáře k pokrytí:**
+- [ ] `mapOnCourse` - partial message (`total > competitors.length`) vrací `updateOnCourse: false`
+- [ ] `mapOnCourse` - prázdný competitors s `total > 0` je partial
+- [ ] `ScoreboardContext` - merge partial message do existujícího seznamu
+- [ ] `ScoreboardContext` - grace period pro dokončené závodníky
+
+#### 12.2 Testy pro DNS/DNF/DSQ
+**Stav:** [ ] TODO
+
+**Scénáře:**
+- [ ] `mapResults` - status jen když není validní total
+- [ ] `mapResults` - ignoruje status když má validní čas
+- [ ] `ResultRow` - nevýrazný styl pro DNS/DNF/DSQ
+
+#### 12.3 Testy pro category change flow
+**Stav:** [ ] TODO
+
+**Scénáře:**
+- [ ] `ScoreboardContext` - vymaže results při změně activeRaceId
+- [ ] `ScoreboardContext` - filtruje Results podle targetRaceId
+
+#### 12.4 Testy pro title display
+**Stav:** [ ] TODO
+
+**Scénáře:**
+- [ ] `Title` komponenta - zobrazí "TITLE: CATEGORY"
+- [ ] `Title` komponenta - fallback na jen CATEGORY když chybí title
+
+---
+
+### Blok 13: Code review a vyčištění
+
+#### 13.1 Review klíčových souborů
+**Stav:** [ ] TODO
+
+**Soubory k review:**
+- [ ] `C123ServerProvider.ts` - connection handling, reconnect logika
+- [ ] `c123ServerMapper.ts` - partial messages, status mapping
+- [ ] `ScoreboardContext.tsx` - reducer logika, grace period
+- [ ] `useAutoScroll.ts` - scroll phases, highlight detection
+
+**Kritéria:**
+- [ ] Žádné TODO komentáře bez tracking issue
+- [ ] Dostatečné komentáře pro komplexní logiku
+- [ ] Konzistentní error handling
+- [ ] Žádné console.log v produkčním kódu (jen warn/error kde nutné)
+
+#### 13.2 Odstranění mrtvého kódu
+**Stav:** [ ] TODO
+
+**Akce:**
+- [ ] Zkontrolovat nepoužívané exporty
+- [ ] Odstranit zakomentovaný kód
+- [ ] Zkontrolovat nepoužívané importy
+
+#### 13.3 Konzistence typů
+**Stav:** [ ] TODO
+
+**Akce:**
+- [ ] Ověřit že všechny typy jsou exportované z `@/types`
+- [ ] Žádné `any` typy v produkčním kódu
+- [ ] Konzistentní pojmenování (camelCase pro proměnné, PascalCase pro typy)
+
+---
+
+### Blok 14: Dokumentace a finalizace
+
+#### 14.1 Aktualizace CLAUDE.md
+**Stav:** [ ] TODO
+
+**Akce:**
+- [ ] Přidat sekci o architektuře C123 vs CLI provideru
+- [ ] Dokumentovat klíčové konstanty a jejich význam
+- [ ] Přidat troubleshooting sekci
+
+#### 14.2 Aktualizace deníčku
+**Stav:** [ ] TODO
+
+**Akce:**
+- [ ] Shrnout Fázi E
+- [ ] Zaznamenat naučené lekce
+
+#### 14.3 Finální testy
+**Stav:** [ ] TODO
+
+**Akce:**
+- [ ] Spustit `npm test` - všechny testy prochází
+- [ ] Spustit `npm run lint` - žádné errory
+- [ ] Spustit `npm run build` - build prochází
+- [ ] Manuální test proti nahrávce
+
+---
+
+## Archivované: Opravy z live testování (Fáze D)
 
 ### Blok 10: Vizuální a UX opravy
 
@@ -63,9 +206,9 @@ Mapper vracel `updateOnCourse: true`, což nahrazovalo celý seznam → blikán�
 
 ---
 
-## Budoucí úkoly (po dokončení Fáze D)
+## Budoucí úkoly (po dokončení Fáze E)
 
-### Fáze E: BR1/BR2 merge zobrazení
+### Fáze F: BR1/BR2 merge zobrazení
 **Popis:** Zobrazení sloučených výsledků z obou jízd (Best Run).
 
 **Požadavky:**

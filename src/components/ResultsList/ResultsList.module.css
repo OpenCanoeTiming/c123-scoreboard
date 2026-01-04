@@ -5,6 +5,7 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;  /* Required for correct offsetTop calculation in scroll */
   background-color: var(--color-bg-results);
   border-radius: var(--border-radius-md);
   transition: opacity var(--transition-normal);

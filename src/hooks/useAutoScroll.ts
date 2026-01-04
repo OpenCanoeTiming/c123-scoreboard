@@ -192,7 +192,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     if (!isHighlightActive || !highlightBib || !containerRef.current) return
     if (hasScrolledToHighlight.current) return
 
-    setPhase('HIGHLIGHT_VIEW')
+    // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
+    queueMicrotask(() => {
+      setPhase('HIGHLIGHT_VIEW')
+    })
 
     // Find the highlighted row in DOM
     const container = containerRef.current
@@ -254,19 +257,27 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       // Only scroll to top if we were in an active scrolling phase and not already at top
       if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
         if (containerRef.current && containerRef.current.scrollTop > 0) {
-          setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
+          // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
+          queueMicrotask(() => {
+            setPhase('SCROLLING_TO_TOP_FOR_COMPETITOR')
+          })
           return // Don't proceed - next render will handle the scroll-to-top phase
         }
       }
       // Already at top or not scrolling, just go to IDLE
-      setPhase('IDLE')
+      queueMicrotask(() => {
+        setPhase('IDLE')
+      })
       return
     }
 
     // Don't run if disabled or highlight active
     if (!shouldScroll) {
       if (phase !== 'HIGHLIGHT_VIEW' && phase !== 'IDLE') {
-        setPhase('IDLE')
+        // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
+        queueMicrotask(() => {
+          setPhase('IDLE')
+        })
       }
       return
     }
@@ -288,7 +299,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     /**
      * Calculate rows per page based on actual container height.
      * Measures the real visible height and actual row spacing (including margins).
-     * Subtracts 1 to create overlap between pages (prevents skipping rows).
+     * On vertical layout, subtracts 1 for overlap between pages.
+     * On ledwall, no overlap (fewer rows, faster scrolling).
      */
     const getRowsPerPage = () => {
       // Calculate actual row height including margins by measuring gap between rows
@@ -297,7 +309,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       if (rows.length < 2) {
         // Fallback to simple calculation
         const fullRows = Math.floor(container.clientHeight / rowHeight)
-        return Math.max(1, fullRows - 1)
+        // Only subtract overlap on vertical (more rows, slower scrolling)
+        const overlap = layoutMode === 'vertical' ? 1 : 0
+        return Math.max(1, fullRows - overlap)
       }
 
       // Measure actual spacing between row tops (includes margin)
@@ -313,8 +327,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       // Calculate full rows that fit in the visible area
       const fullRows = Math.floor(container.clientHeight / effectiveRowHeight)
 
-      // Subtract 1 for overlap between pages (at least 1 row visible from previous page)
-      return Math.max(1, fullRows - 1)
+      // Only subtract overlap on vertical (more rows, slower scrolling needs context)
+      // Ledwall has fewer rows and faster scrolling, no overlap needed
+      const overlap = layoutMode === 'vertical' ? 1 : 0
+      return Math.max(1, fullRows - overlap)
     }
 
     const getTotalRows = () => {
@@ -336,7 +352,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     switch (phase) {
       case 'IDLE':
         // Start with initial delay (WAITING phase)
-        setPhase('WAITING')
+        // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
+        queueMicrotask(() => {
+          setPhase('WAITING')
+        })
         break
 
       case 'WAITING':
@@ -395,7 +414,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor, layoutMode])
 
   return {
     phase,

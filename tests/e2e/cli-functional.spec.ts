@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import * as net from 'net'
 
 /**
@@ -102,7 +103,9 @@ async function waitForResults(page: Page, timeout = 30000) {
 
 /**
  * Wait for current competitor (oncourse) to be displayed
+ * @deprecated Currently unused - kept for future tests
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function waitForCurrentCompetitor(page: Page, timeout = 30000) {
   await page.waitForSelector('[data-testid="oncourse"]', { timeout })
   await page.waitForFunction(
@@ -115,7 +118,7 @@ async function waitForCurrentCompetitor(page: Page, timeout = 30000) {
 }
 
 test.describe('CLI Connection', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
@@ -164,7 +167,7 @@ test.describe('CLI Connection', () => {
 })
 
 test.describe('CLI Message Handling - top (results)', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
@@ -223,7 +226,6 @@ test.describe('CLI Message Handling - top (results)', () => {
 
     // Capture initial state
     const resultsList = page.getByTestId('results-list')
-    const initialRowCount = await resultsList.locator('div[class*="row"]').count()
 
     // Wait some time for potential updates (live data)
     await page.waitForTimeout(5000)
@@ -238,7 +240,7 @@ test.describe('CLI Message Handling - top (results)', () => {
 })
 
 test.describe('CLI Message Handling - comp (current competitor)', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
@@ -311,7 +313,7 @@ test.describe('CLI Message Handling - comp (current competitor)', () => {
 })
 
 test.describe('CLI Message Handling - control (visibility)', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
@@ -355,7 +357,7 @@ test.describe('CLI Message Handling - control (visibility)', () => {
 })
 
 test.describe('CLI Reconnection', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
@@ -404,7 +406,7 @@ test.describe('CLI Reconnection', () => {
 })
 
 test.describe('CLI Integration - Full Workflow', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     const available = await isCLIServerAvailable()
     test.skip(!available, `CLI server not available at ${CLI_WS_URL}`)
   })
