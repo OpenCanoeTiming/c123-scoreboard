@@ -183,9 +183,10 @@
   padding: 2px 4px;
 }
 
-/* Status indicator for invalid results (DNS, DNF, DSQ) */
+/* Status indicator for invalid results (DNS, DNF, DSQ) - subdued style */
 .statusIndicator {
-  color: var(--color-penalty-miss);
-  font-weight: 600;
-  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.7;
 }

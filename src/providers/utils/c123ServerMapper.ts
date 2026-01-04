@@ -93,38 +93,22 @@ export function mapOnCourse(data: C123OnCourseData): OnCourseData {
 // =============================================================================
 
 /**
- * Detect result status from C123 data.
+ * Get result status from C123 data.
  *
- * If the status field is provided (from IRM field in XML), use it directly.
- * Otherwise, detect DNS/DNF based on data patterns:
- * - DNS: total is "0" or "0.00" or empty, no penalty, empty time
- * - DNF: has time but no total or incomplete gates
+ * Only uses explicit status field from data (IRM field in XML).
+ * Does NOT infer DNS/DNF from data patterns - if status is not in data,
+ * display will show "---" instead of time.
  *
  * @param row - C123 result row
- * @returns Status string or empty for valid results
+ * @returns Status string or empty for valid/unknown results
  */
-function detectResultStatus(row: C123ResultRow): ResultStatus {
-  // If status is explicitly provided, normalize it
+function getResultStatus(row: C123ResultRow): ResultStatus {
+  // Only use explicitly provided status (from IRM field in XML)
   if (row.status) {
     const upperStatus = row.status.toUpperCase()
     if (upperStatus === 'DNS' || upperStatus === 'DNF' || upperStatus === 'DSQ') {
       return upperStatus as ResultStatus
     }
-  }
-
-  // Detect DNS: no time, no penalty, total is 0 or empty
-  const totalEmpty = !row.total || row.total === '' || row.total === '0' || row.total === '0.00'
-  const timeEmpty = !row.time || row.time === '' || row.time === '0' || row.time === '0.00'
-  const noPenalty = row.pen === 0
-
-  if (totalEmpty && timeEmpty && noPenalty) {
-    return 'DNS'
-  }
-
-  // Detect DNF: has some time but total is empty or 0 (incomplete run)
-  if (timeEmpty && totalEmpty && !noPenalty) {
-    // Has penalty but no time - likely DNF
-    return 'DNF'
   }
 
   return ''
@@ -134,7 +118,7 @@ function detectResultStatus(row: C123ResultRow): ResultStatus {
  * Map C123 result row to scoreboard Result
  */
 function mapResultRow(row: C123ResultRow): Result {
-  const status = detectResultStatus(row)
+  const status = getResultStatus(row)
 
   return {
     rank: row.rank,

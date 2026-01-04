@@ -295,6 +295,17 @@ function scoreboardReducer(
         lastActiveRaceId: newActiveRaceId || state.lastActiveRaceId,
       }
 
+      // Clear results when category changes
+      // This prevents showing results from previous category when new category starts
+      // Condition: new active race exists, differs from currently displayed results,
+      // and we have results to clear
+      if (newActiveRaceId && newActiveRaceId !== state.raceId && state.results.length > 0) {
+        newState.results = []
+        newState.raceName = ''
+        newState.raceId = ''
+        newState.raceStatus = ''
+      }
+
       // Atomic departing update - if previous competitor exists and bib differs
       const prev = state.currentCompetitor
       if (prev && prev.bib !== newCurrent?.bib) {

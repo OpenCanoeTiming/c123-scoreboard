@@ -38,10 +38,19 @@ function formatBehind(behind: string): string {
 }
 
 /**
- * Check if result has invalid status (DNS, DNF, DSQ)
+ * Check if result has explicit invalid status (DNS, DNF, DSQ)
  */
-function isInvalidResult(status?: ResultStatus): status is 'DNS' | 'DNF' | 'DSQ' {
+function hasExplicitStatus(status?: ResultStatus): status is 'DNS' | 'DNF' | 'DSQ' {
   return status === 'DNS' || status === 'DNF' || status === 'DSQ'
+}
+
+/**
+ * Check if result has missing/empty time (no explicit status but no valid time)
+ */
+function hasMissingTime(result: Result): boolean {
+  if (hasExplicitStatus(result.status)) return false
+  const total = result.total
+  return !total || total === '' || total === '0' || total === '0.00'
 }
 
 /**
@@ -70,24 +79,36 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     ref
   ) {
     const rowClasses = `${styles.row}${isHighlighted ? ` ${styles.highlighted}` : ''}${layoutMode === 'ledwall' ? ` ${styles.ledwall}` : ''}`
-    const hasInvalidStatus = isInvalidResult(result.status)
+    const explicitStatus = hasExplicitStatus(result.status)
+    const missingTime = hasMissingTime(result)
+    const showAsInvalid = explicitStatus || missingTime
+
+    // Determine what to show in time column:
+    // - Explicit status (DNS/DNF/DSQ): show status text
+    // - Missing time without status: show "---"
+    // - Valid time: show total
+    const timeDisplay = explicitStatus
+      ? result.status
+      : missingTime
+        ? '---'
+        : result.total
 
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
-        <div className={styles.rank}>{hasInvalidStatus ? '-' : `${result.rank}.`}</div>
+        <div className={styles.rank}>{showAsInvalid ? '-' : `${result.rank}.`}</div>
         <div className={styles.bib}>{result.bib}</div>
         <div className={styles.name}>{formatName(result.name)}</div>
         {showPenalty && (
-          <div className={`${styles.penalty} ${hasInvalidStatus ? '' : getPenaltyClass(result.pen)}`}>
-            {hasInvalidStatus ? '' : result.pen}
+          <div className={`${styles.penalty} ${showAsInvalid ? '' : getPenaltyClass(result.pen)}`}>
+            {showAsInvalid ? '' : result.pen}
           </div>
         )}
-        <div className={`${styles.time} ${hasInvalidStatus ? styles.statusIndicator : ''}`}>
-          {hasInvalidStatus ? result.status : result.total}
+        <div className={`${styles.time} ${showAsInvalid ? styles.statusIndicator : ''}`}>
+          {timeDisplay}
         </div>
         {showBehind && (
           <div className={styles.behind}>
-            {hasInvalidStatus ? '' : formatBehind(result.behind)}
+            {showAsInvalid ? '' : formatBehind(result.behind)}
           </div>
         )}
       </div>
