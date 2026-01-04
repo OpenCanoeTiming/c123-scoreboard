@@ -156,9 +156,14 @@ function buildRaceName(mainTitle: string, raceId: string): string {
  * @returns ResultsData for scoreboard
  */
 export function mapResults(data: C123ResultsData): ResultsData {
+  // Build race name: if mainTitle is present, append run suffix; otherwise use raceId
+  const raceName = data.mainTitle
+    ? buildRaceName(data.mainTitle, data.raceId)
+    : data.raceId
+
   return {
     results: data.rows.map(mapResultRow),
-    raceName: buildRaceName(data.mainTitle || '', data.raceId) || data.raceId,
+    raceName,
     raceStatus: mapRaceStatus(data.isCurrent),
     highlightBib: null, // C123 Server doesn't provide this; finish detection uses dtFinish
   }
