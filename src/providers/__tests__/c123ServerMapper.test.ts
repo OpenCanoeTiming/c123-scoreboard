@@ -63,17 +63,19 @@ function createResultRow(overrides: Partial<C123ResultRow> = {}): C123ResultRow 
 // =============================================================================
 
 describe('mapOnCourse', () => {
-  it('maps empty competitor list', () => {
-    const data: C123OnCourseData = {
-      total: 0,
-      competitors: [],
-    }
+  describe('basic mapping', () => {
+    it('maps empty competitor list', () => {
+      const data: C123OnCourseData = {
+        total: 0,
+        competitors: [],
+      }
 
-    const result = mapOnCourse(data)
+      const result = mapOnCourse(data)
 
-    expect(result.current).toBeNull()
-    expect(result.onCourse).toEqual([])
-    expect(result.updateOnCourse).toBe(true)
+      expect(result.current).toBeNull()
+      expect(result.onCourse).toEqual([])
+      expect(result.updateOnCourse).toBe(true)
+    })
   })
 
   it('maps single competitor', () => {
@@ -178,6 +180,106 @@ describe('mapOnCourse', () => {
     expect(mapped.ttbDiff).toBe('+12.79')
     expect(mapped.ttbName).toBe('Jiří Prskavec')
     expect(mapped.rank).toBe(5)
+  })
+
+  // =========================================================================
+  // Partial OnCourse Messages (12.1)
+  // =========================================================================
+  describe('partial messages (updateOnCourse detection)', () => {
+    it('returns updateOnCourse: true for full message (total === competitors.length)', () => {
+      const data: C123OnCourseData = {
+        total: 2,
+        competitors: [
+          createCompetitor({ bib: '10', dtStart: '16:10:00.000' }),
+          createCompetitor({ bib: '11', dtStart: '16:11:00.000' }),
+        ],
+      }
+
+      const result = mapOnCourse(data)
+
+      expect(result.updateOnCourse).toBe(true)
+      expect(result.onCourse).toHaveLength(2)
+    })
+
+    it('returns updateOnCourse: false for partial message (total > competitors.length)', () => {
+      // C123 timing system sends updates for individual competitors alternately
+      // e.g., total: 2 but only 1 competitor in message
+      const data: C123OnCourseData = {
+        total: 2, // Two competitors on course
+        competitors: [
+          createCompetitor({ bib: '10', dtStart: '16:10:00.000' }),
+        ], // But only one in message
+      }
+
+      const result = mapOnCourse(data)
+
+      expect(result.updateOnCourse).toBe(false)
+      expect(result.onCourse).toHaveLength(1)
+      expect(result.current?.bib).toBe('10')
+    })
+
+    it('returns updateOnCourse: false when all competitors filtered (no dtStart)', () => {
+      // Message contains competitor without dtStart (not yet started)
+      // After filtering, activeCompetitors is empty but total > 0
+      const data: C123OnCourseData = {
+        total: 1,
+        competitors: [
+          createCompetitor({ bib: '20', dtStart: '' }), // No dtStart - filtered out
+        ],
+      }
+
+      const result = mapOnCourse(data)
+
+      // This is partial because total (1) > activeCompetitors.length (0)
+      expect(result.updateOnCourse).toBe(false)
+      expect(result.onCourse).toHaveLength(0)
+      expect(result.current).toBeNull()
+    })
+
+    it('returns updateOnCourse: true for truly empty list (total === 0)', () => {
+      const data: C123OnCourseData = {
+        total: 0,
+        competitors: [],
+      }
+
+      const result = mapOnCourse(data)
+
+      expect(result.updateOnCourse).toBe(true)
+      expect(result.onCourse).toHaveLength(0)
+    })
+
+    it('treats message as partial when some competitors lack dtStart', () => {
+      // total: 3 means 3 competitors, but after filtering only 1 has dtStart
+      const data: C123OnCourseData = {
+        total: 3,
+        competitors: [
+          createCompetitor({ bib: '10', dtStart: '16:10:00.000' }),
+          createCompetitor({ bib: '11', dtStart: '' }), // filtered out
+          createCompetitor({ bib: '12', dtStart: '' }), // filtered out
+        ],
+      }
+
+      const result = mapOnCourse(data)
+
+      // total (3) > activeCompetitors.length (1) → partial
+      expect(result.updateOnCourse).toBe(false)
+      expect(result.onCourse).toHaveLength(1)
+    })
+
+    it('provides current from partial message for merge', () => {
+      // When partial, current should be set so ScoreboardContext can merge
+      const competitor = createCompetitor({ bib: '42', dtStart: '16:10:00.000' })
+      const data: C123OnCourseData = {
+        total: 2, // Partial - more than 1 competitor on course
+        competitors: [competitor],
+      }
+
+      const result = mapOnCourse(data)
+
+      expect(result.updateOnCourse).toBe(false)
+      expect(result.current).not.toBeNull()
+      expect(result.current?.bib).toBe('42')
+    })
   })
 })
 
@@ -343,6 +445,185 @@ describe('mapResults', () => {
       const result = mapResults(data)
 
       expect(result.raceStatus).toBe('Unofficial')
+    })
+  })
+
+  // =========================================================================
+  // DNS/DNF/DSQ Status Mapping (12.2)
+  // =========================================================================
+  describe('DNS/DNF/DSQ status mapping', () => {
+    it('shows status only when no valid total time', () => {
+      const row = createResultRow({
+        total: '', // No valid time
+        status: 'DNS',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DNS')
+    })
+
+    it('ignores status when valid total time exists', () => {
+      // C123 sends total from better run, so if total exists, show time not status
+      const row = createResultRow({
+        total: '78.99', // Valid time
+        status: 'DNF', // Status should be ignored
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('')
+      expect(result.results[0].total).toBe('78.99')
+    })
+
+    it('maps DNF status correctly', () => {
+      const row = createResultRow({
+        total: '',
+        status: 'DNF',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DNF')
+    })
+
+    it('maps DSQ status correctly', () => {
+      const row = createResultRow({
+        total: '0',
+        status: 'DSQ',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DSQ')
+    })
+
+    it('treats total "0" as no valid time', () => {
+      const row = createResultRow({
+        total: '0',
+        status: 'DNS',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DNS')
+    })
+
+    it('treats total "0.00" as no valid time', () => {
+      const row = createResultRow({
+        total: '0.00',
+        status: 'DNF',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DNF')
+    })
+
+    it('normalizes lowercase status to uppercase', () => {
+      const row = createResultRow({
+        total: '',
+        status: 'dns', // lowercase
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('DNS')
+    })
+
+    it('returns empty status for unknown status values', () => {
+      const row = createResultRow({
+        total: '',
+        status: 'INVALID',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].status).toBe('')
+    })
+
+    it('returns empty status when no status field and no valid time', () => {
+      const row = createResultRow({
+        total: '',
+        // no status field
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      // No inference - just show "---" in UI (handled by component)
+      expect(result.results[0].status).toBe('')
     })
   })
 

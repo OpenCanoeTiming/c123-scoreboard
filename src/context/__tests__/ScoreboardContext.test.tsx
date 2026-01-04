@@ -866,6 +866,285 @@ describe('ScoreboardContext', () => {
     })
   })
 
+  // =========================================================================
+  // Category Change Flow (12.3)
+  // =========================================================================
+  describe('category change flow', () => {
+    it('clears results when activeRaceId changes', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Set initial results for race R1
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'K1M - Race 1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R1',
+        })
+      })
+
+      // Set competitor from same race R1
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: createOnCourseCompetitor({ bib: '10', raceId: 'R1' }),
+          onCourse: [createOnCourseCompetitor({ bib: '10', raceId: 'R1' })],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.raceName).toBe('K1M - Race 1')
+
+      // New competitor from different race R2 (category change)
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: createOnCourseCompetitor({ bib: '20', raceId: 'R2' }),
+          onCourse: [createOnCourseCompetitor({ bib: '20', raceId: 'R2' })],
+          updateOnCourse: true,
+        })
+      })
+
+      // Results should be cleared when category changes
+      expect(result.current.results).toEqual([])
+      expect(result.current.raceName).toBe('')
+      expect(result.current.activeRaceId).toBe('R2')
+    })
+
+    it('filters Results by targetRaceId (activeRaceId or lastActiveRaceId)', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Set competitor from race R1
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: createOnCourseCompetitor({ bib: '10', raceId: 'R1' }),
+          onCourse: [createOnCourseCompetitor({ bib: '10', raceId: 'R1' })],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.activeRaceId).toBe('R1')
+
+      // Try to set results for different race R2 - should be ignored
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '99' })],
+          raceName: 'C1W - Race 2',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R2', // Different from activeRaceId
+        })
+      })
+
+      // Results should not be updated
+      expect(result.current.results).toEqual([])
+
+      // Results for correct race R1 should be accepted
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'K1M - Race 1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R1', // Matches activeRaceId
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('42')
+    })
+
+    it('uses lastActiveRaceId when no one is on course', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Set competitor from race R1
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: createOnCourseCompetitor({ bib: '10', raceId: 'R1' }),
+          onCourse: [createOnCourseCompetitor({ bib: '10', raceId: 'R1' })],
+          updateOnCourse: true,
+        })
+      })
+
+      // Set results for R1
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '42' })],
+          raceName: 'K1M - Race 1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R1',
+        })
+      })
+
+      expect(result.current.activeRaceId).toBe('R1')
+      expect(result.current.lastActiveRaceId).toBe('R1')
+
+      // Clear on-course (no one on course now)
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: null,
+          onCourse: [],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.activeRaceId).toBeNull()
+      expect(result.current.lastActiveRaceId).toBe('R1')
+
+      // Results for R2 should still be ignored (using lastActiveRaceId)
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '99' })],
+          raceName: 'C1W - Race 2',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R2',
+        })
+      })
+
+      // R2 results should be filtered out
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('42')
+    })
+  })
+
+  // =========================================================================
+  // Partial OnCourse Messages Merge (12.1)
+  // =========================================================================
+  describe('partial OnCourse message handling', () => {
+    it('merges partial message into existing onCourse list', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor10 = createOnCourseCompetitor({ bib: '10', dtStart: '2025-12-28T10:00:00' })
+      const competitor11 = createOnCourseCompetitor({ bib: '11', dtStart: '2025-12-28T10:01:00' })
+
+      // Full message - sets both competitors
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor10,
+          onCourse: [competitor10, competitor11],
+          updateOnCourse: true, // Full message
+        })
+      })
+
+      expect(result.current.onCourse).toHaveLength(2)
+
+      // Partial message - updates only competitor 10
+      const updated10 = { ...competitor10, time: '45.00', total: '47.00' }
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: updated10,
+          onCourse: [updated10], // Only one competitor in partial
+          updateOnCourse: false, // Partial message - merge, don't replace
+        })
+      })
+
+      // Both should still be in list, but 10 should be updated
+      expect(result.current.onCourse).toHaveLength(2)
+      const found10 = result.current.onCourse.find(c => c.bib === '10')
+      expect(found10?.time).toBe('45.00')
+      expect(found10?.total).toBe('47.00')
+    })
+
+    it('adds new competitor from partial message', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor10 = createOnCourseCompetitor({ bib: '10', dtStart: '2025-12-28T10:00:00' })
+
+      // Set one competitor
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor10,
+          onCourse: [competitor10],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.onCourse).toHaveLength(1)
+
+      // Partial message with new competitor
+      const competitor11 = createOnCourseCompetitor({ bib: '11', dtStart: '2025-12-28T10:01:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor11,
+          onCourse: [competitor11],
+          updateOnCourse: false, // Partial - add to existing list
+        })
+      })
+
+      // Both should be in list
+      expect(result.current.onCourse).toHaveLength(2)
+      expect(result.current.onCourse.find(c => c.bib === '10')).toBeDefined()
+      expect(result.current.onCourse.find(c => c.bib === '11')).toBeDefined()
+    })
+
+    it('detects finish from partial message before filtering', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor10 = createOnCourseCompetitor({
+        bib: '10',
+        dtStart: '2025-12-28T10:00:00',
+        dtFinish: null,
+        total: '90.50',
+      })
+      const competitor11 = createOnCourseCompetitor({
+        bib: '11',
+        dtStart: '2025-12-28T10:01:00',
+        dtFinish: null,
+      })
+
+      // Both on course
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor10,
+          onCourse: [competitor10, competitor11],
+          updateOnCourse: true,
+        })
+      })
+
+      // Partial message - competitor 10 finishes
+      const finished10 = { ...competitor10, dtFinish: '2025-12-28T10:01:30' }
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: finished10,
+          onCourse: [finished10],
+          updateOnCourse: false, // Partial message
+        })
+      })
+
+      // Results arrive - should trigger highlight for 10
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '10', total: '90.50' })],
+          raceName: 'Test',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+        })
+      })
+
+      expect(result.current.highlightBib).toBe('10')
+    })
+  })
+
   describe('cleanup', () => {
     it('unsubscribes from all callbacks on unmount', () => {
       const mockProvider = createMockProvider()
