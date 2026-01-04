@@ -85,21 +85,21 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
 
     // Determine what to show in time column:
     // - Explicit status (DNS/DNF/DSQ): show status text
-    // - Missing time without status: show "---"
+    // - Missing time without status: show nothing
     // - Valid time: show total
     const timeDisplay = explicitStatus
       ? result.status
       : missingTime
-        ? '---'
+        ? ''
         : result.total
 
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
-        <div className={styles.rank}>{showAsInvalid ? '-' : `${result.rank}.`}</div>
+        <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
         <div className={styles.bib}>{result.bib}</div>
         <div className={styles.name}>{formatName(result.name)}</div>
         {showPenalty && (
-          <div className={`${styles.penalty} ${showAsInvalid ? '' : getPenaltyClass(result.pen)}`}>
+          <div className={`${styles.penalty} ${showAsInvalid ? styles.penaltyHidden : getPenaltyClass(result.pen)}`}>
             {showAsInvalid ? '' : result.pen}
           </div>
         )}

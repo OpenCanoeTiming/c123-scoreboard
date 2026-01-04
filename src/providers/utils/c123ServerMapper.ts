@@ -113,15 +113,21 @@ export function mapOnCourse(data: C123OnCourseData): OnCourseData {
 /**
  * Get result status from C123 data.
  *
- * Only uses explicit status field from data (IRM field in XML).
- * Does NOT infer DNS/DNF from data patterns - if status is not in data,
- * display will show "---" instead of time.
+ * Only uses explicit status field when there's no valid time.
+ * If total exists, we show the time (from better run), not the status.
  *
  * @param row - C123 result row
- * @returns Status string or empty for valid/unknown results
+ * @returns Status string or empty for valid results
  */
 function getResultStatus(row: C123ResultRow): ResultStatus {
-  // Only use explicitly provided status (from IRM field in XML)
+  // Only show status if there's no valid total time
+  // C123 server sends total from better run, so if total exists, show it
+  const hasValidTotal = row.total && row.total !== '' && row.total !== '0' && row.total !== '0.00'
+  if (hasValidTotal) {
+    return ''
+  }
+
+  // No valid total - check for explicit status
   if (row.status) {
     const upperStatus = row.status.toUpperCase()
     if (upperStatus === 'DNS' || upperStatus === 'DNF' || upperStatus === 'DSQ') {
@@ -136,8 +142,6 @@ function getResultStatus(row: C123ResultRow): ResultStatus {
  * Map C123 result row to scoreboard Result
  */
 function mapResultRow(row: C123ResultRow): Result {
-  const status = getResultStatus(row)
-
   return {
     rank: row.rank,
     bib: row.bib,
@@ -149,7 +153,7 @@ function mapResultRow(row: C123ResultRow): Result {
     total: row.total,
     pen: row.pen,
     behind: row.behind,
-    status,
+    status: getResultStatus(row),
   }
 }
 

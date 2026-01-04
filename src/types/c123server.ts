@@ -113,6 +113,14 @@ export interface C123ResultRow {
   total: string // time + penalty: "78.99"
   behind: string // difference to first: "" for winner, "+1.50" for others
   status?: string // IRM field: "DNS", "DNF", "DSQ", or empty for valid results
+  // BR2 fields - data from first run
+  prevTime?: number // 1st run time in centiseconds
+  prevPen?: number // 1st run penalty
+  prevTotal?: number // 1st run total in centiseconds
+  prevRank?: number // 1st run rank
+  totalTotal?: number // Best of both runs in centiseconds
+  totalRank?: number // Overall rank
+  betterRun?: number // Which run was better: 1 or 2
 }
 
 export interface C123ResultsData {

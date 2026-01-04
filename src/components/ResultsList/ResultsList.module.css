@@ -190,3 +190,8 @@
   font-style: italic;
   opacity: 0.7;
 }
+
+/* Hidden penalty for invalid results (no background box) */
+.penaltyHidden {
+  background-color: transparent;
+}
