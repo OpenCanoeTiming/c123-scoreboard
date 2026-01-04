@@ -26,39 +26,33 @@ Zajistit stabilitu, kvalitu kódu a komplexní pokrytí testy před nasazením d
 
 ---
 
-### Blok 11: Commitnutí a linting opravy
+### Blok 11: Commitnutí a linting opravy ✅
 
-#### 11.1 Commitnutí necommitovaných změn
-**Stav:** [ ] TODO
+#### 11.1 Commitnutí necommitovaných změn ✅
+**Stav:** [x] Hotovo
 
-**Změny k commitnutí:**
+**Změny commitnuty:**
 - `src/components/ResultsList/ResultsList.module.css` - `position: relative` pro správný výpočet offsetTop
 - `src/components/ResultsList/ResultsList.tsx` - oprava výpočtu výšky řádků (ROW_MARGIN)
 - `src/hooks/useAutoScroll.ts` - ledwall overlap fix, přidán `layoutMode` do dependency array
 
-**Akce:**
-- [ ] Review změn
-- [ ] Commit: `fix: improve scroll calculation and ledwall overlap handling`
+#### 11.2 Oprava ESLint errorů ✅
+**Stav:** [x] Hotovo
 
-#### 11.2 Oprava ESLint errorů
-**Stav:** [ ] TODO
+**Opravené chyby:**
+- `useAutoScroll.ts` - všechny synchronní `setPhase` volání zabaleny do `queueMicrotask()`
+- `tests/e2e/cli-functional.spec.ts` - odstraněna nepoužitá proměnná `page` z beforeEach
 
-**Chyby:**
-- `useAutoScroll.ts:195` - `setState` voláno synchronně v effectu
-- `useAutoScroll.ts:257` - totéž
-
-**Řešení:**
-- [ ] Refaktorizovat highlight scroll effect aby používal callback pattern nebo useLayoutEffect
-- [ ] Ověřit že scroll funguje správně po refaktorizaci
+**Commit:** `fix: improve scroll calculation and fix ESLint errors` (5191027)
 
 #### 11.3 ESLint warnings (nízká priorita)
-**Stav:** [ ] Volitelné
+**Stav:** [ ] Volitelné - ignorováno
 
 **Warnings:**
 - `ErrorBoundary.tsx:112` - fast refresh warning
 - `ScoreboardContext.tsx:456, 632` - fast refresh warning (context v jednom souboru)
 
-**Poznámka:** Tyto warnings neovlivňují produkční build, pouze dev hot reload. Lze ignorovat nebo opravit přesunutím kontextu do separátního souboru.
+**Poznámka:** Tyto warnings neovlivňují produkční build, pouze dev hot reload. Ponecháno bez opravy.
 
 ---
 
