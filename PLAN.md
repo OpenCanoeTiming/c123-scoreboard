@@ -702,6 +702,23 @@ initialDelay: 1000ms → 2s → 4s → 8s → 16s → 30s (max)
 - Zbývá pouze REST API pro merged BR1/BR2 - bude implementováno dle potřeby
 - **Status:** Projekt je funkční a připravený k použití
 
+### 2026-01-04 - Blok 8 hotový (OnCourse a Results flow)
+- ✅ Opraveno mizení jezdců na trati
+  - `mapOnCourse()` nyní filtruje závodníky bez platného dtStart
+  - Závodníci, kteří ještě nestartovali (jsou ve startovní frontě), se nezobrazují
+- ✅ Opraveno sledování aktivní kategorie
+  - Přidán `raceId` do `ResultsData` interface
+  - Přidány `activeRaceId` a `lastActiveRaceId` do ScoreboardState
+  - Results jsou nyní filtrovány podle raceId z OnCourse dat
+  - Zobrazují se pouze výsledky kategorie, která zrovna jede
+  - Pokud nikdo nejede, zobrazuje se poslední aktivní kategorie
+- **Změněné soubory:**
+  - `src/providers/types.ts`
+  - `src/providers/utils/c123ServerMapper.ts`
+  - `src/providers/utils/messageHandlers.ts`
+  - `src/context/ScoreboardContext.tsx`
+- **Commit:** `fix: improve OnCourse filtering and Results race tracking`
+
 ---
 
 ## Fáze D: Opravy z live testování
@@ -743,23 +760,21 @@ Testování proti živému serveru na `192.168.68.108:27123` odhalilo následuj�
 
 ---
 
-### Blok 8: Opravy OnCourse a flow závodu (~40% kontextu)
+### Blok 8: Opravy OnCourse a flow závodu (~40% kontextu) ✅ HOTOVO
 
-#### 8.1 Jezdci na trati - mizení a přepisování
+#### 8.1 Jezdci na trati - mizení a přepisování ✅
 **Problém:**
 - Jeden jezdec na trati (má start čas) a druhý ještě nejede (nemá start čas) → jezdec na trati se objevuje a mizí
 - Dva jezdci na trati se přepisují
 
 **Řešení:**
-- [ ] Zkontrolovat `mapOnCourse()` v `c123ServerMapper.ts` - správné filtrování jezdců bez dtStart
-- [ ] Zkontrolovat `ScoreboardContext.tsx` - OnCourse state management
-- [ ] Debug: logovat příchozí OnCourse zprávy vs. zobrazený stav
+- ✅ Upravena `mapOnCourse()` v `c123ServerMapper.ts` - filtruje závodníky bez platného dtStart
+- ✅ Závodníci bez dtStart (ještě nestartovali) jsou nyní ignorováni
 
 **Soubory:**
 - `src/providers/utils/c123ServerMapper.ts`
-- `src/context/ScoreboardContext.tsx`
 
-#### 8.2 Results ignorují OnCourse flow (KRITICKÉ!)
+#### 8.2 Results ignorují OnCourse flow (KRITICKÉ!) ✅
 **Problém:** Scoreboard zobrazuje results, které přijdou zespodu, bez ohledu na to co se děje na trati - porušení základního požadavku.
 
 **Kontext:** C123 patrně posílá do TCP kanálu celé výsledky, když se daný výsledkový set změní (např. opravy penalizací v předchozí kategorii). C123 server admin zobrazuje "Event" pole kde se mění kategorie - ale to asi není korektní chování.
@@ -767,17 +782,19 @@ Testování proti živému serveru na `192.168.68.108:27123` odhalilo následuj�
 **Požadavek:** Zobrazovat výsledky kategorie, která **zrovna jede** (ta kde je závodník na trati), nebo když nikdo nejede, tu co poslední dojela.
 
 **Řešení:**
-- [ ] Přidat logiku do ScoreboardContext:
-  - Sledovat `currentRaceId` z OnCourse dat (raceId jezdce na trati)
-  - Results filtrovat/prioritizovat podle `currentRaceId`
-  - Pokud nikdo na trati → zobrazit poslední aktivní kategorii
-- [ ] Možná potřeba úpravy v C123 server (viz TODO.md)
+- ✅ Přidán `raceId` do `ResultsData` interface
+- ✅ Přidány `activeRaceId` a `lastActiveRaceId` do `ScoreboardState`
+- ✅ Upravena logika v `SET_ON_COURSE` reducer - trackuje activeRaceId z on-course závodníků
+- ✅ Upravena logika v `SET_RESULTS` reducer - filtruje Results podle activeRaceId
+- ✅ Aktualizován CLI `transformTopMessage` pro zpětnou kompatibilitu
 
 **Soubory:**
-- `src/context/ScoreboardContext.tsx`
-- `src/providers/C123ServerProvider.ts` (možná přidat raceId tracking)
+- `src/providers/types.ts` - přidán raceId do ResultsData
+- `src/providers/utils/c123ServerMapper.ts` - mapResults vrací raceId
+- `src/providers/utils/messageHandlers.ts` - CLI transformTopMessage s raceId
+- `src/context/ScoreboardContext.tsx` - activeRaceId tracking a Results filtrace
 
-**Viz také:** `../c123-server/TODO.md` - požadavek na správné Event pole
+**Commit:** ✅ `fix: improve OnCourse filtering and Results race tracking`
 
 ---
 
