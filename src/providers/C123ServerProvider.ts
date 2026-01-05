@@ -224,6 +224,11 @@ export class C123ServerProvider implements DataProvider {
           this.setStatus('connected')
           this.currentReconnectDelay = this.initialReconnectDelay // Reset backoff
 
+          // Fetch event name on every connect (initial and reconnect)
+          this.fetchEventName().catch(err => {
+            console.warn('C123Server: Failed to fetch event name:', err)
+          })
+
           // Sync state via REST API after reconnect
           if (wasReconnect && this.syncOnReconnect) {
             this.syncState().catch(err => {
@@ -385,9 +390,24 @@ export class C123ServerProvider implements DataProvider {
   }
 
   /**
-   * Fetch event name from /api/discover endpoint and emit as EventInfo
+   * Fetch event name and emit as EventInfo title
+   *
+   * Priority:
+   * 1. customTitle from URL params (set by ConfigPush)
+   * 2. eventName from /api/discover endpoint
    */
   private async fetchEventName(): Promise<void> {
+    // Check for customTitle in URL params (highest priority)
+    const urlParams = new URLSearchParams(window.location.search)
+    const customTitle = urlParams.get('customTitle')
+
+    if (customTitle) {
+      console.log(`C123Server: Using custom title from URL: ${customTitle}`)
+      this.callbacks.emitEventInfo({ title: customTitle })
+      return
+    }
+
+    // Fall back to eventName from discover endpoint
     const serverInfo = await getServerInfo(this.httpUrl)
     if (serverInfo?.eventName) {
       console.log(`C123Server: Event name: ${serverInfo.eventName}`)

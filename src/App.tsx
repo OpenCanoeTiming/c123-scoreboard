@@ -73,6 +73,7 @@ function ScoreboardContent() {
     initialDataReceived,
     title,
     raceName,
+    raceId,
     dayTime,
     currentCompetitor,
     departingCompetitor,
@@ -103,7 +104,7 @@ function ScoreboardContent() {
               partnerLogoUrl="/assets/partners.png"
             />
             <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
-            <Title title={title} raceName={raceName} visible={visibility.displayTitle} />
+            <Title title={title} raceName={raceName} raceId={raceId} visible={visibility.displayTitle} />
           </>
         }
         footer={<Footer visible={visibility.displayFooter} imageUrl="/assets/footer.png" />}

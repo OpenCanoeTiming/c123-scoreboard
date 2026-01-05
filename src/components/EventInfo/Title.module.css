@@ -38,7 +38,9 @@
   position: absolute;
   top: 8px;
   left: 85px;
-  width: 70%;  /* Leave space for time display on right */
+  /* Extend to leave space for TimeDisplay (right: 100px + ~100px for time text) */
+  right: 220px;
+  width: auto;
   padding: 0;
   z-index: 15;
   justify-content: flex-start;
@@ -47,9 +49,9 @@
 .ledwall .text {
   /* Same 48px font size as vertical - per original v1 styles */
   font-size: var(--font-size-3xl);
-  /* Handle long titles in ledwall */
+  /* Handle long titles in ledwall - use full available width */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 580px;
+  max-width: 100%;
 }
