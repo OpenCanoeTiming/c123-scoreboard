@@ -5,8 +5,8 @@
 | Fáze | Status |
 |------|--------|
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
-| **Fáze F: Vylepšení a integrace s C123** | 🔄 Aktuální |
-| Fáze G: BR1/BR2 merge zobrazení | ⏳ Čeká |
+| Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
+| **Fáze G: BR1/BR2 merge zobrazení** | 🔄 Aktuální |
 
 ---
 
@@ -145,94 +145,145 @@ Možné přístupy:
 
 ### Cíl
 
-Zobrazení sloučených výsledků z obou jízd (Best Run) při probíhající 2. jízdě. Umožňuje divákům vidět celkové pořadí již během BR2.
+Při BR2 závodech zobrazit OBA časy (BR1 i BR2) s grafickým rozlišením lepší/horší jízdy.
 
-### Analýza (2026-01-04)
+### Klíčová zjištění (2026-01-05)
 
-**C123 Server:** REST endpoint `GET /api/xml/races/:id/results?merged=true` je **hotový**.
-- Vrací: `{ results: MergedResult[], merged: true, classId: string }`
-- Každý výsledek obsahuje: `run1`, `run2`, `bestTotal`, `bestRank`
+**TCP stream chování:**
+- `Total` v Results = **best of both runs** (NE BR2 total!)
+- BR2 total se dá spočítat: `Time + Pen`
+- BR1 data nejsou v TCP streamu dostupná
 
-**Scoreboard:** Potřebuje implementaci:
-1. Detekce BR2 závodů z raceId (`_BR2_`)
-2. Fetch merged dat z REST API při BR2
-3. Nová komponenta pro zobrazení merged výsledků (2 sloupce času)
-4. Rozšíření Result typu o volitelná BR1/BR2 pole
+**Řešení:** Debounced REST fetch BR1 dat při každém Results během BR2.
 
-**Rozhodnutí:** Unified view (varianta B) - rozšíření existujícího ResultsList o extra sloupce.
+**Viz:** `docs/SolvingBR1BR2.md` pro kompletní analýzu.
 
 ---
 
-### Blok G1: Typy a detekce BR2
+### Rozdíly mezi layouty
 
-#### G1.1 Rozšíření Result typu
-- [ ] Přidat volitelná pole do `Result`: `run1Total?`, `run2Total?`, `bestRun?: 1 | 2`
-- [ ] Přidat typ `MergedResultRow` pro REST response
+#### Ledwall layout
+- **Beze změny** - zobrazuje jen nejlepší čas (Total z TCP)
+- **Skrýt penalizace** - mohou náležet jiné jízdě než zobrazený čas
+- Důvod: ledwall má omezený prostor, složitější zobrazení by bylo nečitelné
 
-#### G1.2 Utility pro detekci BR2
-- [ ] Funkce `isBR2Race(raceId: string): boolean` - detekce `_BR2_` v raceId
-- [ ] Funkce `getClassId(raceId: string): string` - extrakce classId pro merged API
+#### Vertical layout
+- **Při BR1 a ostatních závodech:** zobrazení jako dosud (jeden sloupec času)
+- **Při BR2:** dva sloupce - BR1 (pen + čas) a BR2 (pen + čas)
+- BR2 sloupec se postupně plní, jak závodníci dojíždějí
+- **Lepší jízda:** zvýrazněná (normální barva)
+- **Horší jízda:** graficky potlačená (opacity/šedá)
+
+---
+
+### Předpoklady
+
+**C123 Server:** `BR1BR2Merger` byla odstraněna - server už nemanipuluje TCP stream data.
+Scoreboard přebírá odpovědnost za BR1/BR2 merge pomocí REST API.
+
+---
+
+### Blok G1: Typy a utility
+
+#### G1.1 Rozšíření Result typu ✅
+Typy už jsou připravené v `src/types/result.ts`:
+- [x] `RunResult` interface s `total`, `pen`, `rank`, `status`
+- [x] `Result.run1?: RunResult`, `Result.run2?: RunResult`
+- [x] `Result.bestRun?: 1 | 2`
+
+#### G1.2 Utility funkce
+- [ ] `isBR2Race(raceId: string): boolean` - detekce `_BR2_` v raceId
+- [ ] `getBR1RaceId(br2RaceId: string): string` - `_BR2_` → `_BR1_`
+- [ ] `getClassId(raceId: string): string` - extrakce pro REST API
 
 #### G1.3 Testy
-- [ ] Unit testy pro `isBR2Race` a `getClassId`
-- [ ] Type checking pro rozšířený Result
+- [ ] Unit testy pro všechny utility funkce
+- [ ] Edge cases: prázdný raceId, nevalidní formát
 
 ---
 
-### Blok G2: REST API klient a mapper
+### Blok G2: REST fetch a merge logika
 
 #### G2.1 REST API klient
-- [ ] Funkce `fetchMergedResults(serverUrl, raceId): Promise<MergedResult[]>`
-- [ ] Error handling pro network errors
-- [ ] Caching pro opakované požadavky (optional)
+- [ ] Funkce `fetchBR1Results(serverUrl, br1RaceId): Promise<BR1Result[]>`
+- [ ] Error handling (network, 404, timeout)
+- [ ] Debouncing ~500ms pro omezení požadavků
 
-#### G2.2 Mapper pro merged results
-- [ ] `mapMergedResults(data): Result[]` - převod REST response na Result[]
-- [ ] Přidat run1/run2 pole do Result
-- [ ] Zachovat kompatibilitu s existujícím ResultsList
+#### G2.2 Merge BR1 + BR2
+- [ ] Spojení BR1 výsledků s aktuálními BR2 daty podle bib
+- [ ] Výpočet `bestRun` - porovnání run1.total vs run2.total
+- [ ] Ošetření DNF/DNS/DSQ:
+  - DNF/DNS/DSQ v jedné jízdě → druhá jízda je automaticky "lepší"
+  - DNF/DNS/DSQ v obou jízdách → zobrazit stav, žádné zvýraznění
+  - Časy null/undefined → nezobrazovat, neporovnávat
 
 ---
 
-### Blok G3: Context a data flow
+### Blok G3: C123ServerProvider změny
 
-#### G3.1 Rozšíření ScoreboardContext
-- [ ] Nový state field: `isMergedView: boolean`
-- [ ] Trigger pro fetch merged při BR2 results
-- [ ] Merge logika: nahradit results merged daty
+#### G3.1 Detekce BR2 v Results handleru
+- [ ] Při Results zprávě kontrolovat `isBR2Race(raceId)`
+- [ ] Pokud BR2 → spustit debounced fetch BR1
 
-#### G3.2 Provider změny
-- [ ] C123ServerProvider: detekce BR2, fetch merged
-- [ ] Timing: fetch po každém Results update (debounced)
+#### G3.2 Debounced fetch
+- [ ] Implementovat debounce (~500ms) pro REST volání
+- [ ] Při každém Results aktualizovat BR2 data okamžitě
+- [ ] Po debounce: fetch BR1 + merge + emit merged results
+
+#### G3.3 State management
+- [ ] Flag `isBR2View: boolean` pro UI
+- [ ] BR1 data cache (per session, není třeba persitovat)
 
 ---
 
 ### Blok G4: UI komponenty
 
-#### G4.1 Rozšíření ResultRow
-- [ ] Podmíněné zobrazení extra sloupců (BR1, BR2)
-- [ ] Highlight lepšího času
-- [ ] Úprava CSS grid pro extra sloupce
+#### G4.1 Ledwall: skrýt penalizace při BR2
+- [ ] Podmínka: `isBR2View && layout === 'ledwall'` → skrýt penalty sloupec
+- [ ] Zachovat ostatní zobrazení beze změny
 
-#### G4.2 Podmíněné zobrazení sloupců
-- [ ] Detekce `isMergedView` v ResultsList
-- [ ] Přepínání mezi 1-run a 2-run layoutem
+#### G4.2 Vertical: dva sloupce při BR2
+- [ ] Rozšířit ResultRow o volitelné BR1/BR2 sloupce
+- [ ] CSS grid úprava pro extra sloupce
+- [ ] Header: "1. jízda" / "2. jízda" (nebo "BR1" / "BR2")
+
+#### G4.3 Grafické rozlišení lepší/horší jízdy
+- [ ] CSS třída `.better-run` - normální zobrazení
+- [ ] CSS třída `.worse-run` - opacity ~0.5 nebo šedá barva
+- [ ] Aplikovat podle `bestRun` hodnoty
+
+#### G4.4 Prázdné BR2 výsledky
+- [ ] Závodník ještě nedojel BR2 → BR2 sloupec prázdný (pomlčka nebo prázdno)
+- [ ] BR1 sloupec vždy vyplněn (data z REST)
 
 ---
 
-### Blok G5: Testy a dokumentace
+### Blok G5: Testy a edge cases
 
 #### G5.1 Unit testy
-- [ ] Testy pro mapper
-- [ ] Testy pro REST klient
-- [ ] Testy pro ResultRow merged zobrazení
+- [ ] Utility funkce
+- [ ] Merge logika
+- [ ] bestRun výpočet
 
-#### G5.2 Integrační testy
-- [ ] E2E test pro BR2 merged view
-- [ ] Snapshot testy
+#### G5.2 Edge cases testy
+- [ ] DNF v BR1, platný čas v BR2
+- [ ] Platný čas v BR1, DSQ v BR2
+- [ ] Oba DNF
+- [ ] Stejný čas v obou jízdách
+- [ ] REST API nedostupné → fallback na TCP-only zobrazení
 
-#### G5.3 Dokumentace
-- [ ] Aktualizace docs/
-- [ ] Deníček vývoje
+#### G5.3 Vizuální testy
+- [ ] Vertical layout s BR2 daty
+- [ ] Ledwall layout bez penalizací
+- [ ] Responsivita na různých rozlišeních
+
+---
+
+### Blok G6: Dokumentace
+
+- [ ] Aktualizace docs/architecture.md
+- [ ] Zápis do docs/DEVLOG.md
+- [ ] Aktualizace docs/troubleshooting.md (BR2 specific issues)
 
 ---
 
