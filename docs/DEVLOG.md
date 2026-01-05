@@ -172,3 +172,46 @@ Chronologický záznam vývoje, zjištění a řešení problémů.
 - **Scoreboard:** Potřebuje implementaci (5 bloků)
 - **Rozhodnutí:** Unified view (varianta B) - rozšíření existujícího ResultsList o extra sloupce
 - Podrobný plán rozdělen do bloků F1-F5
+
+---
+
+## 2026-01-05 - Fáze G dokončena: BR1/BR2 merge zobrazení
+
+**Implementováno:**
+
+1. **G1: Typy a utility**
+   - `raceUtils.ts`: `isBR2Race()`, `isBR1Race()`, `getClassId()`, `getOtherRunRaceId()`
+   - `Result` typ rozšířen o `run1`, `run2`, `bestRun`
+
+2. **G2: REST fetch a merge logika**
+   - `C123ServerApi`: `getMergedResults(raceId)` - fetch z REST API
+   - `br1br2Merger.ts`: `BR2Manager` class s debounced fetch (500ms)
+   - `mergeBR1IntoBR2Results()`, `mergeBR1CacheIntoBR2Results()`
+
+3. **G3: C123ServerProvider integrace**
+   - `BR2Manager` instancován při startu provideru
+   - `processResults()` automaticky merguje BR1 data při BR2 závodech
+   - Cache BR1 dat pro rychlou odezvu
+
+4. **G4: UI komponenty**
+   - `ResultRow`: `RunTimeCell` komponenta pro BR1/BR2 sloupce
+   - CSS: `.br2Row` grid layout, `.worseRun` opacity styling
+   - Ledwall: skryty penalizace při BR2 (mohou být z jiné jízdy)
+   - Vertical: dva sloupce (BR1, BR2) s vizuálním rozlišením lepší/horší
+
+5. **G5: Testy**
+   - Unit testy pro raceUtils (45 testů)
+   - Unit testy pro br1br2Merger (12 testů)
+   - Celkem 672 testů, všechny prochází
+
+**Klíčová zjištění:**
+- TCP stream posílá `Total` = nejlepší z obou jízd (ne BR2 total!)
+- BR1 data nutno fetchovat z REST API
+- Debounce 500ms chrání před zahlcením API při rychlých Results zprávách
+
+**Soubory:**
+- `src/utils/raceUtils.ts` - BR1/BR2 utility funkce
+- `src/providers/utils/br1br2Merger.ts` - BR2Manager + merge logika
+- `src/providers/utils/c123ServerApi.ts` - REST API klient
+- `src/components/ResultsList/ResultRow.tsx` - RunTimeCell pro BR2
+- `src/components/ResultsList/ResultsList.module.css` - BR2 styly

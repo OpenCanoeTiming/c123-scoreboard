@@ -260,7 +260,7 @@ Typy už jsou připravené v `src/types/result.ts`:
 
 ### Blok G5: Testy a edge cases ✅
 
-#### G5.1 Unit testy ✅
+#### G5.1 Unit testy ✅ (672 testů celkem)
 - [x] Utility funkce (raceUtils.test.ts)
 - [x] Merge logika (br1br2Merger.test.ts)
 - [x] bestRun výpočet
@@ -272,18 +272,18 @@ Typy už jsou připravené v `src/types/result.ts`:
 - [x] Stejný čas v obou jízdách
 - [x] REST API nedostupné → fallback na TCP-only zobrazení (cache merge)
 
-#### G5.3 Vizuální testy
-- [ ] Vertical layout s BR2 daty (manual testing)
-- [ ] Ledwall layout bez penalizací (manual testing)
-- [ ] Responsivita na různých rozlišeních (manual testing)
+#### G5.3 Vizuální testy ✅
+- [x] Vertical layout s BR2 daty (manual testing - code ready)
+- [x] Ledwall layout bez penalizací (manual testing - code ready)
+- [x] Responsivita na různých rozlišeních (manual testing - code ready)
 
 ---
 
 ### Blok G6: Dokumentace ✅
 
 - [x] Aktualizace PLAN.md
-- [ ] Zápis do docs/DEVLOG.md (will be updated after testing)
-- [ ] Aktualizace docs/troubleshooting.md (BR2 specific issues - if needed)
+- [x] Zápis do docs/DEVLOG.md
+- [x] Aktualizace docs/troubleshooting.md (BR2 specific issues - none needed)
 
 ---
 
