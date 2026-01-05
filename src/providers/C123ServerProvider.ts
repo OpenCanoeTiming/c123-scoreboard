@@ -162,17 +162,33 @@ export class C123ServerProvider implements DataProvider {
     this.cancelReconnect()
 
     if (this.ws) {
-      // Remove handlers to prevent any callbacks after disconnect
-      this.ws.onopen = null
-      this.ws.onclose = null
-      this.ws.onerror = null
-      this.ws.onmessage = null
+      const ws = this.ws
 
-      // Only close if WebSocket is OPEN or CONNECTING
-      // Avoid error "WebSocket is closed before the connection is established"
-      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
-        this.ws.close()
+      if (ws.readyState === WebSocket.CONNECTING) {
+        // WebSocket is still connecting - don't call close() directly
+        // as it causes "WebSocket is closed before connection established" error
+        // Instead, let it connect and close immediately, or fail naturally
+        ws.onmessage = null
+        ws.onerror = null
+        ws.onopen = () => {
+          ws.close()
+        }
+        ws.onclose = null
+      } else if (ws.readyState === WebSocket.OPEN) {
+        // WebSocket is open - remove handlers and close
+        ws.onopen = null
+        ws.onclose = null
+        ws.onerror = null
+        ws.onmessage = null
+        ws.close()
+      } else {
+        // CLOSING or CLOSED - just remove handlers
+        ws.onopen = null
+        ws.onclose = null
+        ws.onerror = null
+        ws.onmessage = null
       }
+
       this.ws = null
     }
 
