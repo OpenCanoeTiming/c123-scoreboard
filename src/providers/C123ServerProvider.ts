@@ -37,6 +37,7 @@ import { CallbackManager } from './utils/CallbackManager'
 import { getWebSocketUrl, getServerInfo, getClientIdFromUrl } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
+import { BR2Manager } from './utils/br1br2Merger'
 
 // =============================================================================
 // Types
@@ -89,6 +90,9 @@ export class C123ServerProvider implements DataProvider {
   // REST API client for sync operations
   private api: C123ServerApi
 
+  // BR2 Manager for merging BR1/BR2 results
+  private br2Manager: BR2Manager
+
   // Track current race for config mapping
   private currentRaceName: string = ''
   private currentRaceId: string = ''
@@ -121,6 +125,18 @@ export class C123ServerProvider implements DataProvider {
     this.currentReconnectDelay = this.initialReconnectDelay
     this.syncOnReconnect = options.syncOnReconnect ?? true
     this.api = new C123ServerApi(this.httpUrl, options.apiTimeout ?? 5000)
+
+    // Initialize BR2 Manager for merging BR1/BR2 results
+    this.br2Manager = new BR2Manager(this.api, (mergedResults) => {
+      // Re-emit results with merged BR1/BR2 data
+      this.callbacks.emitResults({
+        results: mergedResults,
+        raceName: this.currentRaceName,
+        raceStatus: this.currentRaceIsCurrent ? 'In Progress' : 'Unofficial',
+        highlightBib: null,
+        raceId: this.currentRaceId,
+      })
+    })
   }
 
   // ===========================================================================
@@ -160,6 +176,7 @@ export class C123ServerProvider implements DataProvider {
   disconnect(): void {
     this.isManualDisconnect = true
     this.cancelReconnect()
+    this.br2Manager.dispose()
 
     if (this.ws) {
       const ws = this.ws
@@ -448,7 +465,20 @@ export class C123ServerProvider implements DataProvider {
     this.currentRaceIsCurrent = data.isCurrent
 
     const resultsData = mapResults(data)
-    this.callbacks.emitResults(resultsData)
+
+    // Process through BR2 Manager for potential BR1/BR2 merging
+    // This will fetch BR1 data and emit merged results asynchronously if BR2
+    const processedResults = this.br2Manager.processResults(
+      resultsData.results,
+      data.raceId
+    )
+
+    // Emit results (may be enriched with BR1 cache data if BR2)
+    this.callbacks.emitResults({
+      ...resultsData,
+      results: processedResults,
+      isBR2: this.br2Manager.isBR2Mode,
+    })
   }
 
   private handleRaceConfig(data: C123RaceConfigData): void {

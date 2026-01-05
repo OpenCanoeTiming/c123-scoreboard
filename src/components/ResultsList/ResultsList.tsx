@@ -5,6 +5,8 @@ import type { Result } from '@/types'
 import { useHighlight } from '@/hooks/useHighlight'
 import { useLayout } from '@/hooks/useLayout'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
+import { useScoreboard } from '@/context/ScoreboardContext'
+import { isBR2Race } from '@/utils/raceUtils'
 
 /**
  * Props for ResultsList component
@@ -43,6 +45,10 @@ interface ResultsListProps {
 export function ResultsList({ results, visible = true }: ResultsListProps) {
   const { highlightBib, isActive } = useHighlight()
   const { disableScroll, layoutMode, displayRows, rowHeight } = useLayout()
+  const { raceId } = useScoreboard()
+
+  // Detect BR2 race for merged display
+  const isBR2 = isBR2Race(raceId)
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
@@ -66,7 +72,9 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
 
   // Whether to show behind column (hidden on ledwall, shown on vertical)
   // Note: Penalty column is always shown on both layouts (matches original v1)
+  // Exception: BR2 ledwall hides penalty because it may be from a different run than the displayed time
   const showBehind = layoutMode !== 'ledwall'
+  const showPenalty = !(layoutMode === 'ledwall' && isBR2)
 
   // Container classes
   const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}`
@@ -90,8 +98,10 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
             key={result.bib}
             result={result}
             isHighlighted={isHighlighted}
+            showPenalty={showPenalty}
             showBehind={showBehind}
             layoutMode={layoutMode}
+            isBR2={isBR2}
           />
         )
       })}

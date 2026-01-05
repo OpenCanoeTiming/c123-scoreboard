@@ -41,6 +41,43 @@ vi.mock('@/hooks/useAutoScroll', () => ({
   })),
 }))
 
+vi.mock('@/context/ScoreboardContext', () => ({
+  useScoreboard: vi.fn(() => ({
+    raceId: 'K1M_ST_XF_6',
+    results: [],
+    raceName: 'Test Race',
+    raceStatus: 'In Progress',
+    status: 'connected',
+    error: null,
+    initialDataReceived: true,
+    providerErrors: [],
+    activeRaceId: null,
+    lastActiveRaceId: null,
+    highlightBib: null,
+    highlightTimestamp: null,
+    currentCompetitor: null,
+    onCourse: [],
+    onCourseFinishedAt: {},
+    departingCompetitor: null,
+    departedAt: null,
+    pendingHighlightBib: null,
+    pendingHighlightTimestamp: null,
+    visibility: {
+      displayTopBar: true,
+      displayTitle: true,
+      displayFooter: true,
+      displayCurrent: true,
+      displayTop: true,
+      displayOnCourse: true,
+    },
+    title: '',
+    infoText: '',
+    dayTime: '',
+    reconnect: vi.fn(),
+    clearProviderErrors: vi.fn(),
+  })),
+}))
+
 import { useHighlight } from '@/hooks/useHighlight'
 import { useLayout } from '@/hooks/useLayout'
 

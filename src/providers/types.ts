@@ -15,6 +15,16 @@ export interface ResultsData {
   highlightBib: string | null
   /** Race ID for tracking active category (e.g., "K1M_ST_BR2_6") */
   raceId?: string
+  /** Whether this is a BR2 race with merged BR1/BR2 display */
+  isBR2?: boolean
+}
+
+/**
+ * BR2 mode data for UI components
+ */
+export interface BR2ModeData {
+  /** Whether currently in BR2 mode */
+  isBR2: boolean
 }
 
 /**

@@ -6,7 +6,7 @@
 |------|--------|
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
 | Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
-| **Fáze G: BR1/BR2 merge zobrazení** | 🔄 Aktuální |
+| **Fáze G: BR1/BR2 merge zobrazení** | ✅ Hotovo (2026-01-05) |
 
 ---
 
@@ -183,7 +183,7 @@ Scoreboard přebírá odpovědnost za BR1/BR2 merge pomocí REST API.
 
 ---
 
-### Blok G1: Typy a utility
+### Blok G1: Typy a utility ✅
 
 #### G1.1 Rozšíření Result typu ✅
 Typy už jsou připravené v `src/types/result.ts`:
@@ -191,99 +191,99 @@ Typy už jsou připravené v `src/types/result.ts`:
 - [x] `Result.run1?: RunResult`, `Result.run2?: RunResult`
 - [x] `Result.bestRun?: 1 | 2`
 
-#### G1.2 Utility funkce
-- [ ] `isBR2Race(raceId: string): boolean` - detekce `_BR2_` v raceId
-- [ ] `getBR1RaceId(br2RaceId: string): string` - `_BR2_` → `_BR1_`
-- [ ] `getClassId(raceId: string): string` - extrakce pro REST API
+#### G1.2 Utility funkce ✅
+- [x] `isBR2Race(raceId: string): boolean` - detekce `_BR2_` v raceId
+- [x] `getBR1RaceId(br2RaceId: string): string` - `_BR2_` → `_BR1_`
+- [x] `getClassId(raceId: string): string` - extrakce pro REST API
 
-#### G1.3 Testy
-- [ ] Unit testy pro všechny utility funkce
-- [ ] Edge cases: prázdný raceId, nevalidní formát
+#### G1.3 Testy ✅
+- [x] Unit testy pro všechny utility funkce
+- [x] Edge cases: prázdný raceId, nevalidní formát
 
 ---
 
-### Blok G2: REST fetch a merge logika
+### Blok G2: REST fetch a merge logika ✅
 
-#### G2.1 REST API klient
-- [ ] Funkce `fetchBR1Results(serverUrl, br1RaceId): Promise<BR1Result[]>`
-- [ ] Error handling (network, 404, timeout)
-- [ ] Debouncing ~500ms pro omezení požadavků
+#### G2.1 REST API klient ✅
+- [x] Funkce `getMergedResults(raceId)` v C123ServerApi
+- [x] Error handling (network, 404, timeout)
+- [x] Debouncing ~500ms pro omezení požadavků
 
-#### G2.2 Merge BR1 + BR2
-- [ ] Spojení BR1 výsledků s aktuálními BR2 daty podle bib
-- [ ] Výpočet `bestRun` - porovnání run1.total vs run2.total
-- [ ] Ošetření DNF/DNS/DSQ:
+#### G2.2 Merge BR1 + BR2 ✅
+- [x] Spojení BR1 výsledků s aktuálními BR2 daty podle bib
+- [x] Výpočet `bestRun` - porovnání run1.total vs run2.total
+- [x] Ošetření DNF/DNS/DSQ:
   - DNF/DNS/DSQ v jedné jízdě → druhá jízda je automaticky "lepší"
   - DNF/DNS/DSQ v obou jízdách → zobrazit stav, žádné zvýraznění
   - Časy null/undefined → nezobrazovat, neporovnávat
 
 ---
 
-### Blok G3: C123ServerProvider změny
+### Blok G3: C123ServerProvider změny ✅
 
-#### G3.1 Detekce BR2 v Results handleru
-- [ ] Při Results zprávě kontrolovat `isBR2Race(raceId)`
-- [ ] Pokud BR2 → spustit debounced fetch BR1
+#### G3.1 Detekce BR2 v Results handleru ✅
+- [x] Při Results zprávě kontrolovat `isBR2Race(raceId)`
+- [x] Pokud BR2 → spustit debounced fetch BR1
 
-#### G3.2 Debounced fetch
-- [ ] Implementovat debounce (~500ms) pro REST volání
-- [ ] Při každém Results aktualizovat BR2 data okamžitě
-- [ ] Po debounce: fetch BR1 + merge + emit merged results
+#### G3.2 Debounced fetch ✅
+- [x] Implementovat debounce (~500ms) pro REST volání
+- [x] Při každém Results aktualizovat BR2 data okamžitě
+- [x] Po debounce: fetch BR1 + merge + emit merged results
 
-#### G3.3 State management
-- [ ] Flag `isBR2View: boolean` pro UI
-- [ ] BR1 data cache (per session, není třeba persitovat)
-
----
-
-### Blok G4: UI komponenty
-
-#### G4.1 Ledwall: skrýt penalizace při BR2
-- [ ] Podmínka: `isBR2View && layout === 'ledwall'` → skrýt penalty sloupec
-- [ ] Zachovat ostatní zobrazení beze změny
-
-#### G4.2 Vertical: dva sloupce při BR2
-- [ ] Rozšířit ResultRow o volitelné BR1/BR2 sloupce
-- [ ] CSS grid úprava pro extra sloupce
-- [ ] Header: "1. jízda" / "2. jízda" (nebo "BR1" / "BR2")
-
-#### G4.3 Grafické rozlišení lepší/horší jízdy
-- [ ] CSS třída `.better-run` - normální zobrazení
-- [ ] CSS třída `.worse-run` - opacity ~0.5 nebo šedá barva
-- [ ] Aplikovat podle `bestRun` hodnoty
-
-#### G4.4 Prázdné BR2 výsledky
-- [ ] Závodník ještě nedojel BR2 → BR2 sloupec prázdný (pomlčka nebo prázdno)
-- [ ] BR1 sloupec vždy vyplněn (data z REST)
+#### G3.3 State management ✅
+- [x] Flag `isBR2Mode: boolean` pro UI (v BR2Manager)
+- [x] BR1 data cache (per session, není třeba persitovat)
 
 ---
 
-### Blok G5: Testy a edge cases
+### Blok G4: UI komponenty ✅
 
-#### G5.1 Unit testy
-- [ ] Utility funkce
-- [ ] Merge logika
-- [ ] bestRun výpočet
+#### G4.1 Ledwall: skrýt penalizace při BR2 ✅
+- [x] Podmínka: `isBR2 && layout === 'ledwall'` → skrýt penalty sloupec
+- [x] Zachovat ostatní zobrazení beze změny
 
-#### G5.2 Edge cases testy
-- [ ] DNF v BR1, platný čas v BR2
-- [ ] Platný čas v BR1, DSQ v BR2
-- [ ] Oba DNF
-- [ ] Stejný čas v obou jízdách
-- [ ] REST API nedostupné → fallback na TCP-only zobrazení
+#### G4.2 Vertical: dva sloupce při BR2 ✅
+- [x] Rozšířit ResultRow o volitelné BR1/BR2 sloupce (RunTimeCell komponenta)
+- [x] CSS grid úprava pro extra sloupce (.br2Row class)
+- [x] Bez headeru (zachování konzistence s ostatními závodami)
+
+#### G4.3 Grafické rozlišení lepší/horší jízdy ✅
+- [x] Lepší jízda - normální zobrazení
+- [x] CSS třída `.worseRun` - opacity 0.5 + šedá barva
+- [x] Aplikovat podle `bestRun` hodnoty
+
+#### G4.4 Prázdné BR2 výsledky ✅
+- [x] Závodník ještě nedojel BR2 → BR2 sloupec zobrazí pomlčku
+- [x] BR1 sloupec vždy vyplněn (data z REST)
+
+---
+
+### Blok G5: Testy a edge cases ✅
+
+#### G5.1 Unit testy ✅
+- [x] Utility funkce (raceUtils.test.ts)
+- [x] Merge logika (br1br2Merger.test.ts)
+- [x] bestRun výpočet
+
+#### G5.2 Edge cases testy ✅
+- [x] DNF v BR1, platný čas v BR2
+- [x] Platný čas v BR1, DSQ v BR2
+- [x] Oba DNF
+- [x] Stejný čas v obou jízdách
+- [x] REST API nedostupné → fallback na TCP-only zobrazení (cache merge)
 
 #### G5.3 Vizuální testy
-- [ ] Vertical layout s BR2 daty
-- [ ] Ledwall layout bez penalizací
-- [ ] Responsivita na různých rozlišeních
+- [ ] Vertical layout s BR2 daty (manual testing)
+- [ ] Ledwall layout bez penalizací (manual testing)
+- [ ] Responsivita na různých rozlišeních (manual testing)
 
 ---
 
-### Blok G6: Dokumentace
+### Blok G6: Dokumentace ✅
 
-- [ ] Aktualizace docs/architecture.md
-- [ ] Zápis do docs/DEVLOG.md
-- [ ] Aktualizace docs/troubleshooting.md (BR2 specific issues)
+- [x] Aktualizace PLAN.md
+- [ ] Zápis do docs/DEVLOG.md (will be updated after testing)
+- [ ] Aktualizace docs/troubleshooting.md (BR2 specific issues - if needed)
 
 ---
 
