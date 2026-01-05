@@ -29,6 +29,19 @@
   max-width: 100%;
 }
 
+.category {
+  /* Category inherits text styles, positioned inline */
+  position: relative;
+}
+
+.runNumber {
+  /* Run number - smaller, aligned to baseline */
+  font-size: 0.6em;
+  font-weight: 500;
+  color: var(--color-text-secondary);  /* Off-white */
+  vertical-align: baseline;
+}
+
 /* ============================================
    LEDWALL LAYOUT
    ============================================ */

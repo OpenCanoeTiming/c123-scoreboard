@@ -37,30 +37,15 @@ function extractCategory(raceName: string): string {
 }
 
 /**
- * Build race identification string (category + run number)
- * e.g. "K1M/1." or "K1M/2." or just "K1M" if no run number
- */
-function buildRaceIdentification(category: string, raceId: string): string {
-  if (!category) return ''
-
-  const runNumber = raceId ? getRunNumber(raceId) : null
-  if (runNumber) {
-    return `${category}/${runNumber}.`
-  }
-  return category
-}
-
-/**
  * Title component
  *
  * Displays event name and race identification. Font size adapts based on layout mode.
- * Format: "Event Name CATEGORY/RUN."
+ * Run number is displayed as a smaller superscript for elegance.
  *
  * Examples:
- * - "Jarní slalomy K1M/1." (event name + category + 1st run)
- * - "Jarní slalomy K1M/2." (event name + category + 2nd run)
+ * - "Jarní slalomy K1M" with superscript "1" (event + category + 1st run)
+ * - "Jarní slalomy K1M" with superscript "2" (event + category + 2nd run)
  * - "Jarní slalomy K1M" (event name + category, no run number)
- * - "K1M/1." (no event name, just race identification)
  *
  * @example
  * ```tsx
@@ -80,23 +65,10 @@ export function Title({ title, raceName = '', raceId = '', visible = true }: Tit
   }
 
   const category = extractCategory(raceName)
-  const raceIdentification = buildRaceIdentification(category, raceId)
+  const runNumber = raceId ? getRunNumber(raceId) : null
 
-  // Build display text:
-  // - Event name + race identification: "Event Name CATEGORY/RUN."
-  // - Event name only: "Event Name"
-  // - Race identification only: "CATEGORY/RUN." (fallback)
-  // - Neither: return null
-  let displayTitle: string
-  if (title && raceIdentification) {
-    displayTitle = `${title} ${raceIdentification}`
-  } else if (title) {
-    displayTitle = title
-  } else if (raceIdentification) {
-    // Fallback: show just race identification when no event name
-    displayTitle = raceIdentification
-  } else {
-    // Nothing to display
+  // Need at least title or category to display
+  if (!title && !category) {
     return null
   }
 
@@ -108,7 +80,16 @@ export function Title({ title, raceName = '', raceId = '', visible = true }: Tit
       data-testid="title"
       data-layout-mode={layoutMode}
     >
-      <span className={styles.text}>{displayTitle}</span>
+      <span className={styles.text}>
+        {title}
+        {title && category && ' '}
+        {category && (
+          <span className={styles.category}>
+            {category}
+            {runNumber && <sub className={styles.runNumber}>/{runNumber}.</sub>}
+          </span>
+        )}
+      </span>
     </div>
   )
 }
