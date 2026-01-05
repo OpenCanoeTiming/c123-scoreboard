@@ -22,6 +22,8 @@ import type {
   C123RaceConfigData,
   C123ErrorData,
   C123XmlChangeData,
+  C123ForceRefreshData,
+  C123ConfigPushData,
 } from '@/types/c123server'
 import type {
   DataProvider,
@@ -32,7 +34,7 @@ import type {
   EventInfoData,
 } from './types'
 import { CallbackManager } from './utils/CallbackManager'
-import { getWebSocketUrl, getServerInfo } from './utils/discovery-client'
+import { getWebSocketUrl, getServerInfo, getClientIdFromUrl } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 
@@ -54,6 +56,8 @@ export interface C123ServerProviderOptions {
   apiTimeout?: number
   /** Sync state via REST API after reconnect (default: true) */
   syncOnReconnect?: boolean
+  /** Client ID for server identification (default: from URL ?clientId param) */
+  clientId?: string
 }
 
 // =============================================================================
@@ -71,6 +75,7 @@ export class C123ServerProvider implements DataProvider {
   private _status: ConnectionStatus = 'disconnected'
   private wsUrl: string
   private httpUrl: string
+  private clientId: string | null
   private autoReconnect: boolean
   private maxReconnectDelay: number
   private initialReconnectDelay: number
@@ -102,7 +107,9 @@ export class C123ServerProvider implements DataProvider {
    * @param options - Provider options
    */
   constructor(serverUrl: string, options: C123ServerProviderOptions = {}) {
-    this.wsUrl = getWebSocketUrl(serverUrl)
+    // Get clientId from options or URL parameter
+    this.clientId = options.clientId ?? getClientIdFromUrl()
+    this.wsUrl = getWebSocketUrl(serverUrl, this.clientId ?? undefined)
     // Normalize HTTP URL for REST API
     this.httpUrl = serverUrl.replace(/\/$/, '')
     if (!this.httpUrl.startsWith('http')) {
@@ -347,6 +354,12 @@ export class C123ServerProvider implements DataProvider {
         case 'Error':
           this.handleServerError(message.data as C123ErrorData)
           break
+        case 'ForceRefresh':
+          this.handleForceRefresh(message.data as C123ForceRefreshData)
+          break
+        case 'ConfigPush':
+          this.handleConfigPush(message.data as C123ConfigPushData)
+          break
         default:
           // Unknown message type - ignore silently (extensibility)
           break
@@ -426,6 +439,77 @@ export class C123ServerProvider implements DataProvider {
       this.syncResults(this.currentRaceId).catch(err => {
         console.warn('C123Server: Failed to sync results after XmlChange:', err)
       })
+    }
+  }
+
+  private handleForceRefresh(data: C123ForceRefreshData): void {
+    console.log(`C123Server: Force refresh requested - ${data.reason || 'No reason provided'}`)
+    // Perform hard reload (bypass cache)
+    window.location.reload()
+  }
+
+  private handleConfigPush(data: C123ConfigPushData): void {
+    console.log('C123Server: Received config push:', data)
+
+    // Apply configuration changes by updating URL parameters and reloading
+    // This ensures the layout hook picks up the new values
+    const url = new URL(window.location.href)
+
+    // Apply layout type
+    if (data.type !== undefined) {
+      url.searchParams.set('type', data.type)
+    }
+
+    // Apply display rows
+    if (data.displayRows !== undefined) {
+      url.searchParams.set('displayRows', String(data.displayRows))
+    }
+
+    // Apply custom title (stored for use by components)
+    if (data.customTitle !== undefined) {
+      url.searchParams.set('customTitle', data.customTitle)
+    }
+
+    // Check if URL changed
+    if (url.href !== window.location.href) {
+      console.log('C123Server: Applying config push - reloading with new URL params')
+      window.location.href = url.href
+    } else {
+      console.log('C123Server: Config push received but no changes to apply')
+    }
+
+    // Send ClientState response
+    this.sendClientState(data)
+  }
+
+  /**
+   * Send ClientState message to server reporting current configuration
+   */
+  private sendClientState(appliedConfig: C123ConfigPushData): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    const message = {
+      type: 'ClientState',
+      timestamp: new Date().toISOString(),
+      data: {
+        current: {
+          type: params.get('type') || appliedConfig.type || 'vertical',
+          displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
+          customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
+        },
+        version: '3.0.0',
+        capabilities: ['configPush', 'forceRefresh'],
+      },
+    }
+
+    try {
+      this.ws.send(JSON.stringify(message))
+      console.log('C123Server: Sent ClientState response')
+    } catch (err) {
+      console.warn('C123Server: Failed to send ClientState:', err)
     }
   }
 

@@ -9,21 +9,30 @@ import type { ResultsData, OnCourseData, EventInfoData } from '../types'
 
 class MockWebSocket {
   static instances: MockWebSocket[] = []
+  static readonly CONNECTING = 0
+  static readonly OPEN = 1
+  static readonly CLOSING = 2
+  static readonly CLOSED = 3
 
   url: string
   onopen: (() => void) | null = null
   onclose: (() => void) | null = null
   onerror: ((event: Event) => void) | null = null
   onmessage: ((event: MessageEvent) => void) | null = null
-  readyState = 0 // CONNECTING
+  readyState = MockWebSocket.CONNECTING
 
   constructor(url: string) {
     this.url = url
     MockWebSocket.instances.push(this)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  send(_data: string) {
+    // Default no-op, can be overridden in tests
+  }
+
   close() {
-    this.readyState = 3 // CLOSED
+    this.readyState = MockWebSocket.CLOSED
     if (this.onclose) {
       this.onclose()
     }
@@ -31,7 +40,7 @@ class MockWebSocket {
 
   // Test helpers
   simulateOpen() {
-    this.readyState = 1 // OPEN
+    this.readyState = MockWebSocket.OPEN
     if (this.onopen) {
       this.onopen()
     }
@@ -108,6 +117,26 @@ describe('C123ServerProvider', () => {
 
       expect(provider.status).toBe('disconnected')
       expect(provider.connected).toBe(false)
+    })
+
+    it('includes clientId in WebSocket URL when provided', () => {
+      const provider = new C123ServerProvider('http://192.168.1.50:27123', {
+        clientId: 'test-display-1',
+      })
+      provider.connect()
+
+      const ws = MockWebSocket.getLastInstance()
+      expect(ws?.url).toBe('ws://192.168.1.50:27123/ws?clientId=test-display-1')
+    })
+
+    it('encodes special characters in clientId', () => {
+      const provider = new C123ServerProvider('http://localhost:27123', {
+        clientId: 'display with spaces',
+      })
+      provider.connect()
+
+      const ws = MockWebSocket.getLastInstance()
+      expect(ws?.url).toBe('ws://localhost:27123/ws?clientId=display%20with%20spaces')
     })
   })
 
@@ -707,6 +736,65 @@ describe('C123ServerProvider', () => {
 
       // Should not trigger additional sync (same checksum)
       expect(consoleSpy.mock.calls.length).toBe(callCountAfterFirst)
+
+      consoleSpy.mockRestore()
+    })
+  })
+
+  // ===========================================================================
+  // ForceRefresh message handling
+  // Note: window.location.reload cannot be mocked in jsdom, so we skip those tests
+  // The implementation is straightforward (logs and reloads) and is tested manually
+  // ===========================================================================
+
+  // ===========================================================================
+  // ConfigPush message handling
+  // ===========================================================================
+
+  describe('ConfigPush message handling', () => {
+    it('logs ConfigPush message', async () => {
+      const provider = new C123ServerProvider('http://localhost:27123')
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'ConfigPush',
+        timestamp: '2025-01-03T16:00:00.000Z',
+        data: {
+          type: 'ledwall',
+          displayRows: 8,
+        },
+      })
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'C123Server: Received config push:',
+        expect.objectContaining({ type: 'ledwall', displayRows: 8 })
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it('logs ClientState sent message', async () => {
+      const provider = new C123ServerProvider('http://localhost:27123')
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const promise = provider.connect()
+      MockWebSocket.getLastInstance()?.simulateOpen()
+      await promise
+
+      MockWebSocket.getLastInstance()?.simulateMessage({
+        type: 'ConfigPush',
+        timestamp: '2025-01-03T16:00:00.000Z',
+        data: {
+          type: 'vertical',
+        },
+      })
+
+      // Verify ClientState was sent (we check log since we can't easily spy on internal ws.send)
+      expect(consoleSpy).toHaveBeenCalledWith('C123Server: Sent ClientState response')
 
       consoleSpy.mockRestore()
     })

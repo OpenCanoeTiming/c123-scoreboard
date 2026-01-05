@@ -7,7 +7,24 @@
 export type ResultStatus = 'DNS' | 'DNF' | 'DSQ' | ''
 
 /**
+ * Single run result data for merged BR1/BR2 display
+ */
+export interface RunResult {
+  /** Total time in seconds (e.g., "78.99") */
+  total?: string
+  /** Penalty seconds */
+  pen?: number
+  /** Rank for this run */
+  rank?: number
+  /** Status for invalid results */
+  status?: ResultStatus
+}
+
+/**
  * Result in the results list
+ *
+ * For single-run races, only the base fields are used.
+ * For BR1/BR2 merged display, run1, run2, and bestRun fields are populated.
  */
 export interface Result {
   rank: number
@@ -22,4 +39,13 @@ export interface Result {
   behind: string
   /** Status for invalid results (DNS, DNF, DSQ). Empty string for valid results. */
   status?: ResultStatus
+
+  // === Merged BR1/BR2 fields (optional, only for merged view) ===
+
+  /** First run (BR1) result data */
+  run1?: RunResult
+  /** Second run (BR2) result data */
+  run2?: RunResult
+  /** Which run had the best time (1 or 2) */
+  bestRun?: 1 | 2
 }

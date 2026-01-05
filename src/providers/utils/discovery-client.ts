@@ -436,10 +436,28 @@ export function normalizeServerUrl(
  * Extract WebSocket URL from HTTP server URL.
  *
  * @param httpUrl - HTTP server URL (e.g., "http://192.168.1.50:27123")
- * @returns WebSocket URL (e.g., "ws://192.168.1.50:27123/ws")
+ * @param clientId - Optional client ID for identification (used when multiple clients on same machine)
+ * @returns WebSocket URL (e.g., "ws://192.168.1.50:27123/ws" or "ws://192.168.1.50:27123/ws?clientId=xxx")
  */
-export function getWebSocketUrl(httpUrl: string): string {
-  return httpUrl.replace(/^http/, 'ws') + '/ws'
+export function getWebSocketUrl(httpUrl: string, clientId?: string): string {
+  const wsUrl = httpUrl.replace(/^http/, 'ws') + '/ws'
+  if (clientId) {
+    return `${wsUrl}?clientId=${encodeURIComponent(clientId)}`
+  }
+  return wsUrl
+}
+
+/**
+ * Get clientId from URL parameters.
+ *
+ * The clientId is used to identify this scoreboard instance to the C123 Server.
+ * This is useful when running multiple scoreboards on the same machine.
+ *
+ * @returns Client ID from URL or null if not specified
+ */
+export function getClientIdFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('clientId')
 }
 
 // =============================================================================

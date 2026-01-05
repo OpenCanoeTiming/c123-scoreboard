@@ -31,6 +31,8 @@ export type C123MessageType =
   | 'Schedule'
   | 'XmlChange'
   | 'Error'
+  | 'ForceRefresh'
+  | 'ConfigPush'
 
 // =============================================================================
 // Connected Message (sent on WebSocket connect)
@@ -201,6 +203,37 @@ export interface C123ErrorMessage extends C123ServerMessage<C123ErrorData> {
 }
 
 // =============================================================================
+// ForceRefresh Message
+// =============================================================================
+
+export interface C123ForceRefreshData {
+  reason?: string
+}
+
+export interface C123ForceRefreshMessage extends C123ServerMessage<C123ForceRefreshData> {
+  type: 'ForceRefresh'
+}
+
+// =============================================================================
+// ConfigPush Message
+// =============================================================================
+
+export interface C123ConfigPushData {
+  type?: 'vertical' | 'ledwall'
+  displayRows?: number
+  customTitle?: string
+  raceFilter?: string[]
+  showOnCourse?: boolean
+  showResults?: boolean
+  custom?: Record<string, string | number | boolean>
+  label?: string
+}
+
+export interface C123ConfigPushMessage extends C123ServerMessage<C123ConfigPushData> {
+  type: 'ConfigPush'
+}
+
+// =============================================================================
 // Union Type for All Messages
 // =============================================================================
 
@@ -213,6 +246,8 @@ export type C123Message =
   | C123ScheduleMessage
   | C123XmlChangeMessage
   | C123ErrorMessage
+  | C123ForceRefreshMessage
+  | C123ConfigPushMessage
 
 // =============================================================================
 // Type Guards
@@ -248,4 +283,12 @@ export function isXmlChangeMessage(msg: C123ServerMessage): msg is C123XmlChange
 
 export function isErrorMessage(msg: C123ServerMessage): msg is C123ErrorMessage {
   return msg.type === 'Error'
+}
+
+export function isForceRefreshMessage(msg: C123ServerMessage): msg is C123ForceRefreshMessage {
+  return msg.type === 'ForceRefresh'
+}
+
+export function isConfigPushMessage(msg: C123ServerMessage): msg is C123ConfigPushMessage {
+  return msg.type === 'ConfigPush'
 }

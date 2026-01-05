@@ -18,24 +18,24 @@ Dokončení integrace s C123 serverem (remote config, force refresh), vizuální
 
 ---
 
-### Blok F1: Vizuální opravy penalizací
+### Blok F1: Vizuální opravy penalizací ✅
 
 #### Problém
 Barevné zvýraznění penalizací (0/2/50) je příliš výrazné - na ledwall může být nečitelné, na vertical působí "papouškovitě" vzhledem k celkovému designu.
 
 #### F1.1 Analýza a návrh
-- [ ] Projít stávající CSS pro penalty colors
-- [ ] Navrhnout utilitární barevné schéma v duchu stávající grafiky
-- [ ] Možnosti: odstíny šedé s opacity, tlumené barvy, pouze ikonky
+- [x] Projít stávající CSS pro penalty colors
+- [x] Navrhnout utilitární barevné schéma v duchu stávající grafiky
+- [x] Možnosti: odstíny šedé s opacity, tlumené barvy, pouze ikonky
 
 #### F1.2 Implementace
-- [ ] Upravit penalty CSS classes
-- [ ] Testovat na vertical i ledwall layoutu
-- [ ] Zajistit čitelnost na různých rozlišeních
+- [x] Upravit penalty CSS classes - tlumené barvy (#a08060, #a06060, #70a070)
+- [x] Testovat na vertical i ledwall layoutu
+- [x] Zajistit čitelnost na různých rozlišeních
 
 ---
 
-### Blok F2: Client ID pro C123 server
+### Blok F2: Client ID pro C123 server ✅
 
 #### Popis
 Scoreboard může poslat `clientId` v URL při WebSocket připojení. Server pak identifikuje klienta podle ID místo IP adresy. Užitečné pro více scoreboardů na jednom stroji.
@@ -43,20 +43,20 @@ Scoreboard může poslat `clientId` v URL při WebSocket připojení. Server pak
 **Viz:** `../c123-server/docs/CLIENT-CONFIG.md`
 
 #### F2.1 URL parametr
-- [ ] Přidat podporu `?clientId=xxx` URL parametru
-- [ ] Předat clientId do C123ServerProvider
+- [x] Přidat podporu `?clientId=xxx` URL parametru
+- [x] Předat clientId do C123ServerProvider
 
 #### F2.2 WebSocket URL
-- [ ] Upravit WebSocket URL: `ws://server/ws?clientId=xxx`
-- [ ] Fallback na IP-based identifikaci když clientId chybí
+- [x] Upravit WebSocket URL: `ws://server/ws?clientId=xxx`
+- [x] Fallback na IP-based identifikaci když clientId chybí
 
 #### F2.3 Testy
-- [ ] Unit test pro clientId parsing
-- [ ] Test WebSocket URL construction
+- [x] Unit test pro clientId parsing
+- [x] Test WebSocket URL construction
 
 ---
 
-### Blok F3: Force Refresh
+### Blok F3: Force Refresh ✅
 
 #### Popis
 C123 server může poslat `ForceRefresh` zprávu. Scoreboard má provést reload jako Ctrl+F5.
@@ -70,16 +70,16 @@ C123 server může poslat `ForceRefresh` zprávu. Scoreboard má provést reload
 ```
 
 #### F3.1 Handler v C123ServerProvider
-- [ ] Přidat handler pro `ForceRefresh` message type
-- [ ] Implementovat `window.location.reload(true)` nebo ekvivalent
+- [x] Přidat handler pro `ForceRefresh` message type
+- [x] Implementovat `window.location.reload()` pro full refresh
 
 #### F3.2 Logování
-- [ ] Log důvodu refreshe před reloadem
-- [ ] Možnost zobrazit krátkou notifikaci (optional)
+- [x] Log důvodu refreshe před reloadem
+- [x] Možnost zobrazit krátkou notifikaci (optional) - logování do konzole
 
 ---
 
-### Blok F4: ConfigPush - přejímání parametrů ze serveru
+### Blok F4: ConfigPush - přejímání parametrů ze serveru ✅
 
 #### Popis
 C123 server může poslat `ConfigPush` zprávu s parametry `type`, `displayRows`, `customTitle` atd. Scoreboard má přebrat tato nastavení.
@@ -97,22 +97,22 @@ C123 server může poslat `ConfigPush` zprávu s parametry `type`, `displayRows`
 ```
 
 #### F4.1 Definice ConfigPush typu
-- [ ] Přidat `ConfigPushData` interface
-- [ ] Přidat handler v C123ServerProvider
+- [x] Přidat `ConfigPushData` interface
+- [x] Přidat handler v C123ServerProvider
 
 #### F4.2 Aplikace konfigurace
-- [ ] Propojit s existujícím URL param systémem
-- [ ] Priorita: ConfigPush > URL params > defaults
-- [ ] Re-render po změně konfigurace
+- [x] Propojit s existujícím URL param systémem
+- [x] Priorita: ConfigPush > URL params > defaults
+- [x] Re-render po změně konfigurace (přes URL reload)
 
-#### F4.3 ClientState response (optional)
-- [ ] Po aplikaci ConfigPush poslat zpět `ClientState` zprávu
-- [ ] Reportovat current config a version
+#### F4.3 ClientState response
+- [x] Po aplikaci ConfigPush poslat zpět `ClientState` zprávu
+- [x] Reportovat current config a version
 
 #### F4.4 Flow při startu
-- [ ] Inicializace z URL params / localStorage
-- [ ] Čekat na ConfigPush po připojení
-- [ ] Merge s existující konfigurací
+- [x] Inicializace z URL params / localStorage
+- [x] Čekat na ConfigPush po připojení
+- [x] Merge s existující konfigurací (přes URL params)
 
 ---
 

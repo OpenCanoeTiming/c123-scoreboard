@@ -1,6 +1,6 @@
 // Re-export all types
 export type { OnCourseCompetitor } from './competitor'
-export type { Result, ResultStatus } from './result'
+export type { Result, ResultStatus, RunResult } from './result'
 export type { RaceConfig } from './config'
 export type { VisibilityState } from './visibility'
 export { defaultVisibility } from './visibility'
@@ -41,6 +41,10 @@ export type {
   C123XmlChangeMessage,
   C123ErrorData,
   C123ErrorMessage,
+  C123ForceRefreshData,
+  C123ForceRefreshMessage,
+  C123ConfigPushData,
+  C123ConfigPushMessage,
   C123Message,
 } from './c123server'
 export {
@@ -52,4 +56,6 @@ export {
   isScheduleMessage,
   isXmlChangeMessage,
   isErrorMessage,
+  isForceRefreshMessage,
+  isConfigPushMessage,
 } from './c123server'
