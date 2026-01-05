@@ -103,7 +103,10 @@ function ScoreboardContent() {
               logoUrl="/assets/logo.svg"
               partnerLogoUrl="/assets/partners.png"
             />
-            <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
+            {/* TimeDisplay only in vertical layout */}
+            {layoutMode !== 'ledwall' && (
+              <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
+            )}
             <Title title={title} raceName={raceName} raceId={raceId} visible={visibility.displayTitle} />
           </>
         }

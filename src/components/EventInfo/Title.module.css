@@ -38,8 +38,8 @@
   position: absolute;
   top: 8px;
   left: 85px;
-  /* Extend to leave space for TimeDisplay (right: 100px + ~100px for time text) */
-  right: 220px;
+  /* Extend to leave space for partner logo on right */
+  right: 100px;
   width: auto;
   padding: 0;
   z-index: 15;
