@@ -18,10 +18,10 @@
   --color-accent-yellow: #e6b566;  /* Time display color */
   --color-highlight: #ffcc00;
 
-  /* Colors - Penalties (muted for better readability on displays) */
-  --color-penalty-touch: #a08060;  /* 2s penalty - muted orange/brown */
-  --color-penalty-miss: #a06060;   /* 50s penalty - muted red */
-  --color-penalty-clear: #70a070;  /* 0 penalty - muted green */
+  /* Colors - Penalties (for results list - muted, utilitarian) */
+  --color-penalty-touch: #c89050;  /* 2s penalty - warm but muted */
+  --color-penalty-miss: #b06060;   /* 50s penalty - muted red */
+  --color-penalty-clear: #808080;  /* 0 penalty - neutral gray */
 
   /* Colors - Status */
   --color-success: #33cc33;
