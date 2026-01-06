@@ -38,7 +38,7 @@ import { getWebSocketUrl, getServerInfo, getClientIdFromUrl, saveClientId, getSt
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 import { BR2Manager } from './utils/br1br2Merger'
-import { saveAssets, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
+import { saveAssets, loadAssets, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
 
 // =============================================================================
 // Types
@@ -545,21 +545,35 @@ export class C123ServerProvider implements DataProvider {
   private handleConfigPush(data: C123ConfigPushData): void {
     console.log('C123Server: Received config push:', data)
 
-    // Save assets to localStorage if provided (persisted for useAssets hook)
-    // Assets are nested in data.assets object from server
-    const assetsToSave: AssetConfig = {}
+    // Check if assets changed compared to localStorage
+    // Only save and reload if there are actual changes
+    let hasAssetChanges = false
+    const currentAssets = loadAssets() ?? {}
+    const newAssets: AssetConfig = {}
+
     if (data.assets?.logoUrl && isValidAssetUrl(data.assets.logoUrl)) {
-      assetsToSave.logoUrl = data.assets.logoUrl
+      newAssets.logoUrl = data.assets.logoUrl
+      if (currentAssets.logoUrl !== data.assets.logoUrl) {
+        hasAssetChanges = true
+      }
     }
     if (data.assets?.partnerLogoUrl && isValidAssetUrl(data.assets.partnerLogoUrl)) {
-      assetsToSave.partnerLogoUrl = data.assets.partnerLogoUrl
+      newAssets.partnerLogoUrl = data.assets.partnerLogoUrl
+      if (currentAssets.partnerLogoUrl !== data.assets.partnerLogoUrl) {
+        hasAssetChanges = true
+      }
     }
     if (data.assets?.footerImageUrl && isValidAssetUrl(data.assets.footerImageUrl)) {
-      assetsToSave.footerImageUrl = data.assets.footerImageUrl
+      newAssets.footerImageUrl = data.assets.footerImageUrl
+      if (currentAssets.footerImageUrl !== data.assets.footerImageUrl) {
+        hasAssetChanges = true
+      }
     }
-    if (Object.keys(assetsToSave).length > 0) {
-      saveAssets(assetsToSave)
-      console.log('C123Server: Saved assets to localStorage:', assetsToSave)
+
+    // Only save if there are actual changes
+    if (hasAssetChanges && Object.keys(newAssets).length > 0) {
+      saveAssets(newAssets)
+      console.log('C123Server: Saved changed assets to localStorage:', newAssets)
     }
 
     // Apply configuration changes by updating URL parameters and reloading
@@ -603,8 +617,7 @@ export class C123ServerProvider implements DataProvider {
       url.searchParams.set('scrollToFinished', String(data.scrollToFinished))
     }
 
-    // Check if URL changed or assets were saved (reload needed to apply new assets)
-    const hasAssetChanges = Object.keys(assetsToSave).length > 0
+    // Check if URL changed or assets actually changed (reload needed to apply)
     if (url.href !== window.location.href || hasAssetChanges) {
       console.log('C123Server: Applying config push - reloading with new config')
       window.location.href = url.href
