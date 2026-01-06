@@ -546,15 +546,16 @@ export class C123ServerProvider implements DataProvider {
     console.log('C123Server: Received config push:', data)
 
     // Save assets to localStorage if provided (persisted for useAssets hook)
+    // Assets are nested in data.assets object from server
     const assetsToSave: AssetConfig = {}
-    if (data.logoUrl && isValidAssetUrl(data.logoUrl)) {
-      assetsToSave.logoUrl = data.logoUrl
+    if (data.assets?.logoUrl && isValidAssetUrl(data.assets.logoUrl)) {
+      assetsToSave.logoUrl = data.assets.logoUrl
     }
-    if (data.partnerLogoUrl && isValidAssetUrl(data.partnerLogoUrl)) {
-      assetsToSave.partnerLogoUrl = data.partnerLogoUrl
+    if (data.assets?.partnerLogoUrl && isValidAssetUrl(data.assets.partnerLogoUrl)) {
+      assetsToSave.partnerLogoUrl = data.assets.partnerLogoUrl
     }
-    if (data.footerImageUrl && isValidAssetUrl(data.footerImageUrl)) {
-      assetsToSave.footerImageUrl = data.footerImageUrl
+    if (data.assets?.footerImageUrl && isValidAssetUrl(data.assets.footerImageUrl)) {
+      assetsToSave.footerImageUrl = data.assets.footerImageUrl
     }
     if (Object.keys(assetsToSave).length > 0) {
       saveAssets(assetsToSave)
@@ -635,10 +636,12 @@ export class C123ServerProvider implements DataProvider {
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
           scrollToFinished: scrollToFinishedParam !== null ? scrollToFinishedParam !== 'false' : appliedConfig.scrollToFinished ?? true,
-          // Report current asset URLs (from ConfigPush)
-          logoUrl: appliedConfig.logoUrl || undefined,
-          partnerLogoUrl: appliedConfig.partnerLogoUrl || undefined,
-          footerImageUrl: appliedConfig.footerImageUrl || undefined,
+          // Report current asset URLs (from ConfigPush - nested in assets object)
+          assets: appliedConfig.assets ? {
+            logoUrl: appliedConfig.assets.logoUrl || undefined,
+            partnerLogoUrl: appliedConfig.assets.partnerLogoUrl || undefined,
+            footerImageUrl: appliedConfig.assets.footerImageUrl || undefined,
+          } : undefined,
         },
         version: '3.0.0',
         capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement'],

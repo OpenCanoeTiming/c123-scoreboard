@@ -218,6 +218,18 @@ export interface C123ForceRefreshMessage extends C123ServerMessage<C123ForceRefr
 // ConfigPush Message
 // =============================================================================
 
+/**
+ * Asset URLs for scoreboard branding (nested in ConfigPush)
+ */
+export interface C123AssetUrls {
+  /** Main logo URL (top-left corner). Can be relative, absolute, or data URI. */
+  logoUrl?: string
+  /** Partner/sponsor logo URL (top-right corner). Can be relative, absolute, or data URI. */
+  partnerLogoUrl?: string
+  /** Footer sponsor banner URL. Can be relative, absolute, or data URI. */
+  footerImageUrl?: string
+}
+
 export interface C123ConfigPushData {
   /** Client ID - if changed, client will reconnect with new ID */
   clientId?: string
@@ -229,12 +241,8 @@ export interface C123ConfigPushData {
   showResults?: boolean
   /** Whether to scroll to finished competitor (default: true). When false, only highlights without scrolling. */
   scrollToFinished?: boolean
-  /** Main logo URL (top-left corner). Can be relative, absolute, or data URI. */
-  logoUrl?: string
-  /** Partner/sponsor logo URL (top-right corner). Can be relative, absolute, or data URI. */
-  partnerLogoUrl?: string
-  /** Footer sponsor banner URL. Can be relative, absolute, or data URI. */
-  footerImageUrl?: string
+  /** Asset URLs (logos, banners) - nested object from server */
+  assets?: C123AssetUrls
   custom?: Record<string, string | number | boolean>
   label?: string
 }
