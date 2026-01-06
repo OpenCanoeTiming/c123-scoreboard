@@ -4,7 +4,7 @@ import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
 import { C123ServerProvider } from '@/providers/C123ServerProvider'
 import type { DataProvider } from '@/providers/types'
-import { useLayout } from '@/hooks'
+import { useLayout, useAssets } from '@/hooks'
 import {
   discoverC123Server,
   isC123Server,
@@ -36,6 +36,9 @@ import {
  * - type: 'vertical' | 'ledwall' (layout mode, default: auto-detect)
  * - displayRows: number (fixed row count for ledwall scaling, min: 3, max: 20)
  * - scrollToFinished: 'true' | 'false' (scroll to finished competitor, default: 'true')
+ * - logoUrl: string (main logo URL, relative or absolute - no data URIs via URL)
+ * - partnerLogoUrl: string (partner logo URL, relative or absolute)
+ * - footerImageUrl: string (footer banner URL, relative or absolute)
  */
 function getUrlParams(): {
   server: string | null
@@ -82,6 +85,7 @@ function ScoreboardContent() {
   } = useScoreboard()
 
   const { layoutMode } = useLayout()
+  const assets = useAssets()
 
   return (
     <>
@@ -96,8 +100,8 @@ function ScoreboardContent() {
           <>
             <TopBar
               visible={visibility.displayTopBar}
-              logoUrl="/assets/logo.svg"
-              partnerLogoUrl="/assets/partners.png"
+              logoUrl={assets.logoUrl}
+              partnerLogoUrl={assets.partnerLogoUrl}
             />
             {/* TimeDisplay only in vertical layout */}
             {layoutMode !== 'ledwall' && (
@@ -106,7 +110,7 @@ function ScoreboardContent() {
             <Title title={title} raceName={raceName} raceId={raceId} visible={visibility.displayTitle} />
           </>
         }
-        footer={<Footer visible={visibility.displayFooter} imageUrl="/assets/footer.png" />}
+        footer={<Footer visible={visibility.displayFooter} imageUrl={assets.footerImageUrl} />}
       >
         {/* Current competitor - shows departing if no current */}
         <ErrorBoundary componentName="CurrentCompetitor">

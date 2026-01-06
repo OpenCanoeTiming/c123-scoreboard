@@ -70,6 +70,9 @@ interface ConfigPushData {
   displayRows?: number
   customTitle?: string
   scrollToFinished?: boolean  // Scroll na pozici závodníka po dojetí (default: true)
+  logoUrl?: string       // Hlavní logo (relativní, absolutní, nebo data URI)
+  partnerLogoUrl?: string // Partner logo (relativní, absolutní, nebo data URI)
+  footerImageUrl?: string // Footer banner (relativní, absolutní, nebo data URI)
   // ...
 }
 ```
@@ -80,19 +83,36 @@ interface ConfigPushData {
 3. Klient provede reload → připojí se s novým ID
 4. Server uloží config pod novým klíčem
 
+**Asset management flow:**
+1. Server pošle `ConfigPush` s asset URL(s)
+2. Klient validuje URL (musí být relativní, http/https, nebo data:image/...)
+3. Klient uloží do localStorage (`csb-assets`)
+4. Klient provede reload → `useAssets()` hook načte z localStorage
+
+**Fallback chain pro assets:**
+```
+ConfigPush → localStorage → URL params (jen relativní/absolutní) → defaults
+```
+
+**Podporované formáty:**
+- Relativní URL: `/assets/custom-logo.png`
+- Absolutní URL: `https://example.com/logo.png`
+- Data URI: `data:image/png;base64,...` (pouze přes ConfigPush, ne URL params!)
+
 **Použití:**
 - Pojmenování nového klienta (místo IP adresy)
 - Přejmenování stávajícího klienta
 - Přesun konfigurace mezi zařízeními
+- Customizace log a bannerů bez rebuildů
 
 **ClientState response:**
 ```typescript
 {
   type: 'ClientState',
   data: {
-    current: { clientId, type, displayRows, customTitle, scrollToFinished },
+    current: { clientId, type, displayRows, customTitle, scrollToFinished, logoUrl, partnerLogoUrl, footerImageUrl },
     version: '3.0.0',
-    capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished']
+    capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement']
   }
 }
 ```

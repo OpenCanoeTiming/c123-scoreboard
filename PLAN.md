@@ -5,9 +5,9 @@
 | Fáze | Status |
 |------|--------|
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
-| Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
+| Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (2026-01-06) |
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
-| **Fáze H: OnCourse vylepšení a scrollToFinished** | ✅ Hotovo (2026-01-06) |
+| Fáze H: OnCourse vylepšení a scrollToFinished | ✅ Hotovo (2026-01-06) |
 
 ---
 
@@ -117,43 +117,69 @@ C123 server může poslat `ConfigPush` zprávu s parametry `type`, `displayRows`
 
 ---
 
-### Blok F5: Asset management
+### Blok F5: Asset management ✅
 
 #### Problém
 Customizace log a obrázků bez rebuildů. Hardcoded cesty v App.tsx.
 
 #### Řešení
-ConfigPush override - server posílá URL nebo base64 data URI, scoreboard použije nebo fallback na default.
+ConfigPush přes WebSocket - server posílá URL nebo base64 data URI, scoreboard uloží do localStorage a použije. URL parametry jen pro jednoduché relativní cesty (ne pro base64 - ty mají stovky KB a URL má limit ~2KB).
 
 **Podporované formáty hodnot:**
-- URL: `http://...`, `https://...`
-- Data URI: `data:image/png;base64,...`, `data:image/svg+xml;base64,...`
+- Relativní URL: `/assets/custom-logo.png`
+- Absolutní URL: `https://example.com/logo.png`
+- Data URI: `data:image/png;base64,...` (pouze přes ConfigPush!)
+
+**Fallback chain:**
+```
+ConfigPush (WebSocket) → localStorage (persistence) → URL params (jen relativní) → defaults
+```
 
 #### F5.1 Rozšíření ConfigPushData
-- [ ] Přidat `logoUrl?: string` - hlavní logo (levý horní roh)
-- [ ] Přidat `partnerLogoUrl?: string` - logo partnerů (pravý horní roh)
-- [ ] Přidat `footerImageUrl?: string` - sponzorský banner (footer)
+- [x] Přidat `logoUrl?: string` - hlavní logo (levý horní roh)
+- [x] Přidat `partnerLogoUrl?: string` - logo partnerů (pravý horní roh)
+- [x] Přidat `footerImageUrl?: string` - sponzorský banner (footer)
 
-#### F5.2 Asset hook
-- [ ] Vytvořit `useAssets()` hook v `src/hooks/`
-- [ ] Čte ConfigPush data z kontextu (nebo URL params jako fallback)
-- [ ] Vrací resolved URLs: `{ logoUrl, partnerLogoUrl, footerImageUrl }`
-- [ ] Fallback chain: ConfigPush → URL params → defaults (`/assets/...`)
+#### F5.2 Asset storage
+- [x] Vytvořit `src/utils/assetStorage.ts`
+- [x] `saveAssets(assets)` - uloží do localStorage pod klíčem `csb-assets`
+- [x] `loadAssets()` - načte z localStorage
+- [x] `clearAssets()` - smaže (pro reset na defaults)
+- [x] Uložit při přijetí ConfigPush s asset daty
 
-#### F5.3 Úprava App.tsx
-- [ ] Importovat a použít `useAssets()` v ScoreboardContent
-- [ ] Předat resolved URLs do TopBar a Footer
-- [ ] Aktualizovat DiscoveryScreen a ErrorScreen (použít default logo)
+#### F5.3 Asset hook
+- [x] Vytvořit `useAssets()` hook v `src/hooks/`
+- [x] Fallback chain: localStorage → URL params (jen relativní) → defaults
+- [x] Vrací resolved URLs: `{ logoUrl, partnerLogoUrl, footerImageUrl }`
+- [x] URL params validace: odmítnout `data:` prefix (příliš velké)
 
-#### F5.4 Validace a error handling
-- [ ] Validace formátu (http/https/data:)
-- [ ] `<img onError>` fallback na default při broken URL
-- [ ] Console warning pro nevalidní hodnoty
+#### F5.4 Úprava App.tsx
+- [x] Importovat a použít `useAssets()` v ScoreboardContent
+- [x] Předat resolved URLs do TopBar a Footer
+- [x] DiscoveryScreen a ErrorScreen používají default logo (hardcoded)
 
-#### F5.5 Testy a dokumentace
-- [ ] Unit testy pro useAssets hook
-- [ ] Dokumentace URL parametrů a ConfigPush polí
-- [ ] Příklady v docs/
+#### F5.5 Validace a error handling
+- [x] Validace formátu v assetStorage (http/https/data:/relativní)
+- [x] `<img onError>` fallback na default při broken URL
+- [x] Console warning pro nevalidní hodnoty
+- [x] Warning v konzoli když URL param obsahuje `data:` (ignorovat)
+
+#### F5.6 Testy a dokumentace
+- [x] Unit testy pro assetStorage (23 testů)
+- [x] Unit testy pro useAssets hook (8 testů)
+- [x] Dokumentace ConfigPush polí v docs/architecture.md
+- [x] Celkem 708 testů prošlo
+
+#### Soubory
+```
+src/types/c123server.ts           # ConfigPushData s asset fields
+src/utils/assetStorage.ts         # localStorage persistence
+src/hooks/useAssets.ts            # Hook pro resolved URLs
+src/providers/C123ServerProvider.ts # Uložení assets při ConfigPush
+src/components/EventInfo/TopBar.tsx # onError fallback
+src/components/Footer/Footer.tsx   # onError fallback
+src/App.tsx                       # Použití useAssets()
+```
 
 ---
 

@@ -11,11 +11,11 @@ exports[`Footer snapshots > should match snapshot when visible 1`] = `
     <div
       class="_sponsorBanner_acfd2c"
     >
-      <span
-        class="_sponsorText_acfd2c"
-      >
-        Sponsor Banner
-      </span>
+      <img
+        alt="Sponsor banner"
+        class="_sponsorImage_acfd2c"
+        src="/assets/footer.png"
+      />
     </div>
   </div>
 </div>
@@ -30,11 +30,11 @@ exports[`Footer snapshots > should match snapshot with default props 1`] = `
     <div
       class="_sponsorBanner_acfd2c"
     >
-      <span
-        class="_sponsorText_acfd2c"
-      >
-        Sponsor Banner
-      </span>
+      <img
+        alt="Sponsor banner"
+        class="_sponsorImage_acfd2c"
+        src="/assets/footer.png"
+      />
     </div>
   </div>
 </div>

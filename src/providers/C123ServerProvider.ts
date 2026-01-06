@@ -38,6 +38,7 @@ import { getWebSocketUrl, getServerInfo, getClientIdFromUrl } from './utils/disc
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 import { BR2Manager } from './utils/br1br2Merger'
+import { saveAssets, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
 
 // =============================================================================
 // Types
@@ -544,6 +545,22 @@ export class C123ServerProvider implements DataProvider {
   private handleConfigPush(data: C123ConfigPushData): void {
     console.log('C123Server: Received config push:', data)
 
+    // Save assets to localStorage if provided (persisted for useAssets hook)
+    const assetsToSave: AssetConfig = {}
+    if (data.logoUrl && isValidAssetUrl(data.logoUrl)) {
+      assetsToSave.logoUrl = data.logoUrl
+    }
+    if (data.partnerLogoUrl && isValidAssetUrl(data.partnerLogoUrl)) {
+      assetsToSave.partnerLogoUrl = data.partnerLogoUrl
+    }
+    if (data.footerImageUrl && isValidAssetUrl(data.footerImageUrl)) {
+      assetsToSave.footerImageUrl = data.footerImageUrl
+    }
+    if (Object.keys(assetsToSave).length > 0) {
+      saveAssets(assetsToSave)
+      console.log('C123Server: Saved assets to localStorage:', assetsToSave)
+    }
+
     // Apply configuration changes by updating URL parameters and reloading
     // This ensures the layout hook picks up the new values
     const url = new URL(window.location.href)
@@ -577,9 +594,10 @@ export class C123ServerProvider implements DataProvider {
       url.searchParams.set('scrollToFinished', String(data.scrollToFinished))
     }
 
-    // Check if URL changed
-    if (url.href !== window.location.href) {
-      console.log('C123Server: Applying config push - reloading with new URL params')
+    // Check if URL changed or assets were saved (reload needed to apply new assets)
+    const hasAssetChanges = Object.keys(assetsToSave).length > 0
+    if (url.href !== window.location.href || hasAssetChanges) {
+      console.log('C123Server: Applying config push - reloading with new config')
       window.location.href = url.href
     } else {
       console.log('C123Server: Config push received but no changes to apply')
@@ -609,9 +627,13 @@ export class C123ServerProvider implements DataProvider {
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
           scrollToFinished: scrollToFinishedParam !== null ? scrollToFinishedParam !== 'false' : appliedConfig.scrollToFinished ?? true,
+          // Report current asset URLs (from ConfigPush)
+          logoUrl: appliedConfig.logoUrl || undefined,
+          partnerLogoUrl: appliedConfig.partnerLogoUrl || undefined,
+          footerImageUrl: appliedConfig.footerImageUrl || undefined,
         },
         version: '3.0.0',
-        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished'],
+        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement'],
       },
     }
 

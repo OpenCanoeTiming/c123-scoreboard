@@ -229,6 +229,12 @@ export interface C123ConfigPushData {
   showResults?: boolean
   /** Whether to scroll to finished competitor (default: true). When false, only highlights without scrolling. */
   scrollToFinished?: boolean
+  /** Main logo URL (top-left corner). Can be relative, absolute, or data URI. */
+  logoUrl?: string
+  /** Partner/sponsor logo URL (top-right corner). Can be relative, absolute, or data URI. */
+  partnerLogoUrl?: string
+  /** Footer sponsor banner URL. Can be relative, absolute, or data URI. */
+  footerImageUrl?: string
   custom?: Record<string, string | number | boolean>
   label?: string
 }
