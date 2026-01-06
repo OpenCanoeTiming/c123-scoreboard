@@ -169,31 +169,42 @@ export function mergeBR1CacheIntoBR2Results(
 
     const { run1, run2: cachedRun2 } = cached
 
-    // BR2: use REST API data for penalty AND status (WebSocket doesn't have per-run status!)
-    // But use WebSocket time for live updates
+    // BR2: Merge REST API cache with WebSocket live data
+    // Priority: cache status > cache data > WebSocket live data
     let run2: RunResult | undefined
+    const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
+
     if (cachedRun2) {
-      // Check if run2 has DSQ/DNS/DNF status - if so, use cached data as-is
+      // Cache has run2 data - use it (authoritative for status and penalty)
       if (cachedRun2.status === 'DSQ' || cachedRun2.status === 'DNS' || cachedRun2.status === 'DNF') {
+        // Invalid status - use cached data as-is
         run2 = cachedRun2
-      } else {
-        // REST API has run2 data - use its penalty
-        // Calculate total from WebSocket time + REST API penalty
-        const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
-        if (hasBR2Time) {
-          const br2Total = calculateBR2Total(result.time, cachedRun2.pen ?? 0)
-          run2 = {
-            total: br2Total || cachedRun2.total, // fallback to cached total
-            pen: cachedRun2.pen,  // from REST API, not WebSocket!
-            rank: result.rank,
-            status: cachedRun2.status || '',  // use REST API status, not WebSocket!
-          }
-        } else {
-          // No live time yet, use cached data
-          run2 = cachedRun2
+      } else if (hasBR2Time) {
+        // Valid run with live time - calculate total from WebSocket time + cached penalty
+        const br2Total = calculateBR2Total(result.time, cachedRun2.pen ?? 0)
+        run2 = {
+          total: br2Total || cachedRun2.total,
+          pen: cachedRun2.pen,
+          rank: result.rank,
+          status: cachedRun2.status || '',
         }
+      } else {
+        // No live time yet, use cached data
+        run2 = cachedRun2
+      }
+    } else if (hasBR2Time) {
+      // Cache doesn't have run2, but WebSocket has live time
+      // This happens when competitor just finished BR2 (before REST API refresh)
+      // Use WebSocket data directly - pen is correct for just-finished competitor
+      const br2Total = calculateBR2Total(result.time, result.pen)
+      run2 = {
+        total: br2Total,
+        pen: result.pen,
+        rank: result.rank,
+        status: '',
       }
     }
+    // else: neither cache nor WebSocket has run2 data - leave undefined
 
     // Determine best run
     const run1Ms = parseTimeToMs(run1.total || '')

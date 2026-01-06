@@ -249,5 +249,59 @@ describe('br1br2Merger', () => {
       expect(merged[0].run2?.status).toBe('DSQ')
       expect(merged[0].bestRun).toBeUndefined()
     })
+
+    // === Live Data Tests (just finished, before REST API refresh) ===
+
+    it('creates BR2 from WebSocket when cache has no run2 (just finished)', () => {
+      // Competitor just finished BR2 - cache doesn't have run2 yet
+      const results = [
+        createResult({
+          bib: '1',
+          time: '92.50',   // Just finished BR2
+          pen: 4,          // BR2 penalty (correct - just finished)
+          total: '85.00',  // BEST = BR1
+          rank: 5,
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '' },
+          run2: undefined,  // Cache doesn't have run2 yet!
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      // run1 from cache
+      expect(merged[0].run1?.total).toBe('85.00')
+      // run2 created from WebSocket (just finished)
+      expect(merged[0].run2?.total).toBe('96.50')  // 92.50 + 4
+      expect(merged[0].run2?.pen).toBe(4)
+      expect(merged[0].bestRun).toBe(1)
+    })
+
+    it('shows empty BR2 when deleted (no cache, no WebSocket time)', () => {
+      // Competitor's BR2 was deleted - neither cache nor WebSocket has data
+      const results = [
+        createResult({
+          bib: '1',
+          time: '',        // No BR2 time (deleted)
+          pen: 0,
+          total: '85.00',  // Just BR1
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '' },
+          run2: undefined,  // Deleted from REST API
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      expect(merged[0].run1?.total).toBe('85.00')
+      expect(merged[0].run2).toBeUndefined()
+      expect(merged[0].bestRun).toBe(1)
+    })
   })
 })
