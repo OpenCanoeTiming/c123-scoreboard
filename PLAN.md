@@ -7,6 +7,7 @@
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
 | Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
+| **Fáze H: OnCourse vylepšení a scrollToFinished** | 📋 Plánováno |
 
 ---
 
@@ -219,6 +220,84 @@ docs/SolvingBR1BR2.md               # Kompletní analýza problému
 
 ### Testy
 672 testů celkem, včetně raceUtils (45) a br1br2Merger (12)
+
+---
+
+## Fáze H - OnCourse vylepšení a scrollToFinished
+
+### Cíl
+Zjednodušení vertical zobrazení OnCourse (jen jeden závodník) a konfigurovatelné scroll chování.
+
+---
+
+### Blok H1: Vertical OnCourse - jeden závodník
+
+#### Problém
+Vertical layout zobrazuje všechny závodníky na trati, ale prakticky stačí jeden (jako ledwall).
+
+#### H1.1 Změna logiky
+- [ ] Vertical: zobrazit pouze `currentCompetitor` (stejně jako ledwall)
+- [ ] Odstranit/skrýt `OnCourseDisplay` komponentu ve vertical layoutu
+- [ ] Zachovat data flow (onCourse array stále existuje pro interní logiku)
+
+#### H1.2 Vizuální úpravy
+- [ ] Dominantnější zobrazení CurrentCompetitor ve vertical
+- [ ] Přidat mezeru/padding pod CurrentCompetitor sekci
+- [ ] Vizuálně oddělit od ResultsList
+
+#### H1.3 Korekce scroll prostoru
+- [ ] Přepočítat dostupný prostor pro ResultsList
+- [ ] Ověřit že scroll funguje správně s novým layoutem
+- [ ] Otestovat s různými počty displayRows
+
+---
+
+### Blok H2: Parametr scrollToFinished
+
+#### Popis
+Nový parametr `scrollToFinished` (default: `true`). Při `false` se po dojetí závodníka neprovádí automatický scroll na jeho pozici ve výsledcích - pouze highlight.
+
+#### H2.1 URL parametr
+- [ ] Přidat `scrollToFinished` do URL params parsingu v App.tsx
+- [ ] Default hodnota: `true` (zachování stávajícího chování)
+- [ ] Formát: `?scrollToFinished=false`
+
+#### H2.2 ConfigPush podpora
+- [ ] Rozšířit `ConfigPushData` o `scrollToFinished?: boolean`
+- [ ] Priorita: ConfigPush > URL param > default (true)
+
+#### H2.3 Implementace v ResultsList
+- [ ] Předat `scrollToFinished` do ResultsList komponenty
+- [ ] Podmínit scroll logiku: `if (scrollToFinished) { scrollToHighlighted() }`
+- [ ] Highlight zůstává vždy (nezávisle na scroll)
+- [ ] Ověřit že scroll netriggeruje side effects
+
+#### H2.4 Layout context
+- [ ] Přidat `scrollToFinished` do `useLayout()` hooku
+- [ ] Nebo vytvořit `useConfig()` hook pro všechny config parametry
+
+---
+
+### Blok H3: Dokumentace a C123 Server
+
+#### Scoreboard dokumentace
+- [ ] Aktualizovat docs s novými parametry
+- [ ] Příklady použití scrollToFinished
+
+#### C123 Server (související změny)
+> **Poznámka:** Změny v `../c123-server/`
+
+- [ ] Přidat `scrollToFinished` do client config schema
+- [ ] Admin UI: checkbox pro scrollToFinished (per-client)
+- [ ] Dokumentace v server docs
+
+---
+
+### Blok H4: Testy
+- [ ] Unit testy pro scrollToFinished logiku
+- [ ] Test highlight bez scroll
+- [ ] Test scroll s různými displayRows
+- [ ] Vizuální test vertical layoutu s jedním OnCourse
 
 ---
 
