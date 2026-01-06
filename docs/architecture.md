@@ -141,6 +141,85 @@ ConfigPush → localStorage → URL params (jen relativní/absolutní) → defau
 
 ---
 
+## BR1/BR2 merge systém
+
+Zobrazení výsledků z obou jízd při Best Run závodech.
+
+### raceUtils.ts
+
+Utility funkce pro práci s race ID:
+
+```typescript
+// Detekce typu závodu
+isBR2Race("K1M_ST_BR2_6")  // true - druhá jízda
+isBR1Race("K1M_ST_BR1_6")  // true - první jízda
+isBestRunRace(raceId)      // true pro BR1 i BR2
+
+// Extrakce classId pro REST API
+getClassId("K1M_ST_BR2_6") // "K1M_ST"
+
+// Číslo jízdy
+getRunNumber("K1M_ST_BR2_6") // 2
+
+// Přepnutí mezi jízdami
+getOtherRunRaceId("K1M_ST_BR1_6") // "K1M_ST_BR2_6"
+```
+
+**Race ID formát:** `{CLASS}_{COURSE}_{RUN}_{VERSION}`
+- `K1M_ST_BR1_6` = K1 Men, Short Track, Best Run 1, verze 6
+- `C2M_LT_BR2_3` = C2 Men, Long Track, Best Run 2, verze 3
+
+### BR2Manager (br1br2Merger.ts)
+
+Třída spravující merge BR1/BR2 dat:
+
+```
+┌─────────────────────┐
+│    BR2Manager       │
+├─────────────────────┤
+│ - state: BR2MergeState
+│ - api: C123ServerApi
+├─────────────────────┤
+│ processResults()    │ ← WebSocket Results
+│ updateOnCoursePenalties() │ ← OnCourse data
+│ dispose()           │
+└─────────────────────┘
+         │
+         ▼
+┌─────────────────────┐
+│   REST API fetch    │
+│ /api/xml/races/:id  │
+│   /results?merged   │
+└─────────────────────┘
+```
+
+**Data flow:**
+
+1. **Detekce BR2 závodu** - při změně `raceId` kontroluje `isBR2Race()`
+2. **Fetch BR1 dat** - REST API volání s delay 500ms, pak refresh každých 30s
+3. **Cache** - `Map<bib, {run1, run2}>` - ukládá data z REST API
+4. **OnCourse penalties** - live penalizace s 10s grace period po dojetí
+5. **Merge** - `mergeBR1CacheIntoBR2Results()` kombinuje cache + WebSocket
+
+**Klíčový insight:**
+
+```
+WebSocket posílá:
+- time = BR2 čas (bez penalizace)
+- pen = penalizace LEPŠÍ jízdy (ne BR2!)
+- total = NEJLEPŠÍ čas z obou jízd
+
+Proto BR2 total = time + pen (z OnCourse nebo REST cache)
+```
+
+**Konstanty:**
+- `INITIAL_FETCH_DELAY_MS = 500` - delay před prvním fetchem
+- `DEBOUNCE_FETCH_MS = 1000` - debounce při Results zprávách
+- `BR1_REFRESH_INTERVAL_MS = 30000` - periodický refresh cache
+- `ONCOURSE_PENALTY_GRACE_MS = 10000` - grace period pro penalizace
+
+---
+
 ## Interní typy
 
 ```typescript

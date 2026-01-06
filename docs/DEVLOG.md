@@ -215,3 +215,56 @@ Chronologický záznam vývoje, zjištění a řešení problémů.
 - `src/providers/utils/c123ServerApi.ts` - REST API klient
 - `src/components/ResultsList/ResultRow.tsx` - RunTimeCell pro BR2
 - `src/components/ResultsList/ResultsList.module.css` - BR2 styly
+
+---
+
+## 2026-01-06 - Fáze J dokončena: Dokumentace
+
+**Shrnutí Fáze J - Kompletní dokumentace:**
+
+1. **J1: README.md** - Kompletní přepis uživatelské příručky
+   - Quick start, instalace, konfigurace
+   - Layout módy, data sources, deployment
+
+2. **J2: docs/url-parameters.md** - Reference všech URL parametrů
+   - Tabulka parametrů s typy a defaults
+   - ConfigPush override chování
+
+3. **J3: docs/configuration.md** - Remote konfigurace
+   - ConfigPush, ClientState, ForceRefresh
+   - Asset management, clientId flow
+
+4. **J4: docs/data-providers.md** - Provider interface
+   - C123ServerProvider, CLIProvider, ReplayProvider
+   - Auto-discovery, reconnect logika
+
+5. **J5: docs/components.md** - React komponenty
+   - App, ScoreboardContext, ResultsList
+   - Hooks dokumentace
+
+6. **J6: docs/development.md** - Vývojářský průvodce
+   - Setup, struktura, coding standards
+   - Git workflow
+
+7. **J7: Aktualizace existujících docs**
+   - testing.md - rozšířeno o coverage, CI/CD, jak psát testy
+   - architecture.md - doplněno o BR2Manager, raceUtils
+
+**Celkový stav po Fázi J:**
+- Kompletní uživatelská dokumentace (README.md)
+- 7 dokumentů v docs/ složce
+- 725 testů prochází
+- Projekt připraven pro budoucí údržbu
+
+---
+
+## Uzavření vývoje V3
+
+Canoe Scoreboard V3 je funkčně kompletní:
+
+- **Plná kompatibilita s V2** - stejné zobrazení, stejná logika
+- **BR1/BR2 merge** - nová funkcionalita zobrazující obě jízdy
+- **ConfigPush** - remote konfigurace z C123 serveru
+- **Asset management** - customizace log a bannerů
+- **725+ testů** - robustní testovací pokrytí
+- **Kompletní dokumentace** - pro uživatele i vývojáře

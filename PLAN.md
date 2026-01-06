@@ -9,7 +9,7 @@
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo |
 | Fáze H: OnCourse vylepšení a scrollToFinished | ✅ Hotovo |
 | Fáze I: Server-assigned clientId persistence | ✅ Hotovo |
-| **Fáze J: Dokumentace** | 🔄 Probíhá |
+| **Fáze J: Dokumentace** | ✅ Hotovo |
 
 ---
 
@@ -134,11 +134,11 @@ Průvodce pro vývojáře.
 
 ---
 
-### Blok J7: Aktualizace existujících docs
+### Blok J7: Aktualizace existujících docs ✅ Hotovo
 
-- [ ] **docs/testing.md** - rozšířit o test coverage, CI/CD, jak psát testy
-- [ ] **docs/architecture.md** - doplnit BR2Manager, raceUtils
-- [ ] **docs/DEVLOG.md** - uzavřít aktuální fázi
+- [x] **docs/testing.md** - rozšířeno o test coverage, CI/CD, jak psát testy
+- [x] **docs/architecture.md** - doplněno o BR2Manager, raceUtils
+- [x] **docs/DEVLOG.md** - uzavřena aktuální fáze
 
 ---
 
