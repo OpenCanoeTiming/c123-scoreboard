@@ -8,6 +8,7 @@
 | Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (2026-01-06) |
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
 | Fáze H: OnCourse vylepšení a scrollToFinished | ✅ Hotovo (2026-01-06) |
+| Fáze I: Server-assigned clientId persistence | ✅ Hotovo (2026-01-06) |
 
 ---
 
@@ -279,6 +280,53 @@ src/hooks/useAutoScroll.ts         # Podmíněný scroll
 src/types/c123server.ts            # ConfigPushData.scrollToFinished
 src/providers/C123ServerProvider.ts # ConfigPush handler
 docs/architecture.md               # Dokumentace
+```
+
+---
+
+## Fáze I - Server-assigned clientId persistence ✅
+
+**Dokončeno:** 2026-01-06
+
+### Cíl
+
+Implementovat podporu pro server-assigned clientId - server může přiřadit klientovi identifikátor, který se uloží do localStorage a použije při dalších připojeních.
+
+### Implementováno
+
+| Funkce | Popis |
+|--------|-------|
+| **getStoredClientId()** | Načte clientId z localStorage |
+| **saveClientId()** | Uloží server-assigned clientId do localStorage |
+| **clearClientId()** | Smaže uložené clientId (reset na IP-based) |
+| **getClientIdFromUrl()** | Rozšířeno o fallback: URL param → localStorage → null |
+| **ConfigPush handler** | Ukládá nové clientId do localStorage |
+
+### Flow
+
+```
+1. Klient se připojí bez clientId → server identifikuje podle IP
+2. Admin v dashboard přiřadí clientId (např. "finish-main")
+3. Server pošle ConfigPush s clientId: "finish-main"
+4. Klient:
+   - Uloží clientId do localStorage
+   - Přidá clientId do URL parametrů
+   - Reloadne stránku s novým clientId
+5. Další připojení automaticky používá uložené clientId
+```
+
+### Priority (fallback chain)
+
+```
+URL param ?clientId=xxx → localStorage (c123-clientId) → null (IP-based)
+```
+
+### Soubory
+
+```
+src/providers/utils/discovery-client.ts    # getClientIdFromUrl, saveClientId, etc.
+src/providers/C123ServerProvider.ts        # ConfigPush handler s ukládáním
+src/providers/utils/__tests__/clientId.test.ts  # 17 unit testů
 ```
 
 ---

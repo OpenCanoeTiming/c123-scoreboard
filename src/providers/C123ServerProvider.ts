@@ -34,7 +34,7 @@ import type {
   EventInfoData,
 } from './types'
 import { CallbackManager } from './utils/CallbackManager'
-import { getWebSocketUrl, getServerInfo, getClientIdFromUrl } from './utils/discovery-client'
+import { getWebSocketUrl, getServerInfo, getClientIdFromUrl, saveClientId, getStoredClientId } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 import { BR2Manager } from './utils/br1br2Merger'
@@ -565,11 +565,19 @@ export class C123ServerProvider implements DataProvider {
     // This ensures the layout hook picks up the new values
     const url = new URL(window.location.href)
 
-    // Apply clientId - if changed, will trigger reconnect with new ID
+    // Handle server-assigned clientId
+    // Save to localStorage for future connections (persists across page reloads)
+    // Also update URL param so the current session uses the new ID
     if (data.clientId !== undefined) {
-      const currentClientId = url.searchParams.get('clientId')
+      const currentStoredId = getStoredClientId()
+      const currentUrlId = url.searchParams.get('clientId')
+      const currentClientId = currentUrlId || currentStoredId
+
       if (data.clientId !== currentClientId) {
         console.log(`C123Server: Client ID changed: ${currentClientId} -> ${data.clientId}`)
+        // Save to localStorage for future connections
+        saveClientId(data.clientId)
+        // Update URL param for current session
         url.searchParams.set('clientId', data.clientId)
       }
     }

@@ -27,6 +27,9 @@ export const PROBE_TIMEOUT = 3000
 /** LocalStorage key for caching discovered server */
 export const STORAGE_KEY = 'c123-server-url'
 
+/** LocalStorage key for storing server-assigned clientId */
+export const CLIENT_ID_STORAGE_KEY = 'c123-clientId'
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -448,16 +451,70 @@ export function getWebSocketUrl(httpUrl: string, clientId?: string): string {
 }
 
 /**
- * Get clientId from URL parameters.
+ * Get clientId with fallback chain: URL param → localStorage → null
+ *
+ * Priority:
+ * 1. URL parameter `?clientId=xxx` - explicit per-session configuration
+ * 2. localStorage (server-assigned) - persisted from ConfigPush
+ * 3. null - let server identify by IP
  *
  * The clientId is used to identify this scoreboard instance to the C123 Server.
  * This is useful when running multiple scoreboards on the same machine.
  *
- * @returns Client ID from URL or null if not specified
+ * @returns Client ID or null if not specified
  */
 export function getClientIdFromUrl(): string | null {
+  // 1. URL parameter has highest priority
   const params = new URLSearchParams(window.location.search)
-  return params.get('clientId')
+  const urlClientId = params.get('clientId')
+  if (urlClientId) {
+    return urlClientId
+  }
+
+  // 2. Check localStorage (server-assigned clientId)
+  return getStoredClientId()
+}
+
+/**
+ * Get clientId from localStorage.
+ *
+ * @returns Stored clientId or null
+ */
+export function getStoredClientId(): string | null {
+  try {
+    return localStorage.getItem(CLIENT_ID_STORAGE_KEY)
+  } catch {
+    // localStorage might be unavailable
+    return null
+  }
+}
+
+/**
+ * Save server-assigned clientId to localStorage.
+ *
+ * Called when server sends a new clientId via ConfigPush.
+ *
+ * @param clientId - Client ID assigned by server
+ */
+export function saveClientId(clientId: string): void {
+  try {
+    localStorage.setItem(CLIENT_ID_STORAGE_KEY, clientId)
+  } catch {
+    // localStorage might be unavailable
+  }
+}
+
+/**
+ * Clear stored clientId.
+ *
+ * Use when resetting to IP-based identification.
+ */
+export function clearClientId(): void {
+  try {
+    localStorage.removeItem(CLIENT_ID_STORAGE_KEY)
+  } catch {
+    // Ignore errors
+  }
 }
 
 // =============================================================================
