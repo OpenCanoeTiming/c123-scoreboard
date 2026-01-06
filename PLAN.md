@@ -31,6 +31,7 @@ Vytvořit kompletní dokumentaci pro budoucí návrat k projektu. Dva typy:
 | docs/url-parameters.md | ✅ Hotovo | URL parametry reference (J2) |
 | docs/configuration.md | ✅ Hotovo | Remote konfigurace (J3) |
 | docs/data-providers.md | ✅ Hotovo | DataProvider interface (J4) |
+| docs/components.md | ✅ Hotovo | React komponenty (J5) |
 | docs/architecture.md | ✅ OK | ConfigPush, typy |
 | docs/timing.md | ✅ OK | Konstanty, flow |
 | docs/troubleshooting.md | ✅ OK | Běžné problémy |
@@ -103,17 +104,17 @@ Jak funguje napojení na data.
 
 ---
 
-### Blok J5: docs/components.md
+### Blok J5: docs/components.md ✅ Hotovo
 
 Klíčové React komponenty pro budoucí úpravy.
 
-#### Obsah
-- [ ] **App.tsx** - entry point, provider setup
-- [ ] **ScoreboardContext** - state management, reducer akce
-- [ ] **ResultsList** - scrolling, highlight, BR1/BR2 columns
-- [ ] **CurrentCompetitor** - on-course zobrazení
-- [ ] **TopBar/Footer** - asset loading, fallbacks
-- [ ] **Hooks** - useLayout, useAutoScroll, useAssets, useHighlight
+#### Obsah ✅ Hotovo
+- [x] **App.tsx** - entry point, provider setup
+- [x] **ScoreboardContext** - state management, reducer akce
+- [x] **ResultsList** - scrolling, highlight, BR1/BR2 columns
+- [x] **CurrentCompetitor** - on-course zobrazení
+- [x] **TopBar/Footer** - asset loading, fallbacks
+- [x] **Hooks** - useLayout, useAutoScroll, useAssets, useHighlight
 
 ---
 
