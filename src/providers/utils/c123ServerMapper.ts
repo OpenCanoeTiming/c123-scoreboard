@@ -140,6 +140,9 @@ function getResultStatus(row: C123ResultRow): ResultStatus {
 
 /**
  * Map C123 result row to scoreboard Result
+ *
+ * For BR2 races, also passes through BR1 data (prevTime, prevPen, prevTotal)
+ * and raw BR2 time for calculating BR2 total (since row.total is BEST, not BR2!)
  */
 function mapResultRow(row: C123ResultRow): Result {
   return {
@@ -154,6 +157,12 @@ function mapResultRow(row: C123ResultRow): Result {
     pen: row.pen,
     behind: row.behind,
     status: getResultStatus(row),
+    // BR2 fields - pass through for merge calculation
+    time: row.time,              // BR2 time without penalty
+    prevTime: row.prevTime,      // BR1 time in centiseconds
+    prevPen: row.prevPen,        // BR1 penalty
+    prevTotal: row.prevTotal,    // BR1 total in centiseconds
+    betterRunNr: row.betterRun,  // Which run was better (1 or 2)
   }
 }
 

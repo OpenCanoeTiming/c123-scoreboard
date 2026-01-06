@@ -34,11 +34,16 @@ export interface Result {
   givenName: string
   club: string
   nat: string
+  /** Total time - for BR2 races this is BEST of both runs! */
   total: string
   pen: number
   behind: string
   /** Status for invalid results (DNS, DNF, DSQ). Empty string for valid results. */
   status?: ResultStatus
+
+  // === Raw BR2 time for calculating BR2 total (time + pen) ===
+  /** BR2 time without penalty (only set during BR2 races) */
+  time?: string
 
   // === Merged BR1/BR2 fields (optional, only for merged view) ===
 
@@ -48,4 +53,14 @@ export interface Result {
   run2?: RunResult
   /** Which run had the best time (1 or 2) */
   bestRun?: 1 | 2
+
+  // === Raw BR1 data from C123 (centiseconds, for BR2 calculation) ===
+  /** BR1 time in centiseconds */
+  prevTime?: number
+  /** BR1 penalty in seconds */
+  prevPen?: number
+  /** BR1 total in centiseconds */
+  prevTotal?: number
+  /** Which run was better: 1 or 2 (from C123) */
+  betterRunNr?: number
 }

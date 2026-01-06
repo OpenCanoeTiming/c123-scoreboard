@@ -12,7 +12,7 @@
  *   await provider.connect()
  */
 
-import type { ConnectionStatus, RaceConfig, VisibilityState } from '@/types'
+import type { ConnectionStatus, RaceConfig, VisibilityState, Result } from '@/types'
 import type {
   C123ServerMessage,
   C123ConnectedData,
@@ -98,6 +98,9 @@ export class C123ServerProvider implements DataProvider {
   private currentRaceId: string = ''
   private currentRaceIsCurrent: boolean = true
 
+  // Last results data for re-emit after BR1 cache update
+  private lastResultsData: Result[] = []
+
   // Track last XML checksum to avoid redundant syncs
   private lastXmlChecksum: string = ''
 
@@ -127,15 +130,9 @@ export class C123ServerProvider implements DataProvider {
     this.api = new C123ServerApi(this.httpUrl, options.apiTimeout ?? 5000)
 
     // Initialize BR2 Manager for merging BR1/BR2 results
-    this.br2Manager = new BR2Manager(this.api, (mergedResults) => {
-      // Re-emit results with merged BR1/BR2 data
-      this.callbacks.emitResults({
-        results: mergedResults,
-        raceName: this.currentRaceName,
-        raceStatus: this.currentRaceIsCurrent ? 'In Progress' : 'Unofficial',
-        highlightBib: null,
-        raceId: this.currentRaceId,
-      })
+    // BR1 from REST API (stable), BR2 from WebSocket time+pen (live)
+    this.br2Manager = new BR2Manager(this.api, () => {
+      this.reemitResultsWithBR1Data()
     })
   }
 
@@ -466,17 +463,40 @@ export class C123ServerProvider implements DataProvider {
 
     const resultsData = mapResults(data)
 
-    // Process through BR2 Manager for potential BR1/BR2 merging
-    // This will fetch BR1 data and emit merged results asynchronously if BR2
+    // Store for re-emit after BR1 cache update
+    this.lastResultsData = resultsData.results
+
+    // Process through BR2 Manager for BR1/BR2 merging
     const processedResults = this.br2Manager.processResults(
       resultsData.results,
       data.raceId
     )
 
-    // Emit results (may be enriched with BR1 cache data if BR2)
+    // Emit results (enriched with run1/run2 if BR2 race)
     this.callbacks.emitResults({
       ...resultsData,
       results: processedResults,
+      isBR2: this.br2Manager.isBR2Mode,
+    })
+  }
+
+  /**
+   * Re-emit results after BR1 cache is updated
+   */
+  private reemitResultsWithBR1Data(): void {
+    if (this.lastResultsData.length === 0 || !this.currentRaceId) return
+
+    const processedResults = this.br2Manager.processResults(
+      this.lastResultsData,
+      this.currentRaceId
+    )
+
+    this.callbacks.emitResults({
+      results: processedResults,
+      raceName: this.currentRaceName,
+      raceStatus: this.currentRaceIsCurrent ? 'In Progress' : 'Unofficial',
+      highlightBib: null,
+      raceId: this.currentRaceId,
       isBR2: this.br2Manager.isBR2Mode,
     })
   }

@@ -73,25 +73,24 @@ function hasRunMissingTime(run?: RunResult): boolean {
 }
 
 /**
- * RunTimeCell - displays penalty and time for a single run
+ * RunTimeCell - displays time with optional penalty prefix
+ * Format: "(+2) 85.00" - penalty before time, only shown when > 0
+ * Times stay right-aligned, penalty is small and muted
  */
 function RunTimeCell({
   run,
   isBetter,
-  showPenalty = true,
 }: {
   run?: RunResult
   isBetter: boolean
-  showPenalty?: boolean
 }) {
   const opacityClass = isBetter ? '' : styles.worseRun
 
-  // No run data - show dash
+  // No run data - show empty
   if (!run) {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
-        {showPenalty && <span className={styles.runPenalty}>-</span>}
-        <span className={styles.runTime}>-</span>
+        <span className={styles.runTime}></span>
       </div>
     )
   }
@@ -100,7 +99,6 @@ function RunTimeCell({
   if (hasRunStatus(run)) {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
-        {showPenalty && <span className={styles.runPenalty}>-</span>}
         <span className={`${styles.runTime} ${styles.statusIndicator}`}>{run.status}</span>
       </div>
     )
@@ -110,21 +108,22 @@ function RunTimeCell({
   if (hasRunMissingTime(run)) {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
-        {showPenalty && <span className={styles.runPenalty}>-</span>}
         <span className={styles.runTime}>-</span>
       </div>
     )
   }
 
-  // Valid run
+  // Valid run - time with penalty badge after (if > 0)
+  const pen = run.pen ?? 0
+  const badgeClass = pen >= 100
+    ? `${styles.runPenaltyBadge} ${styles.runPenaltyBadgeLarge}`
+    : styles.runPenaltyBadge
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
-      {showPenalty && (
-        <span className={`${styles.runPenalty} ${getPenaltyClass(run.pen ?? 0)}`}>
-          {run.pen ?? 0}
-        </span>
-      )}
       <span className={styles.runTime}>{run.total}</span>
+      {pen > 0 && (
+        <span className={badgeClass}>+{pen}</span>
+      )}
     </div>
   )
 }
@@ -168,7 +167,10 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     // Build row classes
     let rowClasses = styles.row
     if (isHighlighted) rowClasses += ` ${styles.highlighted}`
-    if (layoutMode === 'ledwall') rowClasses += ` ${styles.ledwall}`
+    if (layoutMode === 'ledwall') {
+      // Use ledwallNoPenalty when penalty column is hidden (more space for names)
+      rowClasses += showPenalty ? ` ${styles.ledwall}` : ` ${styles.ledwallNoPenalty}`
+    }
     if (showBR2Columns) rowClasses += ` ${styles.br2Row}`
 
     // Determine what to show in time column:
@@ -191,8 +193,8 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
           <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
           <div className={styles.bib}>{result.bib}</div>
           <div className={styles.name}>{formatName(result.name)}</div>
-          <RunTimeCell run={result.run1} isBetter={run1Better} showPenalty={true} />
-          <RunTimeCell run={result.run2} isBetter={run2Better} showPenalty={true} />
+          <RunTimeCell run={result.run1} isBetter={run1Better} />
+          <RunTimeCell run={result.run2} isBetter={run2Better} />
           {showBehind && (
             <div className={styles.behind}>
               {showAsInvalid ? '' : formatBehind(result.behind)}
@@ -202,7 +204,35 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
       )
     }
 
-    // Standard single-time display (non-BR2 or ledwall)
+    // Single-run vertical layout - use same style as BR2 but with one time column
+    const useSingleRunVertical = layoutMode === 'vertical' && !showBR2Columns
+    if (useSingleRunVertical) {
+      // Build classes for single-run vertical (without br2Row)
+      let singleRunClasses = styles.row
+      if (isHighlighted) singleRunClasses += ` ${styles.highlighted}`
+      singleRunClasses += ` ${styles.singleRunVertical}`
+
+      // Convert result to RunResult format for RunTimeCell
+      const singleRun: RunResult | undefined = showAsInvalid
+        ? (explicitStatus ? { total: '', pen: 0, rank: result.rank, status: result.status! } : undefined)
+        : { total: result.total, pen: result.pen, rank: result.rank, status: '' }
+
+      return (
+        <div ref={ref} className={singleRunClasses} data-bib={result.bib}>
+          <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
+          <div className={styles.bib}>{result.bib}</div>
+          <div className={styles.name}>{formatName(result.name)}</div>
+          <RunTimeCell run={singleRun} isBetter={true} />
+          {showBehind && (
+            <div className={styles.behind}>
+              {showAsInvalid ? '' : formatBehind(result.behind)}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Ledwall layout - separate penalty and time columns
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
         <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>

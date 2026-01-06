@@ -139,10 +139,11 @@ describe('ResultsList', () => {
       ]
       render(<ResultsList results={results} />)
 
-      // Penalties are displayed as numbers without 's' suffix (per original v1 style)
-      expect(screen.getByText('0')).toBeInTheDocument() // 0 penalty
-      expect(screen.getByText('2')).toBeInTheDocument() // 2s penalty
-      expect(screen.getByText('50')).toBeInTheDocument() // 50s penalty
+      // Vertical layout uses RunTimeCell - penalties shown as badges after time
+      // Zero penalty: no badge shown
+      // Non-zero penalty: shown as +N badge
+      expect(screen.getByText('+2')).toBeInTheDocument() // 2s penalty as badge
+      expect(screen.getByText('+50')).toBeInTheDocument() // 50s penalty as badge
     })
 
     it('renders behind times with + prefix', () => {
@@ -226,8 +227,8 @@ describe('ResultsList', () => {
       const results = [createResult({ pen: 2, behind: '1.23' })]
       render(<ResultsList results={results} />)
 
-      // Penalty and behind values should be visible
-      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as number without 's'
+      // Vertical layout: penalty shown as badge (+N), behind visible
+      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
       expect(screen.getByText('+1.23')).toBeInTheDocument()
     })
   })
@@ -305,59 +306,63 @@ describe('ResultRow', () => {
       })
       render(<ResultRow result={result} />)
 
-      expect(screen.getByText('1.')).toBeInTheDocument() // Rank with dot (per original v1 style)
+      expect(screen.getByText('1.')).toBeInTheDocument() // Rank with dot
       expect(screen.getByText('42')).toBeInTheDocument()
       expect(screen.getByText('NOVAK Jiri')).toBeInTheDocument()
-      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as number without 's' suffix
-      expect(screen.getByText('90.50')).toBeInTheDocument() // Raw seconds (original v1 style)
+      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
+      expect(screen.getByText('90.50')).toBeInTheDocument()
       expect(screen.getByText('+0.50')).toBeInTheDocument()
     })
 
-    it('renders zero for zero penalty', () => {
+    it('does not render badge for zero penalty', () => {
       const result = createResult({ pen: 0 })
-      render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} />)
 
-      // Penalty is displayed as number (0), not dash (per original v1 style)
-      expect(screen.getByText('0')).toBeInTheDocument()
+      // Zero penalty: no badge shown in vertical layout
+      const badges = container.querySelectorAll('[class*="runPenaltyBadge"]')
+      expect(badges.length).toBe(0)
     })
   })
 
-  describe('penalty styling', () => {
-    it('applies penaltyClear class for zero penalty', () => {
+  describe('penalty styling (ledwall layout)', () => {
+    // Penalty styling classes only apply in ledwall layout
+    // Vertical layout uses RunTimeCell with uniform badge style
+
+    it('applies penaltyClear class for zero penalty on ledwall', () => {
       const result = createResult({ pen: 0 })
-      const { container } = render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} layoutMode="ledwall" />)
 
       const penaltyCell = container.querySelector('[class*="penalty"]')
       expect(penaltyCell?.className).toContain('penaltyClear')
     })
 
-    it('applies penaltyTouch class for 2s penalty', () => {
+    it('applies penaltyTouch class for 2s penalty on ledwall', () => {
       const result = createResult({ pen: 2 })
-      const { container } = render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} layoutMode="ledwall" />)
 
       const penaltyCell = container.querySelector('[class*="penalty"]')
       expect(penaltyCell?.className).toContain('penaltyTouch')
     })
 
-    it('applies penaltyTouch class for 4s penalty', () => {
+    it('applies penaltyTouch class for 4s penalty on ledwall', () => {
       const result = createResult({ pen: 4 })
-      const { container } = render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} layoutMode="ledwall" />)
 
       const penaltyCell = container.querySelector('[class*="penalty"]')
       expect(penaltyCell?.className).toContain('penaltyTouch')
     })
 
-    it('applies penaltyMiss class for 50s penalty', () => {
+    it('applies penaltyMiss class for 50s penalty on ledwall', () => {
       const result = createResult({ pen: 50 })
-      const { container } = render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} layoutMode="ledwall" />)
 
       const penaltyCell = container.querySelector('[class*="penalty"]')
       expect(penaltyCell?.className).toContain('penaltyMiss')
     })
 
-    it('applies penaltyMiss class for 100s penalty (double miss)', () => {
+    it('applies penaltyMiss class for 100s penalty (double miss) on ledwall', () => {
       const result = createResult({ pen: 100 })
-      const { container } = render(<ResultRow result={result} />)
+      const { container } = render(<ResultRow result={result} layoutMode="ledwall" />)
 
       const penaltyCell = container.querySelector('[class*="penalty"]')
       expect(penaltyCell?.className).toContain('penaltyMiss')
@@ -408,13 +413,10 @@ describe('ResultRow', () => {
   })
 
   describe('optional columns', () => {
-    it('hides penalty column when showPenalty is false', () => {
+    it('hides penalty column when showPenalty is false (ledwall)', () => {
       const result = createResult({ pen: 2 })
-      render(<ResultRow result={result} showPenalty={false} />)
-
-      // Check that penalty value is not in the document when column is hidden
-      // Note: "2" might appear as part of other content, so we check for penalty-specific class
-      const { container } = render(<ResultRow result={result} showPenalty={false} />)
+      // showPenalty only affects ledwall layout (vertical always shows penalty in badge)
+      const { container } = render(<ResultRow result={result} showPenalty={false} layoutMode="ledwall" />)
       const penaltyCells = container.querySelectorAll('[class*="penalty"]')
       expect(penaltyCells.length).toBe(0)
     })
@@ -426,11 +428,11 @@ describe('ResultRow', () => {
       expect(screen.queryByText('+1.50')).not.toBeInTheDocument()
     })
 
-    it('shows both columns by default', () => {
+    it('shows penalty badge and behind on vertical layout by default', () => {
       const result = createResult({ pen: 2, behind: '1.50' })
       render(<ResultRow result={result} />)
 
-      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as number
+      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
       expect(screen.getByText('+1.50')).toBeInTheDocument()
     })
   })

@@ -1,13 +1,16 @@
 /**
  * BR1/BR2 Merger - Merges first run and second run results
  *
- * When a BR2 race is active, this module fetches BR1 results from REST API
- * and merges them with the current BR2 results from WebSocket.
+ * Data sources:
+ * - BR1: REST API (getMergedResults) - stable, fetched once per race
+ * - BR2: WebSocket Results - LIVE! Calculate from time + pen
+ *        (NOT total - that's BEST of both runs!)
  *
- * Key concepts:
- * - TCP stream sends Total = best of both runs (not BR2 total!)
- * - BR2 total can be calculated: Time + Pen from TCP
- * - BR1 data comes from REST API with debounced fetch
+ * Key insight from TCP stream:
+ * - Time = BR2 time (without penalty)
+ * - Pen = BR2 penalty
+ * - Total = BEST of both runs (NOT BR2 total!)
+ * - BR2 total = Time + Pen
  */
 
 import type { Result, RunResult, ResultStatus } from '@/types'
@@ -19,32 +22,119 @@ import { isBR2Race } from '@/utils/raceUtils'
 // =============================================================================
 
 /**
- * BR2 merge state - tracks whether we're in BR2 mode
+ * Cached BR1 and BR2 data for a competitor
+ * Both from REST API - WebSocket's pen field contains BEST run's penalty, not BR2!
  */
-export interface BR2MergeState {
-  /** Whether current race is BR2 */
-  isBR2: boolean
-  /** Current BR2 race ID (if in BR2 mode) */
-  raceId: string | null
-  /** Cached BR1 results by bib */
-  br1Cache: Map<string, RunResult>
-  /** Last fetch timestamp for debouncing */
-  lastFetchTime: number
-  /** Pending fetch timeout ID */
-  pendingFetchTimeout: ReturnType<typeof setTimeout> | null
+interface CachedBR2Data {
+  run1: RunResult
+  run2: RunResult | undefined  // undefined = hasn't run BR2 yet
 }
 
 /**
- * Create initial BR2 merge state
+ * BR2 merge state
  */
+export interface BR2MergeState {
+  isBR2: boolean
+  raceId: string | null
+  cache: Map<string, CachedBR2Data>
+  lastFetchTime: number
+  pendingFetchTimeout: ReturnType<typeof setTimeout> | null
+  refreshIntervalId: ReturnType<typeof setInterval> | null
+  debounceFetchTimeout: ReturnType<typeof setTimeout> | null
+}
+
 export function createBR2MergeState(): BR2MergeState {
   return {
     isBR2: false,
     raceId: null,
-    br1Cache: new Map(),
+    cache: new Map(),
     lastFetchTime: 0,
     pendingFetchTimeout: null,
+    refreshIntervalId: null,
+    debounceFetchTimeout: null,
   }
+}
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+const INITIAL_FETCH_DELAY_MS = 500
+const DEBOUNCE_FETCH_MS = 1000  // Debounce for fetching on each Results
+const BR1_REFRESH_INTERVAL_MS = 30_000
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+/**
+ * Convert milliseconds to formatted time string (e.g., "78.99")
+ * REST API returns time values in milliseconds
+ */
+function formatMilliseconds(ms: number): string {
+  if (ms <= 0) return ''
+  const seconds = ms / 1000
+  return seconds.toFixed(2)
+}
+
+/**
+ * Calculate BR2 total from WebSocket's time + pen
+ * This is the CORRECT BR2 total (not result.total which is BEST!)
+ */
+function calculateBR2Total(time: string | undefined, pen: number): string {
+  if (!time || time === '' || time === '0') return ''
+  const timeSeconds = parseFloat(time)
+  if (isNaN(timeSeconds)) return ''
+  const total = timeSeconds + pen
+  return total.toFixed(2)
+}
+
+/**
+ * Parse time string to milliseconds for comparison
+ */
+function parseTimeToMs(time: string): number {
+  if (!time || time === '') return Infinity
+  const seconds = parseFloat(time)
+  if (isNaN(seconds)) return Infinity
+  return Math.round(seconds * 1000)
+}
+
+/**
+ * Check if status is a valid invalid status (DNS/DNF/DSQ)
+ */
+function isInvalidStatus(status: string | undefined): status is 'DNS' | 'DNF' | 'DSQ' {
+  return status === 'DNS' || status === 'DNF' || status === 'DSQ'
+}
+
+/**
+ * Convert REST API run data to RunResult
+ * Handles both valid results and DNS/DNF/DSQ status
+ */
+function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
+  if (!row) return undefined
+
+  // Has invalid status (DNS/DNF/DSQ)
+  if (isInvalidStatus(row.status)) {
+    return {
+      total: '',
+      pen: row.pen ?? 0,
+      rank: row.rank ?? 0,
+      status: row.status as ResultStatus,
+    }
+  }
+
+  // Has valid time
+  if (row.total > 0) {
+    return {
+      total: formatMilliseconds(row.total),
+      pen: row.pen,
+      rank: row.rank,
+      status: '' as ResultStatus,
+    }
+  }
+
+  // No valid time and no status - not started yet
+  return undefined
 }
 
 // =============================================================================
@@ -52,145 +142,76 @@ export function createBR2MergeState(): BR2MergeState {
 // =============================================================================
 
 /**
- * Debounce delay for REST API fetch (ms)
- * Prevents excessive API calls when multiple Results messages arrive quickly
- */
-const FETCH_DEBOUNCE_MS = 500
-
-/**
- * Convert centiseconds to formatted time string (e.g., "78.99")
- */
-function formatCentiseconds(cs: number): string {
-  if (cs <= 0) return ''
-  const seconds = cs / 100
-  return seconds.toFixed(2)
-}
-
-/**
- * Parse time string to centiseconds for comparison
- */
-function parseTimeToCs(time: string): number {
-  if (!time || time === '') return Infinity
-  const seconds = parseFloat(time)
-  if (isNaN(seconds)) return Infinity
-  return Math.round(seconds * 100)
-}
-
-/**
- * Determine which run was better (lower total time)
+ * Merge cached BR1/BR2 data into results
  *
- * @param run1Total - First run total in centiseconds
- * @param run2Total - Second run total in centiseconds
- * @returns 1 if run1 is better, 2 if run2 is better, or undefined if can't compare
- */
-function determineBestRun(run1Total: number | null, run2Total: number | null): 1 | 2 | undefined {
-  if (run1Total === null && run2Total === null) return undefined
-  if (run1Total === null || run1Total <= 0) return 2
-  if (run2Total === null || run2Total <= 0) return 1
-  return run1Total <= run2Total ? 1 : 2
-}
-
-/**
- * Convert MergedResultRow to RunResult
- */
-function toRunResult(row: MergedResultRow['run1'] | MergedResultRow['run2']): RunResult | undefined {
-  if (!row) return undefined
-  return {
-    total: formatCentiseconds(row.total),
-    pen: row.pen,
-    rank: row.rank,
-    status: '' as ResultStatus, // REST API provides numeric data, not status strings
-  }
-}
-
-/**
- * Merge BR1 data into BR2 results
+ * IMPORTANT: WebSocket's `pen` field contains penalty from BEST run, not BR2!
+ * So we use REST API data for both runs.
  *
- * Takes current results (from TCP stream) and enriches them with BR1 data (from REST API).
+ * BR2 time comes from WebSocket (live), but penalty from REST API cache.
  *
- * @param results - Current results from TCP stream
- * @param mergedData - BR1+BR2 data from REST API
+ * @param results - Current results from WebSocket
+ * @param cache - Cached BR1 and BR2 results from REST API
  * @returns Results with run1, run2, and bestRun populated
- */
-export function mergeBR1IntoBR2Results(
-  results: Result[],
-  mergedData: MergedResults | null
-): Result[] {
-  if (!mergedData || !mergedData.results) {
-    return results
-  }
-
-  // Create lookup map from REST API data
-  const mergedMap = new Map<string, MergedResultRow>()
-  for (const row of mergedData.results) {
-    mergedMap.set(row.bib, row)
-  }
-
-  // Enrich each result with BR1/BR2 data
-  return results.map(result => {
-    const merged = mergedMap.get(result.bib)
-    if (!merged) {
-      // No merged data for this competitor - return as-is
-      return result
-    }
-
-    // Build run1 and run2 from merged data
-    const run1 = toRunResult(merged.run1)
-    const run2 = toRunResult(merged.run2)
-
-    // Determine best run
-    const run1Total = merged.run1?.total ?? null
-    const run2Total = merged.run2?.total ?? null
-    const bestRun = determineBestRun(run1Total, run2Total)
-
-    return {
-      ...result,
-      run1,
-      run2,
-      bestRun,
-    }
-  })
-}
-
-/**
- * Merge BR1 cache data into BR2 results (when REST API not available)
- *
- * Uses locally cached BR1 data when API fetch fails or is pending.
- *
- * @param results - Current results from TCP stream
- * @param br1Cache - Cached BR1 results by bib
- * @returns Results with run1, run2, and bestRun populated from cache
  */
 export function mergeBR1CacheIntoBR2Results(
   results: Result[],
-  br1Cache: Map<string, RunResult>
+  cache: Map<string, CachedBR2Data>
 ): Result[] {
-  if (br1Cache.size === 0) {
+  if (cache.size === 0) {
     return results
   }
 
   return results.map(result => {
-    const run1 = br1Cache.get(result.bib)
-    if (!run1) {
-      // No cached BR1 data for this competitor - return as-is
+    const cached = cache.get(result.bib)
+    if (!cached) {
       return result
     }
 
-    // Calculate run2 from current result (TCP data)
-    // TCP sends: Time=BR2 time, Pen=BR2 penalty, Total=best of both runs
-    // So BR2 total needs to be calculated if we want to show it
-    // For now, we use the result.total which is the best run total
-    const run2: RunResult = {
-      total: result.total,
-      pen: result.pen,
-      rank: result.rank,
-      status: result.status || '',
+    const { run1, run2: cachedRun2 } = cached
+
+    // BR2: use REST API data for penalty AND status (WebSocket doesn't have per-run status!)
+    // But use WebSocket time for live updates
+    let run2: RunResult | undefined
+    if (cachedRun2) {
+      // Check if run2 has DSQ/DNS/DNF status - if so, use cached data as-is
+      if (cachedRun2.status === 'DSQ' || cachedRun2.status === 'DNS' || cachedRun2.status === 'DNF') {
+        run2 = cachedRun2
+      } else {
+        // REST API has run2 data - use its penalty
+        // Calculate total from WebSocket time + REST API penalty
+        const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
+        if (hasBR2Time) {
+          const br2Total = calculateBR2Total(result.time, cachedRun2.pen ?? 0)
+          run2 = {
+            total: br2Total || cachedRun2.total, // fallback to cached total
+            pen: cachedRun2.pen,  // from REST API, not WebSocket!
+            rank: result.rank,
+            status: cachedRun2.status || '',  // use REST API status, not WebSocket!
+          }
+        } else {
+          // No live time yet, use cached data
+          run2 = cachedRun2
+        }
+      }
     }
 
-    // Determine best run by comparing totals
-    const run1Cs = parseTimeToCs(run1.total || '')
-    const run2Cs = parseTimeToCs(run2.total || '')
-    const bestRun = determineBestRun(run1Cs, run2Cs)
+    // Determine best run
+    const run1Ms = parseTimeToMs(run1.total || '')
+    const run2Ms = run2 ? parseTimeToMs(run2.total || '') : null
+    let bestRun: 1 | 2 | undefined
+    if (run1Ms === Infinity && (run2Ms === null || run2Ms === Infinity)) {
+      // Both runs invalid or only run1 exists and is invalid
+      bestRun = undefined
+    } else if (run2Ms === null || run2Ms === Infinity) {
+      // run1 valid, run2 missing or invalid
+      bestRun = 1
+    } else if (run1Ms === Infinity) {
+      // run1 invalid, run2 valid
+      bestRun = 2
+    } else {
+      // Both valid - pick better time
+      bestRun = run1Ms <= run2Ms ? 1 : 2
+    }
 
     return {
       ...result,
@@ -199,6 +220,11 @@ export function mergeBR1CacheIntoBR2Results(
       bestRun,
     }
   })
+}
+
+// Legacy export for backward compatibility
+export function mergeBR1IntoBR2Results(results: Result[], _mergedData: unknown): Result[] {
+  return results
 }
 
 // =============================================================================
@@ -208,120 +234,142 @@ export function mergeBR1CacheIntoBR2Results(
 /**
  * BR2 Manager - Handles BR1/BR2 merge logic
  *
- * Coordinates:
- * - Detection of BR2 races
- * - Debounced REST API fetch for BR1 data
- * - Merging BR1 data into results
+ * Fetches BR1 data from REST API (once + periodic refresh)
+ * Merges with live BR2 data from WebSocket
  */
 export class BR2Manager {
   private state: BR2MergeState
   private api: C123ServerApi
-  private onMergedResults: (results: Result[]) => void
+  private onCacheUpdated?: () => void
 
-  constructor(api: C123ServerApi, onMergedResults: (results: Result[]) => void) {
+  constructor(api: C123ServerApi, onCacheUpdated?: () => void) {
     this.state = createBR2MergeState()
     this.api = api
-    this.onMergedResults = onMergedResults
+    this.onCacheUpdated = onCacheUpdated
   }
 
-  /**
-   * Check if currently in BR2 mode
-   */
   get isBR2Mode(): boolean {
     return this.state.isBR2
   }
 
   /**
-   * Process incoming Results and handle BR2 merging
-   *
-   * @param results - Current results from TCP stream
-   * @param raceId - Current race ID
-   * @returns Processed results (may be merged if BR2)
+   * Process incoming Results
    */
   processResults(results: Result[], raceId: string): Result[] {
     const isBR2 = isBR2Race(raceId)
 
-    // Check if race changed
+    // Race changed?
     if (raceId !== this.state.raceId) {
-      this.cancelPendingFetch()
+      this.stopAllFetching()
       this.state = {
         ...createBR2MergeState(),
         isBR2,
         raceId,
       }
+
+      if (isBR2) {
+        this.startBR1Fetching(raceId)
+      }
     }
 
     if (!isBR2) {
-      // Not BR2 - return results as-is
       return results
     }
 
-    // BR2 race - schedule debounced fetch and return results with cache merge
-    this.scheduleFetch(raceId, results)
+    // Trigger debounced fetch on each Results message
+    // BR2 penalties arrive gradually, so we need to refresh frequently
+    this.triggerDebouncedFetch(raceId)
 
-    // Apply cached BR1 data while waiting for fresh fetch
-    if (this.state.br1Cache.size > 0) {
-      return mergeBR1CacheIntoBR2Results(results, this.state.br1Cache)
+    // Apply cached BR1/BR2 data
+    if (this.state.cache.size > 0) {
+      return mergeBR1CacheIntoBR2Results(results, this.state.cache)
     }
 
     return results
   }
 
   /**
-   * Schedule debounced fetch of BR1 data
+   * Trigger debounced fetch - called on each Results message
    */
-  private scheduleFetch(raceId: string, currentResults: Result[]): void {
-    // Cancel any pending fetch
-    this.cancelPendingFetch()
+  private triggerDebouncedFetch(raceId: string): void {
+    // Clear existing debounce timeout
+    if (this.state.debounceFetchTimeout) {
+      clearTimeout(this.state.debounceFetchTimeout)
+    }
 
-    // Schedule new fetch
-    this.state.pendingFetchTimeout = setTimeout(async () => {
-      try {
-        const merged = await this.api.getMergedResults(raceId)
-        if (merged && merged.results) {
-          // Update cache from merged results
-          this.updateCache(merged)
-
-          // Emit merged results
-          const mergedResults = mergeBR1IntoBR2Results(currentResults, merged)
-          this.onMergedResults(mergedResults)
-        }
-      } catch (err) {
-        console.warn('BR2Manager: Failed to fetch merged results:', err)
-      } finally {
-        this.state.lastFetchTime = Date.now()
-        this.state.pendingFetchTimeout = null
-      }
-    }, FETCH_DEBOUNCE_MS)
+    // Schedule fetch after debounce period
+    this.state.debounceFetchTimeout = setTimeout(() => {
+      this.fetchBR1Data(raceId)
+      this.state.debounceFetchTimeout = null
+    }, DEBOUNCE_FETCH_MS)
   }
 
-  /**
-   * Update BR1 cache from merged results
-   */
-  private updateCache(merged: MergedResults): void {
-    this.state.br1Cache.clear()
-    for (const row of merged.results) {
-      if (row.run1) {
-        this.state.br1Cache.set(row.bib, toRunResult(row.run1)!)
+  private startBR1Fetching(raceId: string): void {
+    this.state.pendingFetchTimeout = setTimeout(async () => {
+      await this.fetchBR1Data(raceId)
+      this.state.pendingFetchTimeout = null
+
+      this.state.refreshIntervalId = setInterval(() => {
+        this.fetchBR1Data(raceId)
+      }, BR1_REFRESH_INTERVAL_MS)
+    }, INITIAL_FETCH_DELAY_MS)
+  }
+
+  private async fetchBR1Data(raceId: string): Promise<void> {
+    try {
+      const merged = await this.api.getMergedResults(raceId)
+      if (merged && merged.results) {
+        const prevSize = this.state.cache.size
+        this.updateCache(merged)
+        console.log(`BR2Manager: Loaded ${this.state.cache.size} results for ${raceId}`)
+
+        if (this.onCacheUpdated && this.state.cache.size > prevSize) {
+          this.onCacheUpdated()
+        }
       }
+    } catch (err) {
+      console.warn('BR2Manager: Failed to fetch results:', err)
+    } finally {
+      this.state.lastFetchTime = Date.now()
     }
   }
 
   /**
-   * Cancel pending fetch timeout
+   * Update cache with BOTH run1 and run2 from REST API
+   * WebSocket pen field contains BEST run's penalty, so we need REST API for correct BR2 penalty
+   * Includes DNS/DNF/DSQ status for both runs
    */
-  private cancelPendingFetch(): void {
+  private updateCache(merged: MergedResults): void {
+    this.state.cache.clear()
+    for (const row of merged.results) {
+      const run1Result = toRunResult(row.run1)
+      // Include competitor if they have any run data (valid time OR status)
+      if (run1Result) {
+        this.state.cache.set(row.bib, {
+          run1: run1Result,
+          run2: toRunResult(row.run2),
+        })
+      }
+    }
+  }
+
+  private stopAllFetching(): void {
     if (this.state.pendingFetchTimeout) {
       clearTimeout(this.state.pendingFetchTimeout)
       this.state.pendingFetchTimeout = null
     }
+    if (this.state.refreshIntervalId) {
+      clearInterval(this.state.refreshIntervalId)
+      this.state.refreshIntervalId = null
+    }
+    if (this.state.debounceFetchTimeout) {
+      clearTimeout(this.state.debounceFetchTimeout)
+      this.state.debounceFetchTimeout = null
+    }
   }
 
-  /**
-   * Clean up resources
-   */
   dispose(): void {
-    this.cancelPendingFetch()
+    this.stopAllFetching()
     this.state = createBR2MergeState()
   }
 }

@@ -71,6 +71,7 @@ export interface RunResult {
   pen: number
   total: number // centiseconds
   rank: number
+  status?: string // DNS, DNF, DSQ, or empty for valid
 }
 
 /** Merged BR1+BR2 result row */

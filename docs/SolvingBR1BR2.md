@@ -103,19 +103,25 @@ C123 System ──TCP──► C123 Server ──WS──► Scoreboard
    - Scoreboard zjistí že je BR2 (raceId obsahuje `_BR2_`)
    - Použije BR1 z cache, nebo fetchne z REST API
 
-### Implementace
+### Implementace (FINÁLNÍ)
 
-**C123 Server:**
-- Odstranit/deaktivovat `BR1BR2Merger` (server má být tenký)
-- REST API už funguje správně
+**DŮLEŽITÉ - Zdroje dat:**
+- **BR1**: z REST API (`getMergedResults`) - stabilní, jednou načteno + refresh co 30s
+- **BR2**: z WebSocket Results - **ŽIVÉ!** Ale pozor:
+  - `result.time` = BR2 čas BEZ penalizace
+  - `result.pen` = BR2 penalizace
+  - `result.total` = **BEST** of both runs (NE BR2 total!)
+  - **BR2 total = time + pen** (musí se vypočítat!)
 
 **Scoreboard V3:**
 1. Detekce BR2: `raceId.includes('_BR2_')`
-2. Při každém Results pro BR2:
-   - Odvodit BR1 raceId (`_BR2_` → `_BR1_`)
-   - **Debounced fetch** BR1 z REST (~500ms)
-   - Merge BR1 + BR2 do Result[] s run1/run2
-3. UI: zobrazit dva sloupce času, highlight lepšího
+2. Při přepnutí na BR2 závod:
+   - Fetch BR1 z REST API (jednorázově + refresh co 30s)
+   - Cache BR1 data (stabilní, mění se jen při protestech)
+3. Při každém Results pro BR2:
+   - BR1 z cache
+   - BR2 total = `result.time + result.pen` (NE result.total!)
+4. UI: zobrazit dva sloupce času, highlight lepšího
 
 ### Proč REST (bez cache)
 
