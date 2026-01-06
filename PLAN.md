@@ -6,7 +6,7 @@
 |------|--------|
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
 | Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
-| **Fáze G: BR1/BR2 merge zobrazení** | ✅ Hotovo (2026-01-05) |
+| Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
 
 ---
 
@@ -141,149 +141,43 @@ Možné přístupy:
 
 ---
 
-## Fáze G - BR1/BR2 merge zobrazení
+## Fáze G - BR1/BR2 merge zobrazení ✅
+
+**Dokončeno:** 2026-01-05 až 2026-01-06
 
 ### Cíl
-
 Při BR2 závodech zobrazit OBA časy (BR1 i BR2) s grafickým rozlišením lepší/horší jízdy.
 
-### Klíčová zjištění (2026-01-05)
+### Implementováno
 
-**TCP stream chování:**
-- `Total` v Results = **best of both runs** (NE BR2 total!)
-- BR2 total se dá spočítat: `Time + Pen`
-- BR1 data nejsou v TCP streamu dostupná
+| Komponenta | Popis |
+|------------|-------|
+| **Typy** | `RunResult`, `Result.run1/run2/bestRun` |
+| **Utility** | `isBR2Race()`, `getBR1RaceId()`, `getClassId()` v `raceUtils.ts` |
+| **REST API** | `getMergedResults()` s debounce 500ms |
+| **BR2Manager** | Cache BR1 dat, merge logika, priority zdroje |
+| **Vertical UI** | Dva sloupce (BR1, BR2), `.worseRun` styling |
+| **Ledwall** | Skryté penalizace (mohou být z jiné jízdy) |
 
-**Řešení:** Debounced REST fetch BR1 dat při každém Results během BR2.
+### Klíčová zjištění
 
-**Viz:** `docs/SolvingBR1BR2.md` pro kompletní analýzu.
+- **WebSocket `Total`** = best of both runs (NE BR2!)
+- **WebSocket `pen`** = penalizace NEJLEPŠÍ jízdy (NE BR2!)
+- **Priorita zdrojů BR2 penalizace:** OnCourse (live) → REST cache → WebSocket
+- **10s grace period** pro OnCourse penalizace po opuštění trati
 
----
+### Soubory
 
-### Rozdíly mezi layouty
+```
+src/utils/raceUtils.ts              # BR1/BR2 utility funkce
+src/providers/utils/br1br2Merger.ts # BR2Manager + merge logika
+src/providers/utils/c123ServerApi.ts # REST API klient
+src/components/ResultsList/ResultRow.tsx # RunTimeCell pro BR2
+docs/SolvingBR1BR2.md               # Kompletní analýza problému
+```
 
-#### Ledwall layout
-- **Beze změny** - zobrazuje jen nejlepší čas (Total z TCP)
-- **Skrýt penalizace** - mohou náležet jiné jízdě než zobrazený čas
-- Důvod: ledwall má omezený prostor, složitější zobrazení by bylo nečitelné
-
-#### Vertical layout
-- **Při BR1 a ostatních závodech:** zobrazení jako dosud (jeden sloupec času)
-- **Při BR2:** dva sloupce - BR1 (pen + čas) a BR2 (pen + čas)
-- BR2 sloupec se postupně plní, jak závodníci dojíždějí
-- **Lepší jízda:** zvýrazněná (normální barva)
-- **Horší jízda:** graficky potlačená (opacity/šedá)
-
----
-
-### Předpoklady
-
-**C123 Server:** `BR1BR2Merger` byla odstraněna - server už nemanipuluje TCP stream data.
-Scoreboard přebírá odpovědnost za BR1/BR2 merge pomocí REST API.
-
----
-
-### Blok G1: Typy a utility ✅
-
-#### G1.1 Rozšíření Result typu ✅
-Typy už jsou připravené v `src/types/result.ts`:
-- [x] `RunResult` interface s `total`, `pen`, `rank`, `status`
-- [x] `Result.run1?: RunResult`, `Result.run2?: RunResult`
-- [x] `Result.bestRun?: 1 | 2`
-
-#### G1.2 Utility funkce ✅
-- [x] `isBR2Race(raceId: string): boolean` - detekce `_BR2_` v raceId
-- [x] `getBR1RaceId(br2RaceId: string): string` - `_BR2_` → `_BR1_`
-- [x] `getClassId(raceId: string): string` - extrakce pro REST API
-
-#### G1.3 Testy ✅
-- [x] Unit testy pro všechny utility funkce
-- [x] Edge cases: prázdný raceId, nevalidní formát
-
----
-
-### Blok G2: REST fetch a merge logika ✅
-
-#### G2.1 REST API klient ✅
-- [x] Funkce `getMergedResults(raceId)` v C123ServerApi
-- [x] Error handling (network, 404, timeout)
-- [x] Debouncing ~500ms pro omezení požadavků
-
-#### G2.2 Merge BR1 + BR2 ✅
-- [x] Spojení BR1 výsledků s aktuálními BR2 daty podle bib
-- [x] Výpočet `bestRun` - porovnání run1.total vs run2.total
-- [x] Ošetření DNF/DNS/DSQ:
-  - DNF/DNS/DSQ v jedné jízdě → druhá jízda je automaticky "lepší"
-  - DNF/DNS/DSQ v obou jízdách → zobrazit stav, žádné zvýraznění
-  - Časy null/undefined → nezobrazovat, neporovnávat
-
----
-
-### Blok G3: C123ServerProvider změny ✅
-
-#### G3.1 Detekce BR2 v Results handleru ✅
-- [x] Při Results zprávě kontrolovat `isBR2Race(raceId)`
-- [x] Pokud BR2 → spustit debounced fetch BR1
-
-#### G3.2 Debounced fetch ✅
-- [x] Implementovat debounce (~500ms) pro REST volání
-- [x] Při každém Results aktualizovat BR2 data okamžitě
-- [x] Po debounce: fetch BR1 + merge + emit merged results
-
-#### G3.3 State management ✅
-- [x] Flag `isBR2Mode: boolean` pro UI (v BR2Manager)
-- [x] BR1 data cache (per session, není třeba persitovat)
-
----
-
-### Blok G4: UI komponenty ✅
-
-#### G4.1 Ledwall: skrýt penalizace při BR2 ✅
-- [x] Podmínka: `isBR2 && layout === 'ledwall'` → skrýt penalty sloupec
-- [x] Zachovat ostatní zobrazení beze změny
-
-#### G4.2 Vertical: dva sloupce při BR2 ✅
-- [x] Rozšířit ResultRow o volitelné BR1/BR2 sloupce (RunTimeCell komponenta)
-- [x] CSS grid úprava pro extra sloupce (.br2Row class)
-- [x] Bez headeru (zachování konzistence s ostatními závodami)
-
-#### G4.3 Grafické rozlišení lepší/horší jízdy ✅
-- [x] Lepší jízda - normální zobrazení
-- [x] CSS třída `.worseRun` - opacity 0.5 + šedá barva
-- [x] Aplikovat podle `bestRun` hodnoty
-
-#### G4.4 Prázdné BR2 výsledky ✅
-- [x] Závodník ještě nedojel BR2 → BR2 sloupec zobrazí pomlčku
-- [x] BR1 sloupec vždy vyplněn (data z REST)
-
----
-
-### Blok G5: Testy a edge cases ✅
-
-#### G5.1 Unit testy ✅ (672 testů celkem)
-- [x] Utility funkce (raceUtils.test.ts)
-- [x] Merge logika (br1br2Merger.test.ts)
-- [x] bestRun výpočet
-
-#### G5.2 Edge cases testy ✅
-- [x] DNF v BR1, platný čas v BR2
-- [x] Platný čas v BR1, DSQ v BR2
-- [x] Oba DNF
-- [x] Stejný čas v obou jízdách
-- [x] REST API nedostupné → fallback na TCP-only zobrazení (cache merge)
-
-#### G5.3 Vizuální testy ✅
-- [x] Vertical layout s BR2 daty (manual testing - code ready)
-- [x] Ledwall layout bez penalizací (manual testing - code ready)
-- [x] Responsivita na různých rozlišeních (manual testing - code ready)
-
----
-
-### Blok G6: Dokumentace ✅
-
-- [x] Aktualizace PLAN.md
-- [x] Zápis do docs/DEVLOG.md
-- [x] Aktualizace docs/troubleshooting.md (BR2 specific issues - none needed)
+### Testy
+672 testů celkem, včetně raceUtils (45) a br1br2Merger (12)
 
 ---
 
