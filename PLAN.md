@@ -54,21 +54,21 @@ Uživatelská příručka pro operátory a správce.
 
 ---
 
-### Blok J2: docs/url-parameters.md
+### Blok J2: docs/url-parameters.md ✅ Hotovo
 
 Kompletní reference všech URL parametrů na jednom místě.
 
-#### Obsah
-- [ ] Tabulka všech parametrů s typy a defaults
-- [ ] Příklady URL pro různé scénáře
-- [ ] ConfigPush override chování
-- [ ] Fallback chains (clientId, assets)
+#### Obsah ✅ Hotovo
+- [x] Tabulka všech parametrů s typy a defaults
+- [x] Příklady URL pro různé scénáře
+- [x] ConfigPush override chování
+- [x] Fallback chains (clientId, assets)
 
-**Parametry k dokumentaci:**
+**Dokumentované parametry:**
 ```
-type, displayRows, customTitle, scrollToFinished,
-clientId, server, source, host, speed, loop,
-disableScroll, logoUrl, partnerLogoUrl, footerImageUrl
+server, source, type, displayRows, scrollToFinished,
+disableScroll, clientId, speed, loop, pauseAfter,
+customTitle, logoUrl, partnerLogoUrl, footerImageUrl
 ```
 
 ---
