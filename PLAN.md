@@ -119,25 +119,66 @@ C123 server může poslat `ConfigPush` zprávu s parametry `type`, `displayRows`
 ### Blok F5: Asset management
 
 #### Problém
-Customizace log a obrázků bez rebuildů. ORIGINAL řešení bylo příliš složité.
+Customizace log a obrázků bez rebuildů. Hardcoded cesty v App.tsx.
 
-#### F5.1 Analýza požadavků
-- [ ] Definovat typy assets (logo organizace, sponzoři, pozadí)
-- [ ] Prozkoumat možnosti: public folder, external URL, C123 server hosting
+#### Řešení
+ConfigPush override - server posílá URL nebo base64 data URI, scoreboard použije nebo fallback na default.
 
-#### F5.2 Návrh řešení
-Možné přístupy:
-- **A) Public folder**: `/public/assets/` - jednoduché, vyžaduje přístup k serveru
-- **B) External URLs**: ConfigPush s URL adresami - flexibilní, vyžaduje hosting
-- **C) C123 server hosting**: Server servíruje assets - centralizované
+**Podporované formáty hodnot:**
+- URL: `http://...`, `https://...`
+- Data URI: `data:image/png;base64,...`, `data:image/svg+xml;base64,...`
 
-- [ ] Vybrat přístup (doporučeno: kombinace A+B)
-- [ ] Navrhnout strukturu a fallbacky
+#### F5.1 Rozšíření ConfigPushData
+- [ ] Přidat `logoUrl?: string` - hlavní logo (levý horní roh)
+- [ ] Přidat `partnerLogoUrl?: string` - logo partnerů (pravý horní roh)
+- [ ] Přidat `footerImageUrl?: string` - sponzorský banner (footer)
 
-#### F5.3 Implementace
-- [ ] Komponenta pro asset loading s fallbackem
-- [ ] Konfigurace v ConfigPush (optional)
-- [ ] Dokumentace pro uživatele
+#### F5.2 Asset hook
+- [ ] Vytvořit `useAssets()` hook v `src/hooks/`
+- [ ] Čte ConfigPush data z kontextu (nebo URL params jako fallback)
+- [ ] Vrací resolved URLs: `{ logoUrl, partnerLogoUrl, footerImageUrl }`
+- [ ] Fallback chain: ConfigPush → URL params → defaults (`/assets/...`)
+
+#### F5.3 Úprava App.tsx
+- [ ] Importovat a použít `useAssets()` v ScoreboardContent
+- [ ] Předat resolved URLs do TopBar a Footer
+- [ ] Aktualizovat DiscoveryScreen a ErrorScreen (použít default logo)
+
+#### F5.4 Validace a error handling
+- [ ] Validace formátu (http/https/data:)
+- [ ] `<img onError>` fallback na default při broken URL
+- [ ] Console warning pro nevalidní hodnoty
+
+#### F5.5 Testy a dokumentace
+- [ ] Unit testy pro useAssets hook
+- [ ] Dokumentace URL parametrů a ConfigPush polí
+- [ ] Příklady v docs/
+
+---
+
+### C123 Server - Asset management (související změny)
+
+> **Poznámka:** Tyto změny patří do `../c123-server/`, zde jen pro referenci.
+
+#### Centrální assets
+- [ ] Konfigurace default assets v server config (logo, partners, footer)
+- [ ] Automatické posílání v ConfigPush všem klientům při připojení
+- [ ] Per-client override v client config (přepíše default)
+
+#### Admin UI - Asset helper
+- [ ] Upload/paste obrázku → automatická konverze do base64
+- [ ] URL input → fetch a převod do base64 (pro offline použití)
+- [ ] Automatický resize na přiměřené rozlišení:
+  - Logo: max 200x80px
+  - Partners: max 300x80px
+  - Footer: max 1920x200px
+- [ ] Preview před uložením
+- [ ] Validace velikosti (varování při >100KB base64)
+
+#### Priorita zdrojů (server-side)
+```
+Per-client config > Global default config > Neposlat (scoreboard default)
+```
 
 ---
 
