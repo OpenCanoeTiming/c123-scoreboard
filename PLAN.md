@@ -73,16 +73,16 @@ customTitle, logoUrl, partnerLogoUrl, footerImageUrl
 
 ---
 
-### Blok J3: docs/configuration.md
+### Blok J3: docs/configuration.md ✅ Hotovo
 
 Remote konfigurace přes C123 server.
 
-#### Obsah
-- [ ] **ConfigPush** - formát zprávy, podporovaná pole
-- [ ] **ClientState** - response formát, capabilities
-- [ ] **ForceRefresh** - kdy a jak se používá
-- [ ] **Asset management** - flow, localStorage, validace
-- [ ] **clientId** - přiřazení, persistence, priority
+#### Obsah ✅ Hotovo
+- [x] **ConfigPush** - formát zprávy, podporovaná pole
+- [x] **ClientState** - response formát, capabilities
+- [x] **ForceRefresh** - kdy a jak se používá
+- [x] **Asset management** - flow, localStorage, validace
+- [x] **clientId** - přiřazení, persistence, priority
 
 ---
 
