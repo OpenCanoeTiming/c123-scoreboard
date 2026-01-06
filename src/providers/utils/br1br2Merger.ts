@@ -31,14 +31,22 @@ interface CachedBR2Data {
 }
 
 /**
+ * OnCourse penalty entry with timestamp for grace period
+ */
+interface OnCoursePenaltyEntry {
+  pen: number
+  lastSeen: number  // timestamp when last seen in OnCourse
+}
+
+/**
  * BR2 merge state
  */
 export interface BR2MergeState {
   isBR2: boolean
   raceId: string | null
   cache: Map<string, CachedBR2Data>
-  /** Live penalties from OnCourse - most up-to-date source */
-  onCoursePenalties: Map<string, number>
+  /** Live penalties from OnCourse - with timestamp for grace period */
+  onCoursePenalties: Map<string, OnCoursePenaltyEntry>
   lastFetchTime: number
   pendingFetchTimeout: ReturnType<typeof setTimeout> | null
   refreshIntervalId: ReturnType<typeof setInterval> | null
@@ -65,6 +73,7 @@ export function createBR2MergeState(): BR2MergeState {
 const INITIAL_FETCH_DELAY_MS = 500
 const DEBOUNCE_FETCH_MS = 1000  // Debounce for fetching on each Results
 const BR1_REFRESH_INTERVAL_MS = 30_000
+const ONCOURSE_PENALTY_GRACE_MS = 10_000  // Keep OnCourse penalty for 10s after leaving
 
 // =============================================================================
 // Helper Functions
@@ -158,13 +167,13 @@ function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
  *
  * @param results - Current results from WebSocket
  * @param cache - Cached BR1 and BR2 results from REST API
- * @param onCoursePenalties - Live penalties from OnCourse messages
+ * @param onCoursePenalties - Live penalties from OnCourse messages (with timestamps)
  * @returns Results with run1, run2, and bestRun populated
  */
 export function mergeBR1CacheIntoBR2Results(
   results: Result[],
   cache: Map<string, CachedBR2Data>,
-  onCoursePenalties: Map<string, number> = new Map()
+  onCoursePenalties: Map<string, OnCoursePenaltyEntry> = new Map()
 ): Result[] {
   if (cache.size === 0 && onCoursePenalties.size === 0) {
     return results
@@ -176,7 +185,7 @@ export function mergeBR1CacheIntoBR2Results(
 
     // Get penalty from best source available
     // Priority: OnCourse (live) > REST cache > WebSocket (may be wrong)
-    const onCoursePen = onCoursePenalties.get(result.bib)
+    const onCoursePen = onCoursePenalties.get(result.bib)?.pen
 
     // Not in cache - try to show BR2 from WebSocket if available
     if (!cached) {
@@ -285,18 +294,30 @@ export class BR2Manager {
    * Update live penalties from OnCourse data
    * OnCourse has the most up-to-date penalty info, even for just-finished competitors
    *
-   * The map mirrors OnCourse exactly - only competitors currently in OnCourse
-   * have their penalties stored. When they leave OnCourse, we fall back to REST cache.
+   * Keeps penalties for a grace period after competitor leaves OnCourse,
+   * preventing fallback to wrong WebSocket penalty before REST cache catches up.
    *
    * @param competitors - OnCourse competitors with their current penalties
    */
   updateOnCoursePenalties(competitors: Array<{ bib: string; pen: number }>): void {
     if (!this.state.isBR2) return
 
-    // Clear and rebuild - mirror OnCourse exactly
-    this.state.onCoursePenalties.clear()
+    const now = Date.now()
+    const currentBibs = new Set(competitors.map(c => c.bib))
+
+    // Update current competitors
     for (const comp of competitors) {
-      this.state.onCoursePenalties.set(comp.bib, comp.pen)
+      this.state.onCoursePenalties.set(comp.bib, {
+        pen: comp.pen,
+        lastSeen: now,
+      })
+    }
+
+    // Remove entries older than grace period
+    for (const [bib, entry] of this.state.onCoursePenalties) {
+      if (!currentBibs.has(bib) && now - entry.lastSeen > ONCOURSE_PENALTY_GRACE_MS) {
+        this.state.onCoursePenalties.delete(bib)
+      }
     }
   }
 
