@@ -169,7 +169,11 @@ ConfigPush (WebSocket) → localStorage (persistence) → URL params (jen relati
 - [x] Unit testy pro assetStorage (23 testů)
 - [x] Unit testy pro useAssets hook (8 testů)
 - [x] Dokumentace ConfigPush polí v docs/architecture.md
-- [x] Celkem 708 testů prošlo
+
+#### F5.7 Opravy (2026-01-06)
+- [x] Fix: Assets jsou vnořené v `data.assets` objektu (ne flat na první úrovni)
+- [x] Fix: Porovnání s localStorage před reloadem (prevence nekonečné smyčky)
+- [x] Celkem 725 testů prošlo
 
 #### Soubory
 ```
