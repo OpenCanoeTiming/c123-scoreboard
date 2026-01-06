@@ -163,48 +163,51 @@ export function mergeBR1CacheIntoBR2Results(
 
   return results.map(result => {
     const cached = cache.get(result.bib)
+    const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
+
+    // Not in cache - try to show BR2 from WebSocket if available
     if (!cached) {
+      if (hasBR2Time) {
+        const br2Total = calculateBR2Total(result.time, result.pen)
+        return {
+          ...result,
+          run2: {
+            total: br2Total,
+            pen: result.pen,
+            rank: result.rank,
+            status: '' as ResultStatus,
+          },
+        }
+      }
       return result
     }
 
     const { run1, run2: cachedRun2 } = cached
 
-    // BR2: Merge REST API cache with WebSocket live data
-    // Priority: cache status > cache data > WebSocket live data
+    // BR2: Build from WebSocket (live) + cache (for status/penalty accuracy)
+    // WebSocket is primary source for BR2 time, cache provides status and accurate penalty
     let run2: RunResult | undefined
-    const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
 
-    if (cachedRun2) {
-      // Cache has run2 data - use it (authoritative for status and penalty)
-      if (cachedRun2.status === 'DSQ' || cachedRun2.status === 'DNS' || cachedRun2.status === 'DNF') {
-        // Invalid status - use cached data as-is
-        run2 = cachedRun2
-      } else if (hasBR2Time) {
-        // Valid run with live time - calculate total from WebSocket time + cached penalty
-        const br2Total = calculateBR2Total(result.time, cachedRun2.pen ?? 0)
-        run2 = {
-          total: br2Total || cachedRun2.total,
-          pen: cachedRun2.pen,
-          rank: result.rank,
-          status: cachedRun2.status || '',
-        }
-      } else {
-        // No live time yet, use cached data
-        run2 = cachedRun2
-      }
+    // Check for invalid status first (DSQ/DNS/DNF from cache)
+    if (cachedRun2?.status === 'DSQ' || cachedRun2?.status === 'DNS' || cachedRun2?.status === 'DNF') {
+      // Invalid status from REST API - authoritative
+      run2 = cachedRun2
     } else if (hasBR2Time) {
-      // Cache doesn't have run2, but WebSocket has live time
-      // This happens when competitor just finished BR2 (before REST API refresh)
-      // Use WebSocket data directly - pen is correct for just-finished competitor
-      const br2Total = calculateBR2Total(result.time, result.pen)
+      // WebSocket has BR2 time - use it (live data)
+      // Penalty: prefer cache (accurate), fallback to WebSocket (live)
+      const br2Pen = cachedRun2?.pen ?? result.pen
+      const br2Total = calculateBR2Total(result.time, br2Pen)
       run2 = {
         total: br2Total,
-        pen: result.pen,
+        pen: br2Pen,
         rank: result.rank,
         status: '',
       }
+    } else if (cachedRun2) {
+      // No live time, but cache has data (competitor ran earlier)
+      run2 = cachedRun2
     }
-    // else: neither cache nor WebSocket has run2 data - leave undefined
+    // else: no BR2 data from either source - leave undefined
 
     // Determine best run
     const run1Ms = parseTimeToMs(run1.total || '')

@@ -127,10 +127,10 @@ describe('br1br2Merger', () => {
       expect(merged[0].bestRun).toBe(2)
     })
 
-    it('handles competitor not in cache', () => {
+    it('handles competitor not in cache but with WebSocket time', () => {
       const results = [
         createResult({ bib: '1', time: '87.00' }),
-        createResult({ bib: '99', time: '95.00' }), // Not in cache
+        createResult({ bib: '99', time: '95.00', pen: 2, rank: 10 }), // Not in cache, but has time
       ]
       const cache = new Map<string, CachedBR2Data>([
         ['1', {
@@ -141,10 +141,14 @@ describe('br1br2Merger', () => {
 
       const merged = mergeBR1CacheIntoBR2Results(results, cache)
 
+      // Competitor in cache: has both run1 and run2
       expect(merged[0].run1).toBeDefined()
       expect(merged[0].run2).toBeDefined()
+      // Competitor NOT in cache but with WebSocket time: run2 from WebSocket, no run1
       expect(merged[1].run1).toBeUndefined()
-      expect(merged[1].run2).toBeUndefined()
+      expect(merged[1].run2).toBeDefined()
+      expect(merged[1].run2?.total).toBe('97.00')  // 95.00 + 2
+      expect(merged[1].run2?.pen).toBe(2)
     })
 
     it('calculates BR2 total from WebSocket time + cached penalty', () => {
