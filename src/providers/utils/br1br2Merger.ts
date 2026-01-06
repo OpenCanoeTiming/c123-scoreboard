@@ -260,8 +260,9 @@ export function mergeBR1CacheIntoBR2Results(
   })
 }
 
-// Legacy export for backward compatibility
-export function mergeBR1IntoBR2Results(results: Result[], _mergedData: unknown): Result[] {
+// Legacy export for backward compatibility (mergedData was used in previous implementation)
+export function mergeBR1IntoBR2Results(results: Result[], _mergedData?: unknown): Result[] {
+  void _mergedData // Silence unused parameter warning
   return results
 }
 

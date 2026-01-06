@@ -33,6 +33,8 @@ export interface LayoutConfig {
   displayRows: number | null
   /** Scale factor for ledwall scaling (1.0 = no scaling, only set when displayRows is used) */
   scaleFactor: number
+  /** Whether to scroll to finished competitor position (default: true). When false, only highlights without scrolling. */
+  scrollToFinished: boolean
 }
 
 /**
@@ -71,6 +73,8 @@ interface LayoutURLParams {
   disableScroll: boolean
   /** Fixed number of display rows (for ledwall scaling, min: 3, max: 20) */
   displayRows: number | null
+  /** Whether to scroll to finished competitor position (default: true) */
+  scrollToFinished: boolean
 }
 
 /** Minimum allowed value for displayRows */
@@ -83,7 +87,7 @@ const DISPLAY_ROWS_MAX = 20
  */
 function getLayoutParamsFromURL(): LayoutURLParams {
   if (typeof window === 'undefined') {
-    return { type: null, disableScroll: false, displayRows: null }
+    return { type: null, disableScroll: false, displayRows: null, scrollToFinished: true }
   }
 
   const params = new URLSearchParams(window.location.search)
@@ -100,10 +104,14 @@ function getLayoutParamsFromURL(): LayoutURLParams {
     }
   }
 
+  // Parse scrollToFinished - default true, explicit 'false' disables
+  const scrollToFinished = params.get('scrollToFinished') !== 'false'
+
   return {
     type: type === 'vertical' || type === 'ledwall' ? type : null,
     disableScroll,
     displayRows,
+    scrollToFinished,
   }
 }
 
@@ -330,8 +338,9 @@ export function useLayout(): LayoutConfig {
       disableScroll: urlParams.disableScroll,
       displayRows: urlParams.displayRows,
       scaleFactor,
+      scrollToFinished: urlParams.scrollToFinished,
     }
-  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows])
+  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows, urlParams.scrollToFinished])
 
   // Update CSS variables when config changes
   useEffect(() => {

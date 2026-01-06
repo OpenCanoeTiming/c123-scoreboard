@@ -16,7 +16,6 @@ import {
   TopBar,
   Title,
   CurrentCompetitor,
-  OnCourseDisplay,
   ResultsList,
   TimeDisplay,
   Footer,
@@ -36,6 +35,7 @@ import {
  * - disableScroll: 'true' (disable auto-scroll, for screenshots)
  * - type: 'vertical' | 'ledwall' (layout mode, default: auto-detect)
  * - displayRows: number (fixed row count for ledwall scaling, min: 3, max: 20)
+ * - scrollToFinished: 'true' | 'false' (scroll to finished competitor, default: 'true')
  */
 function getUrlParams(): {
   server: string | null
@@ -64,8 +64,8 @@ function getUrlParams(): {
  * Main scoreboard content - uses context for data
  *
  * Layout-specific behavior for multiple competitors on course:
- * - Ledwall: Shows only the primary competitor (highest time = current, or departing if just finished)
- * - Vertical: Shows all competitors on course (CurrentCompetitor + OnCourseDisplay for others)
+ * - Both layouts now show only the primary competitor (highest time = current, or departing if just finished)
+ * - OnCourseDisplay is no longer shown (simplified display)
  */
 function ScoreboardContent() {
   const {
@@ -77,15 +77,11 @@ function ScoreboardContent() {
     dayTime,
     currentCompetitor,
     departingCompetitor,
-    onCourse,
     results,
     visibility,
   } = useScoreboard()
 
   const { layoutMode } = useLayout()
-
-  // Ledwall shows only one competitor, vertical shows all
-  const showOnCourseDisplay = layoutMode === 'vertical'
 
   return (
     <>
@@ -121,16 +117,6 @@ function ScoreboardContent() {
           />
         </ErrorBoundary>
 
-        {/* On-course competitors (excluding current) - only shown in vertical layout */}
-        {showOnCourseDisplay && (
-          <ErrorBoundary componentName="OnCourseDisplay">
-            <OnCourseDisplay
-              competitors={onCourse}
-              visible={visibility.displayOnCourse}
-              excludeBib={currentCompetitor?.bib}
-            />
-          </ErrorBoundary>
-        )}
 
         {/* Results list */}
         <ErrorBoundary componentName="ResultsList">

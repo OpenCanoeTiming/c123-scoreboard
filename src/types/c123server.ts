@@ -227,6 +227,8 @@ export interface C123ConfigPushData {
   raceFilter?: string[]
   showOnCourse?: boolean
   showResults?: boolean
+  /** Whether to scroll to finished competitor (default: true). When false, only highlights without scrolling. */
+  scrollToFinished?: boolean
   custom?: Record<string, string | number | boolean>
   label?: string
 }

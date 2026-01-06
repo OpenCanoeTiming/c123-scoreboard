@@ -7,7 +7,7 @@
 | Fáze A-E: Základní funkčnost, testy, opravy | ✅ Hotovo |
 | Fáze F: Vylepšení a integrace s C123 | ✅ Hotovo (F5 odloženo) |
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
-| **Fáze H: OnCourse vylepšení a scrollToFinished** | 📋 Plánováno |
+| **Fáze H: OnCourse vylepšení a scrollToFinished** | ✅ Hotovo (2026-01-06) |
 
 ---
 
@@ -157,32 +157,6 @@ ConfigPush override - server posílá URL nebo base64 data URI, scoreboard použ
 
 ---
 
-### C123 Server - Asset management (související změny)
-
-> **Poznámka:** Tyto změny patří do `../c123-server/`, zde jen pro referenci.
-
-#### Centrální assets
-- [ ] Konfigurace default assets v server config (logo, partners, footer)
-- [ ] Automatické posílání v ConfigPush všem klientům při připojení
-- [ ] Per-client override v client config (přepíše default)
-
-#### Admin UI - Asset helper
-- [ ] Upload/paste obrázku → automatická konverze do base64
-- [ ] URL input → fetch a převod do base64 (pro offline použití)
-- [ ] Automatický resize na přiměřené rozlišení:
-  - Logo: max 200x80px
-  - Partners: max 300x80px
-  - Footer: max 1920x200px
-- [ ] Preview před uložením
-- [ ] Validace velikosti (varování při >100KB base64)
-
-#### Priorita zdrojů (server-side)
-```
-Per-client config > Global default config > Neposlat (scoreboard default)
-```
-
----
-
 ## Fáze G - BR1/BR2 merge zobrazení ✅
 
 **Dokončeno:** 2026-01-05 až 2026-01-06
@@ -223,81 +197,63 @@ docs/SolvingBR1BR2.md               # Kompletní analýza problému
 
 ---
 
-## Fáze H - OnCourse vylepšení a scrollToFinished
+## Fáze H - OnCourse vylepšení a scrollToFinished ✅
+
+**Dokončeno:** 2026-01-06
 
 ### Cíl
 Zjednodušení vertical zobrazení OnCourse (jen jeden závodník) a konfigurovatelné scroll chování.
 
 ---
 
-### Blok H1: Vertical OnCourse - jeden závodník
+### Blok H1: Vertical OnCourse - jeden závodník ✅
 
-#### Problém
-Vertical layout zobrazuje všechny závodníky na trati, ale prakticky stačí jeden (jako ledwall).
-
-#### H1.1 Změna logiky
-- [ ] Vertical: zobrazit pouze `currentCompetitor` (stejně jako ledwall)
-- [ ] Odstranit/skrýt `OnCourseDisplay` komponentu ve vertical layoutu
-- [ ] Zachovat data flow (onCourse array stále existuje pro interní logiku)
-
-#### H1.2 Vizuální úpravy
-- [ ] Dominantnější zobrazení CurrentCompetitor ve vertical
-- [ ] Přidat mezeru/padding pod CurrentCompetitor sekci
-- [ ] Vizuálně oddělit od ResultsList
-
-#### H1.3 Korekce scroll prostoru
-- [ ] Přepočítat dostupný prostor pro ResultsList
-- [ ] Ověřit že scroll funguje správně s novým layoutem
-- [ ] Otestovat s různými počty displayRows
+#### Implementováno
+- [x] Odstraněn `OnCourseDisplay` z App.tsx - oba layouty zobrazují pouze jednoho závodníka
+- [x] `CurrentCompetitor` komponenta zůstává pro zobrazení aktuálního závodníka
+- [x] Data flow zachován (onCourse array existuje pro interní logiku a highlight detection)
 
 ---
 
-### Blok H2: Parametr scrollToFinished
+### Blok H2: Parametr scrollToFinished ✅
 
-#### Popis
-Nový parametr `scrollToFinished` (default: `true`). Při `false` se po dojetí závodníka neprovádí automatický scroll na jeho pozici ve výsledcích - pouze highlight.
+#### Implementováno
+- [x] URL parametr `?scrollToFinished=false` - vypne scroll při dojetí
+- [x] ConfigPush podpora - server může nastavit `scrollToFinished: boolean`
+- [x] useLayout hook vrací `scrollToFinished` boolean
+- [x] useAutoScroll respektuje parametr - highlight zůstává, scroll se podmínečně vypne
+- [x] ClientState response obsahuje `scrollToFinished` v capabilities
 
-#### H2.1 URL parametr
-- [ ] Přidat `scrollToFinished` do URL params parsingu v App.tsx
-- [ ] Default hodnota: `true` (zachování stávajícího chování)
-- [ ] Formát: `?scrollToFinished=false`
-
-#### H2.2 ConfigPush podpora
-- [ ] Rozšířit `ConfigPushData` o `scrollToFinished?: boolean`
-- [ ] Priorita: ConfigPush > URL param > default (true)
-
-#### H2.3 Implementace v ResultsList
-- [ ] Předat `scrollToFinished` do ResultsList komponenty
-- [ ] Podmínit scroll logiku: `if (scrollToFinished) { scrollToHighlighted() }`
-- [ ] Highlight zůstává vždy (nezávisle na scroll)
-- [ ] Ověřit že scroll netriggeruje side effects
-
-#### H2.4 Layout context
-- [ ] Přidat `scrollToFinished` do `useLayout()` hooku
-- [ ] Nebo vytvořit `useConfig()` hook pro všechny config parametry
+**Použití:**
+```
+?scrollToFinished=false  # Pouze highlight, bez scroll
+?scrollToFinished=true   # Výchozí - highlight + scroll na pozici
+```
 
 ---
 
-### Blok H3: Dokumentace a C123 Server
+### Blok H3: Dokumentace ✅
 
-#### Scoreboard dokumentace
-- [ ] Aktualizovat docs s novými parametry
-- [ ] Příklady použití scrollToFinished
-
-#### C123 Server (související změny)
-> **Poznámka:** Změny v `../c123-server/`
-
-- [ ] Přidat `scrollToFinished` do client config schema
-- [ ] Admin UI: checkbox pro scrollToFinished (per-client)
-- [ ] Dokumentace v server docs
+- [x] Aktualizován docs/architecture.md - ConfigPush a ClientState
+- [x] Aktualizován komentář v App.tsx s novým parametrem
 
 ---
 
-### Blok H4: Testy
-- [ ] Unit testy pro scrollToFinished logiku
-- [ ] Test highlight bez scroll
-- [ ] Test scroll s různými displayRows
-- [ ] Vizuální test vertical layoutu s jedním OnCourse
+### Blok H4: Testy ✅
+
+- [x] Unit testy pro scrollToFinished v useLayout.test.ts (5 testů)
+- [x] Celkem 677 testů prošlo
+
+### Soubory
+
+```
+src/App.tsx                        # Odstraněn OnCourseDisplay
+src/hooks/useLayout.ts             # scrollToFinished URL param
+src/hooks/useAutoScroll.ts         # Podmíněný scroll
+src/types/c123server.ts            # ConfigPushData.scrollToFinished
+src/providers/C123ServerProvider.ts # ConfigPush handler
+docs/architecture.md               # Dokumentace
+```
 
 ---
 

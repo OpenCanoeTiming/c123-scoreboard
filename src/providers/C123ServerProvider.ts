@@ -572,6 +572,11 @@ export class C123ServerProvider implements DataProvider {
       url.searchParams.set('customTitle', data.customTitle)
     }
 
+    // Apply scrollToFinished
+    if (data.scrollToFinished !== undefined) {
+      url.searchParams.set('scrollToFinished', String(data.scrollToFinished))
+    }
+
     // Check if URL changed
     if (url.href !== window.location.href) {
       console.log('C123Server: Applying config push - reloading with new URL params')
@@ -593,6 +598,7 @@ export class C123ServerProvider implements DataProvider {
     }
 
     const params = new URLSearchParams(window.location.search)
+    const scrollToFinishedParam = params.get('scrollToFinished')
     const message = {
       type: 'ClientState',
       timestamp: new Date().toISOString(),
@@ -602,9 +608,10 @@ export class C123ServerProvider implements DataProvider {
           type: params.get('type') || appliedConfig.type || 'vertical',
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
+          scrollToFinished: scrollToFinishedParam !== null ? scrollToFinishedParam !== 'false' : appliedConfig.scrollToFinished ?? true,
         },
         version: '3.0.0',
-        capabilities: ['configPush', 'forceRefresh', 'clientIdPush'],
+        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished'],
       },
     }
 

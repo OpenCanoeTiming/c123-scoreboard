@@ -587,6 +587,71 @@ describe('useLayout', () => {
     })
   })
 
+  describe('scrollToFinished parameter', () => {
+    it('defaults to true when not specified', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.scrollToFinished).toBe(true)
+    })
+
+    it('returns true when scrollToFinished=true', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?scrollToFinished=true' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.scrollToFinished).toBe(true)
+    })
+
+    it('returns false when scrollToFinished=false', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?scrollToFinished=false' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.scrollToFinished).toBe(false)
+    })
+
+    it('returns true for invalid scrollToFinished values (defaults to true)', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?scrollToFinished=invalid' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      // Any value other than 'false' should result in true (default)
+      expect(result.current.scrollToFinished).toBe(true)
+    })
+
+    it('works combined with other URL parameters', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?type=ledwall&displayRows=6&scrollToFinished=false' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.layoutMode).toBe('ledwall')
+      expect(result.current.displayRows).toBe(6)
+      expect(result.current.scrollToFinished).toBe(false)
+    })
+  })
+
   describe('edge cases', () => {
     it('handles zero dimensions gracefully', () => {
       Object.defineProperty(window, 'innerWidth', {

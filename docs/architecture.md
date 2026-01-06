@@ -69,6 +69,7 @@ interface ConfigPushData {
   type?: 'vertical' | 'ledwall'
   displayRows?: number
   customTitle?: string
+  scrollToFinished?: boolean  // Scroll na pozici závodníka po dojetí (default: true)
   // ...
 }
 ```
@@ -89,9 +90,9 @@ interface ConfigPushData {
 {
   type: 'ClientState',
   data: {
-    current: { clientId, type, displayRows, customTitle },
+    current: { clientId, type, displayRows, customTitle, scrollToFinished },
     version: '3.0.0',
-    capabilities: ['configPush', 'forceRefresh', 'clientIdPush']
+    capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished']
   }
 }
 ```

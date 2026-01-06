@@ -114,7 +114,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const { isActive: isHighlightActive, highlightBib } = useHighlight()
 
   // Get layout for config
-  const { layoutMode, rowHeight } = useLayout()
+  const { layoutMode, rowHeight, scrollToFinished } = useLayout()
 
   // Get OnCourse state - on ledwall, auto-scroll stops when competitor is actively running
   // A competitor is "actively running" if they have dtStart set (actually started)
@@ -187,6 +187,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    * This is protocol-agnostic and works with CLI, C123, and Replay providers.
    * The competitor should already be in results at this point (either from
    * current run or from previous run in multi-run events).
+   *
+   * When scrollToFinished=false, only sets the highlight phase but doesn't scroll.
    */
   useEffect(() => {
     if (!isHighlightActive || !highlightBib || !containerRef.current) return
@@ -196,6 +198,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     queueMicrotask(() => {
       setPhase('HIGHLIGHT_VIEW')
     })
+
+    // Skip scrolling if scrollToFinished is disabled
+    if (!scrollToFinished) {
+      hasScrolledToHighlight.current = true
+      return
+    }
 
     // Find the highlighted row in DOM
     const container = containerRef.current
@@ -212,7 +220,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         block: 'center',
       })
     }
-  }, [isHighlightActive, highlightBib])
+  }, [isHighlightActive, highlightBib, scrollToFinished])
 
   /**
    * Return to normal after highlight ends
