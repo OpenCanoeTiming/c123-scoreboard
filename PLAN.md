@@ -32,6 +32,7 @@ Vytvořit kompletní dokumentaci pro budoucí návrat k projektu. Dva typy:
 | docs/configuration.md | ✅ Hotovo | Remote konfigurace (J3) |
 | docs/data-providers.md | ✅ Hotovo | DataProvider interface (J4) |
 | docs/components.md | ✅ Hotovo | React komponenty (J5) |
+| docs/development.md | ✅ Hotovo | Vývojářský průvodce (J6) |
 | docs/architecture.md | ✅ OK | ConfigPush, typy |
 | docs/timing.md | ✅ OK | Konstanty, flow |
 | docs/troubleshooting.md | ✅ OK | Běžné problémy |
@@ -118,18 +119,18 @@ Klíčové React komponenty pro budoucí úpravy.
 
 ---
 
-### Blok J6: docs/development.md
+### Blok J6: docs/development.md ✅ Hotovo
 
 Průvodce pro vývojáře.
 
-#### Obsah
-- [ ] **Setup prostředí** - Node.js, IDE, extensions
-- [ ] **Struktura projektu** - adresáře, konvence pojmenování
-- [ ] **Coding standards** - TypeScript, CSS, testy
-- [ ] **Testování** - unit, e2e, visual, jak přidat test
-- [ ] **Mock servery** - TCP, WebSocket, recordings
-- [ ] **Debugging** - DevTools, console logs, network
-- [ ] **Git workflow** - branches, commit messages
+#### Obsah ✅ Hotovo
+- [x] **Setup prostředí** - Node.js, IDE, extensions
+- [x] **Struktura projektu** - adresáře, konvence pojmenování
+- [x] **Coding standards** - TypeScript, CSS, testy
+- [x] **Testování** - unit, e2e, visual, jak přidat test
+- [x] **Mock servery** - TCP, WebSocket, recordings
+- [x] **Debugging** - DevTools, console logs, network
+- [x] **Git workflow** - branches, commit messages
 
 ---
 
