@@ -28,6 +28,9 @@ Vytvořit kompletní dokumentaci pro budoucí návrat k projektu. Dva typy:
 | Soubor | Stav | Poznámka |
 |--------|------|----------|
 | README.md | ✅ Hotovo | V3 kompletní přepis (J1) |
+| docs/url-parameters.md | ✅ Hotovo | URL parametry reference (J2) |
+| docs/configuration.md | ✅ Hotovo | Remote konfigurace (J3) |
+| docs/data-providers.md | ✅ Hotovo | DataProvider interface (J4) |
 | docs/architecture.md | ✅ OK | ConfigPush, typy |
 | docs/timing.md | ✅ OK | Konstanty, flow |
 | docs/troubleshooting.md | ✅ OK | Běžné problémy |
@@ -86,17 +89,17 @@ Remote konfigurace přes C123 server.
 
 ---
 
-### Blok J4: docs/data-providers.md
+### Blok J4: docs/data-providers.md ✅ Hotovo
 
 Jak funguje napojení na data.
 
-#### Obsah
-- [ ] **Provider interface** - abstrakce, metody, events
-- [ ] **C123ServerProvider** - WebSocket, REST sync, message typy
-- [ ] **CLIProvider** - legacy protokol, kdy použít
-- [ ] **ReplayProvider** - development, recordings
-- [ ] **Auto-discovery** - jak najde C123 server
-- [ ] **Reconnect logika** - exponential backoff, REST sync po reconnectu
+#### Obsah ✅ Hotovo
+- [x] **Provider interface** - abstrakce, metody, events
+- [x] **C123ServerProvider** - WebSocket, REST sync, message typy
+- [x] **CLIProvider** - legacy protokol, kdy použít
+- [x] **ReplayProvider** - development, recordings
+- [x] **Auto-discovery** - jak najde C123 server
+- [x] **Reconnect logika** - exponential backoff, REST sync po reconnectu
 
 ---
 
