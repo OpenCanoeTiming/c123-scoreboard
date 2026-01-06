@@ -219,6 +219,8 @@ export interface C123ForceRefreshMessage extends C123ServerMessage<C123ForceRefr
 // =============================================================================
 
 export interface C123ConfigPushData {
+  /** Client ID - if changed, client will reconnect with new ID */
+  clientId?: string
   type?: 'vertical' | 'ledwall'
   displayRows?: number
   customTitle?: string

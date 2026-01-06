@@ -56,8 +56,45 @@ C123 Server (WebSocket)          CLI (WebSocket)
 
 - Připojení přes WebSocket k C123 serveru
 - Automatický reconnect s exponential backoff
-- Zpracování zpráv: `results`, `onCourse`, `xmlChange`
+- Zpracování zpráv: `Results`, `OnCourse`, `XmlChange`, `ConfigPush`, `ForceRefresh`
 - REST API sync při reconnectu
+
+### ConfigPush (server → client)
+
+Server může pushovat konfiguraci klientovi:
+
+```typescript
+interface ConfigPushData {
+  clientId?: string      // Přiřazení/změna identity klienta
+  type?: 'vertical' | 'ledwall'
+  displayRows?: number
+  customTitle?: string
+  // ...
+}
+```
+
+**clientId flow:**
+1. Server pošle `ConfigPush` s novým `clientId`
+2. Klient aktualizuje URL param `?clientId=xxx`
+3. Klient provede reload → připojí se s novým ID
+4. Server uloží config pod novým klíčem
+
+**Použití:**
+- Pojmenování nového klienta (místo IP adresy)
+- Přejmenování stávajícího klienta
+- Přesun konfigurace mezi zařízeními
+
+**ClientState response:**
+```typescript
+{
+  type: 'ClientState',
+  data: {
+    current: { clientId, type, displayRows, customTitle },
+    version: '3.0.0',
+    capabilities: ['configPush', 'forceRefresh', 'clientIdPush']
+  }
+}
+```
 
 ### CLIProvider
 

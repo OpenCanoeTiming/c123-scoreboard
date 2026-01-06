@@ -548,6 +548,15 @@ export class C123ServerProvider implements DataProvider {
     // This ensures the layout hook picks up the new values
     const url = new URL(window.location.href)
 
+    // Apply clientId - if changed, will trigger reconnect with new ID
+    if (data.clientId !== undefined) {
+      const currentClientId = url.searchParams.get('clientId')
+      if (data.clientId !== currentClientId) {
+        console.log(`C123Server: Client ID changed: ${currentClientId} -> ${data.clientId}`)
+        url.searchParams.set('clientId', data.clientId)
+      }
+    }
+
     // Apply layout type
     if (data.type !== undefined) {
       url.searchParams.set('type', data.type)
@@ -589,12 +598,13 @@ export class C123ServerProvider implements DataProvider {
       timestamp: new Date().toISOString(),
       data: {
         current: {
+          clientId: params.get('clientId') || appliedConfig.clientId || undefined,
           type: params.get('type') || appliedConfig.type || 'vertical',
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
         },
         version: '3.0.0',
-        capabilities: ['configPush', 'forceRefresh'],
+        capabilities: ['configPush', 'forceRefresh', 'clientIdPush'],
       },
     }
 
