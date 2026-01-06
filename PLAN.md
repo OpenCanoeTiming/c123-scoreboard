@@ -9,7 +9,6 @@
 | Fáze G: BR1/BR2 merge zobrazení | ✅ Hotovo (2026-01-05/06) |
 | Fáze H: OnCourse vylepšení a scrollToFinished | ✅ Hotovo (2026-01-06) |
 | Fáze I: Server-assigned clientId persistence | ✅ Hotovo (2026-01-06) |
-| Fáze J: raceFilter, showOnCourse, showResults | ✅ Hotovo (2026-01-06) |
 
 ---
 
@@ -329,58 +328,6 @@ src/providers/utils/discovery-client.ts    # getClientIdFromUrl, saveClientId, e
 src/providers/C123ServerProvider.ts        # ConfigPush handler s ukládáním
 src/providers/utils/__tests__/clientId.test.ts  # 17 unit testů
 ```
-
----
-
-## Fáze J - raceFilter, showOnCourse, showResults ✅
-
-**Dokončeno:** 2026-01-06
-
-### Cíl
-
-Implementovat zbývající ConfigPush parametry pro filtrování a viditelnost dat:
-- `raceFilter` - filtr raceId pro zobrazení jen vybraných závodů
-- `showOnCourse` - skrytí/zobrazení OnCourse sekce
-- `showResults` - skrytí/zobrazení Results sekce
-
-### Implementováno
-
-| Komponenta | Popis |
-|------------|-------|
-| **useDisplayConfig** | Nový hook pro display configuration |
-| **matchesRaceFilter** | Helper funkce pro race ID matching |
-| **ConfigPush handler** | Zpracování nových parametrů |
-| **App.tsx** | Podmíněné zobrazení sekcí |
-| **ClientState** | Nové capabilities |
-
-### URL parametry
-
-| Parametr | Typ | Default | Popis |
-|----------|-----|---------|-------|
-| `showOnCourse` | boolean | `true` | Zobrazení CurrentCompetitor sekce |
-| `showResults` | boolean | `true` | Zobrazení ResultsList sekce |
-| `raceFilter` | string | `""` | Comma-separated list race ID prefixů |
-
-**Příklady:**
-```
-?showOnCourse=false                    # Skryje závodníka na trati
-?showResults=false                     # Skryje výsledky
-?raceFilter=K1M_ST,K1W_ST              # Zobrazí jen K1M a K1W
-?showOnCourse=false&showResults=true   # Pouze výsledky
-```
-
-### Soubory
-
-```
-src/hooks/useDisplayConfig.ts          # Hook pro display config
-src/hooks/__tests__/useDisplayConfig.test.ts  # 26 testů
-src/providers/C123ServerProvider.ts    # ConfigPush handler
-src/App.tsx                            # Podmíněné zobrazení
-```
-
-### Testy
-
-751 testů celkem, včetně 26 nových pro useDisplayConfig
 
 ---
 

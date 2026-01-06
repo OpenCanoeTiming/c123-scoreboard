@@ -4,7 +4,7 @@ import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
 import { C123ServerProvider } from '@/providers/C123ServerProvider'
 import type { DataProvider } from '@/providers/types'
-import { useLayout, useAssets, useDisplayConfig, matchesRaceFilter } from '@/hooks'
+import { useLayout, useAssets } from '@/hooks'
 import {
   discoverC123Server,
   isC123Server,
@@ -69,11 +69,6 @@ function getUrlParams(): {
  * Layout-specific behavior for multiple competitors on course:
  * - Both layouts now show only the primary competitor (highest time = current, or departing if just finished)
  * - OnCourseDisplay is no longer shown (simplified display)
- *
- * Display configuration (from URL params or ConfigPush):
- * - showOnCourse: Show/hide CurrentCompetitor section
- * - showResults: Show/hide ResultsList section
- * - raceFilter: Only show results for matching race IDs
  */
 function ScoreboardContent() {
   const {
@@ -91,10 +86,6 @@ function ScoreboardContent() {
 
   const { layoutMode } = useLayout()
   const assets = useAssets()
-  const { showOnCourse, showResults, raceFilter } = useDisplayConfig()
-
-  // Apply race filter - if raceFilter is set and current race doesn't match, hide results
-  const shouldShowResults = showResults && (raceFilter.length === 0 || matchesRaceFilter(raceId, raceFilter))
 
   return (
     <>
@@ -122,22 +113,19 @@ function ScoreboardContent() {
         footer={<Footer visible={visibility.displayFooter} imageUrl={assets.footerImageUrl} />}
       >
         {/* Current competitor - shows departing if no current */}
-        {showOnCourse && (
-          <ErrorBoundary componentName="CurrentCompetitor">
-            <CurrentCompetitor
-              competitor={currentCompetitor ?? departingCompetitor}
-              visible={visibility.displayCurrent}
-              isDeparting={!currentCompetitor && !!departingCompetitor}
-            />
-          </ErrorBoundary>
-        )}
+        <ErrorBoundary componentName="CurrentCompetitor">
+          <CurrentCompetitor
+            competitor={currentCompetitor ?? departingCompetitor}
+            visible={visibility.displayCurrent}
+            isDeparting={!currentCompetitor && !!departingCompetitor}
+          />
+        </ErrorBoundary>
+
 
         {/* Results list */}
-        {shouldShowResults && (
-          <ErrorBoundary componentName="ResultsList">
-            <ResultsList results={results} visible={visibility.displayTop} />
-          </ErrorBoundary>
-        )}
+        <ErrorBoundary componentName="ResultsList">
+          <ResultsList results={results} visible={visibility.displayTop} />
+        </ErrorBoundary>
       </ScoreboardLayout>
     </>
   )

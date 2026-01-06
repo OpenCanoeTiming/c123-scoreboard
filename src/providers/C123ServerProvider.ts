@@ -602,26 +602,6 @@ export class C123ServerProvider implements DataProvider {
       url.searchParams.set('scrollToFinished', String(data.scrollToFinished))
     }
 
-    // Apply showOnCourse
-    if (data.showOnCourse !== undefined) {
-      url.searchParams.set('showOnCourse', String(data.showOnCourse))
-    }
-
-    // Apply showResults
-    if (data.showResults !== undefined) {
-      url.searchParams.set('showResults', String(data.showResults))
-    }
-
-    // Apply raceFilter (comma-separated list)
-    if (data.raceFilter !== undefined) {
-      if (data.raceFilter.length > 0) {
-        url.searchParams.set('raceFilter', data.raceFilter.join(','))
-      } else {
-        // Empty array means "show all" - remove the param
-        url.searchParams.delete('raceFilter')
-      }
-    }
-
     // Check if URL changed or assets were saved (reload needed to apply new assets)
     const hasAssetChanges = Object.keys(assetsToSave).length > 0
     if (url.href !== window.location.href || hasAssetChanges) {
@@ -645,10 +625,6 @@ export class C123ServerProvider implements DataProvider {
 
     const params = new URLSearchParams(window.location.search)
     const scrollToFinishedParam = params.get('scrollToFinished')
-    const showOnCourseParam = params.get('showOnCourse')
-    const showResultsParam = params.get('showResults')
-    const raceFilterParam = params.get('raceFilter')
-
     const message = {
       type: 'ClientState',
       timestamp: new Date().toISOString(),
@@ -659,16 +635,13 @@ export class C123ServerProvider implements DataProvider {
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
           scrollToFinished: scrollToFinishedParam !== null ? scrollToFinishedParam !== 'false' : appliedConfig.scrollToFinished ?? true,
-          showOnCourse: showOnCourseParam !== null ? showOnCourseParam !== 'false' : appliedConfig.showOnCourse ?? true,
-          showResults: showResultsParam !== null ? showResultsParam !== 'false' : appliedConfig.showResults ?? true,
-          raceFilter: raceFilterParam ? raceFilterParam.split(',') : appliedConfig.raceFilter || [],
           // Report current asset URLs (from ConfigPush)
           logoUrl: appliedConfig.logoUrl || undefined,
           partnerLogoUrl: appliedConfig.partnerLogoUrl || undefined,
           footerImageUrl: appliedConfig.footerImageUrl || undefined,
         },
         version: '3.0.0',
-        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement', 'raceFilter', 'showOnCourse', 'showResults'],
+        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement'],
       },
     }
 
