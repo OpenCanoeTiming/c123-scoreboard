@@ -452,6 +452,13 @@ export class C123ServerProvider implements DataProvider {
 
   private handleOnCourse(data: C123OnCourseData): void {
     const onCourseData = mapOnCourse(data)
+
+    // Update BR2 Manager with live penalties from OnCourse
+    // OnCourse has the most up-to-date penalty info (even after finish)
+    this.br2Manager.updateOnCoursePenalties(
+      data.competitors.map(c => ({ bib: c.bib, pen: c.pen }))
+    )
+
     this.callbacks.emitOnCourse(onCourseData)
   }
 

@@ -37,6 +37,8 @@ export interface BR2MergeState {
   isBR2: boolean
   raceId: string | null
   cache: Map<string, CachedBR2Data>
+  /** Live penalties from OnCourse - most up-to-date source */
+  onCoursePenalties: Map<string, number>
   lastFetchTime: number
   pendingFetchTimeout: ReturnType<typeof setTimeout> | null
   refreshIntervalId: ReturnType<typeof setInterval> | null
@@ -48,6 +50,7 @@ export function createBR2MergeState(): BR2MergeState {
     isBR2: false,
     raceId: null,
     cache: new Map(),
+    onCoursePenalties: new Map(),
     lastFetchTime: 0,
     pendingFetchTimeout: null,
     refreshIntervalId: null,
@@ -111,7 +114,8 @@ function isInvalidStatus(status: string | undefined): status is 'DNS' | 'DNF' | 
  * Handles both valid results and DNS/DNF/DSQ status
  */
 function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
-  if (!row) return undefined
+  // Check for undefined/null OR empty object (REST API returns {} for no data)
+  if (!row || Object.keys(row).length === 0) return undefined
 
   // Has invalid status (DNS/DNF/DSQ)
   if (isInvalidStatus(row.status)) {
@@ -147,17 +151,22 @@ function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
  * IMPORTANT: WebSocket's `pen` field contains penalty from BEST run, not BR2!
  * So we use REST API data for both runs.
  *
- * BR2 time comes from WebSocket (live), but penalty from REST API cache.
+ * Penalty priority (most accurate first):
+ * 1. OnCourse penalties - live, most up-to-date (even after finish)
+ * 2. REST API cache - authoritative but may be delayed
+ * 3. WebSocket pen - only correct when BR2 is better than BR1
  *
  * @param results - Current results from WebSocket
  * @param cache - Cached BR1 and BR2 results from REST API
+ * @param onCoursePenalties - Live penalties from OnCourse messages
  * @returns Results with run1, run2, and bestRun populated
  */
 export function mergeBR1CacheIntoBR2Results(
   results: Result[],
-  cache: Map<string, CachedBR2Data>
+  cache: Map<string, CachedBR2Data>,
+  onCoursePenalties: Map<string, number> = new Map()
 ): Result[] {
-  if (cache.size === 0) {
+  if (cache.size === 0 && onCoursePenalties.size === 0) {
     return results
   }
 
@@ -165,15 +174,21 @@ export function mergeBR1CacheIntoBR2Results(
     const cached = cache.get(result.bib)
     const hasBR2Time = result.time !== undefined && result.time !== '' && result.time !== '0'
 
+    // Get penalty from best source available
+    // Priority: OnCourse (live) > REST cache > WebSocket (may be wrong)
+    const onCoursePen = onCoursePenalties.get(result.bib)
+
     // Not in cache - try to show BR2 from WebSocket if available
     if (!cached) {
       if (hasBR2Time) {
-        const br2Total = calculateBR2Total(result.time, result.pen)
+        // Use OnCourse penalty if available (most accurate for just-finished)
+        const br2Pen = onCoursePen ?? result.pen
+        const br2Total = calculateBR2Total(result.time, br2Pen)
         return {
           ...result,
           run2: {
             total: br2Total,
-            pen: result.pen,
+            pen: br2Pen,
             rank: result.rank,
             status: '' as ResultStatus,
           },
@@ -194,8 +209,8 @@ export function mergeBR1CacheIntoBR2Results(
       run2 = cachedRun2
     } else if (hasBR2Time) {
       // WebSocket has BR2 time - use it (live data)
-      // Penalty: prefer cache (accurate), fallback to WebSocket (live)
-      const br2Pen = cachedRun2?.pen ?? result.pen
+      // Penalty priority: OnCourse (live) > cache (REST API) > WebSocket
+      const br2Pen = onCoursePen ?? cachedRun2?.pen ?? result.pen
       const br2Total = calculateBR2Total(result.time, br2Pen)
       run2 = {
         total: br2Total,
@@ -267,6 +282,25 @@ export class BR2Manager {
   }
 
   /**
+   * Update live penalties from OnCourse data
+   * OnCourse has the most up-to-date penalty info, even for just-finished competitors
+   *
+   * The map mirrors OnCourse exactly - only competitors currently in OnCourse
+   * have their penalties stored. When they leave OnCourse, we fall back to REST cache.
+   *
+   * @param competitors - OnCourse competitors with their current penalties
+   */
+  updateOnCoursePenalties(competitors: Array<{ bib: string; pen: number }>): void {
+    if (!this.state.isBR2) return
+
+    // Clear and rebuild - mirror OnCourse exactly
+    this.state.onCoursePenalties.clear()
+    for (const comp of competitors) {
+      this.state.onCoursePenalties.set(comp.bib, comp.pen)
+    }
+  }
+
+  /**
    * Process incoming Results
    */
   processResults(results: Result[], raceId: string): Result[] {
@@ -294,9 +328,13 @@ export class BR2Manager {
     // BR2 penalties arrive gradually, so we need to refresh frequently
     this.triggerDebouncedFetch(raceId)
 
-    // Apply cached BR1/BR2 data
-    if (this.state.cache.size > 0) {
-      return mergeBR1CacheIntoBR2Results(results, this.state.cache)
+    // Apply cached BR1/BR2 data + live OnCourse penalties
+    if (this.state.cache.size > 0 || this.state.onCoursePenalties.size > 0) {
+      return mergeBR1CacheIntoBR2Results(
+        results,
+        this.state.cache,
+        this.state.onCoursePenalties
+      )
     }
 
     return results
@@ -333,11 +371,12 @@ export class BR2Manager {
     try {
       const merged = await this.api.getMergedResults(raceId)
       if (merged && merged.results) {
-        const prevSize = this.state.cache.size
         this.updateCache(merged)
         console.log(`BR2Manager: Loaded ${this.state.cache.size} results for ${raceId}`)
 
-        if (this.onCacheUpdated && this.state.cache.size > prevSize) {
+        // Always trigger update - cache content may have changed (new run2 data)
+        // even if cache size is the same
+        if (this.onCacheUpdated) {
           this.onCacheUpdated()
         }
       }
