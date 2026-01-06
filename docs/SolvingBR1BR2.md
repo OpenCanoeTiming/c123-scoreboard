@@ -103,37 +103,101 @@ C123 System ──TCP──► C123 Server ──WS──► Scoreboard
    - Scoreboard zjistí že je BR2 (raceId obsahuje `_BR2_`)
    - Použije BR1 z cache, nebo fetchne z REST API
 
-### Implementace (FINÁLNÍ)
+### Implementace (FINÁLNÍ - 2026-01-06)
 
-**DŮLEŽITÉ - Zdroje dat:**
-- **BR1**: z REST API (`getMergedResults`) - stabilní, jednou načteno + refresh co 30s
-- **BR2**: z WebSocket Results - **ŽIVÉ!** Ale pozor:
-  - `result.time` = BR2 čas BEZ penalizace
-  - `result.pen` = BR2 penalizace
-  - `result.total` = **BEST** of both runs (NE BR2 total!)
-  - **BR2 total = time + pen** (musí se vypočítat!)
+**DŮLEŽITÉ - Zdroje dat a jejich problémy:**
 
-**Scoreboard V3:**
-1. Detekce BR2: `raceId.includes('_BR2_')`
-2. Při přepnutí na BR2 závod:
-   - Fetch BR1 z REST API (jednorázově + refresh co 30s)
-   - Cache BR1 data (stabilní, mění se jen při protestech)
-3. Při každém Results pro BR2:
-   - BR1 z cache
-   - BR2 total = `result.time + result.pen` (NE result.total!)
-4. UI: zobrazit dva sloupce času, highlight lepšího
+| Zdroj | Data | Problém |
+|-------|------|---------|
+| **WebSocket Results** | `time`, `pen`, `total` | `pen` = penalizace LEPŠÍ jízdy! `total` = BEST of both! |
+| **WebSocket OnCourse** | `pen` pro závodníky na trati | Správná BR2 penalizace, ale jen pro pár lidí |
+| **REST API** | `run1`, `run2` kompletní | Zpožděné (XML se aktualizuje pomaleji než WS) |
 
-### Proč REST (bez cache)
+**Klíčový problém s WebSocket `pen`:**
+- Když BR1 byla lepší → `result.pen` obsahuje BR1 penalizaci!
+- Když BR2 byla lepší → `result.pen` obsahuje BR2 penalizaci
+- Nelze spolehlivě použít pro BR2 zobrazení
 
-- BR1 data jsou v XML stabilní (BR1 skončila dávno před BR2)
-- REST je spolehlivější než TCP cache
-- Funguje i když scoreboard startuje během BR2
-- Jednodušší implementace (žádný state pro cache)
+### Priority penalizací
 
-### Debouncing
+```
+1. OnCourse penalties   ← ŽIVÉ, nejpřesnější (i po dojetí)
+2. REST API cache       ← Autoritativní, ale zpožděné
+3. WebSocket pen        ← POZOR: může být z BR1!
+```
 
-Při BR2 přichází Results zprávy často (po každém dojetí).
-Debounce ~500ms zajistí, že REST voláme max 2x za sekundu.
+**Kód:**
+```typescript
+const br2Pen = onCoursePen ?? cachedRun2?.pen ?? result.pen
+```
+
+### Grace period pro OnCourse
+
+Závodník po dojetí zmizí z OnCourse, ale REST API ještě nemá data.
+Bez grace period by se zobrazila špatná penalizace z WebSocket.
+
+**Řešení:** OnCourse penalties zůstávají **10 sekund** po vypadnutí z trati.
+
+```typescript
+const ONCOURSE_PENALTY_GRACE_MS = 10_000
+
+// Entry structure
+interface OnCoursePenaltyEntry {
+  pen: number
+  lastSeen: number  // timestamp
+}
+```
+
+### Data flow
+
+1. **Závodník startuje BR2:**
+   - OnCourse má jeho `pen` → ukládá se do `onCoursePenalties`
+
+2. **Závodník dojede:**
+   - Ještě je v OnCourse (s `dtFinish`) → penalty stále aktuální
+   - Results přijdou → použije se `onCoursePenalties` (správná!)
+
+3. **Závodník zmizí z OnCourse:**
+   - Grace period 10s → penalty zůstává
+   - REST API mezitím dožene → cache má správná data
+
+4. **Po grace period:**
+   - Entry smazána při dalším OnCourse update
+   - Používá se REST cache (autoritativní)
+
+5. **Pozdější opravy v C123:**
+   - REST API refresh (debounce 1s, interval 30s)
+   - Cache aktualizována → zobrazí se správná penalizace
+
+### Detekce prázdných objektů
+
+REST API může vrátit `run2: {}` místo `undefined`:
+
+```typescript
+// ŠPATNĚ - {} projde
+if (!row) return undefined
+
+// SPRÁVNĚ
+if (!row || Object.keys(row).length === 0) return undefined
+```
+
+### Soubory implementace
+
+| Soubor | Účel |
+|--------|------|
+| `src/providers/utils/br1br2Merger.ts` | BR2Manager, merge logika, OnCourse cache |
+| `src/providers/C123ServerProvider.ts` | Propojení OnCourse → BR2Manager |
+| `src/providers/utils/c123ServerApi.ts` | REST API client pro getMergedResults |
+| `src/components/ResultsList/ResultRow.tsx` | UI s RunTimeCell pro BR1/BR2 sloupce |
+
+### Konstanty
+
+```typescript
+const INITIAL_FETCH_DELAY_MS = 500      // Počáteční delay před prvním REST fetch
+const DEBOUNCE_FETCH_MS = 1000          // Debounce pro REST fetch po Results
+const BR1_REFRESH_INTERVAL_MS = 30_000  // Refresh interval pro REST data
+const ONCOURSE_PENALTY_GRACE_MS = 10_000 // Grace period pro OnCourse penalties
+```
 
 ---
 
