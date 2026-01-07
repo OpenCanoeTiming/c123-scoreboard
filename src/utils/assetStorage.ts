@@ -190,6 +190,37 @@ export function clearAssets(): void {
 }
 
 /**
+ * Clear a specific asset from localStorage
+ *
+ * Used when server sends null for an asset (reset to default)
+ *
+ * @param key - Asset key to clear ('logoUrl', 'partnerLogoUrl', or 'footerImageUrl')
+ */
+export function clearAsset(key: keyof AssetConfig): void {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return
+  }
+
+  try {
+    const current = loadAssets()
+    if (!current) {
+      return // Nothing to clear
+    }
+
+    delete current[key]
+
+    // If no assets left, remove the entire storage
+    if (Object.keys(current).length === 0) {
+      window.localStorage.removeItem(STORAGE_KEY)
+    } else {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(current))
+    }
+  } catch (err) {
+    console.warn(`assetStorage: Failed to clear asset ${key} from localStorage:`, err)
+  }
+}
+
+/**
  * Parse asset URLs from URL parameters
  *
  * Only accepts relative and absolute URLs (not data URIs - too large for URL params)

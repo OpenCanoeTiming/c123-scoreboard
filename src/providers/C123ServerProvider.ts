@@ -38,7 +38,7 @@ import { getWebSocketUrl, getServerInfo, getClientIdFromUrl, saveClientId, getSt
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
 import { C123ServerApi } from './utils/c123ServerApi'
 import { BR2Manager } from './utils/br1br2Merger'
-import { saveAssets, loadAssets, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
+import { saveAssets, loadAssets, clearAsset, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
 
 // =============================================================================
 // Types
@@ -546,34 +546,72 @@ export class C123ServerProvider implements DataProvider {
     console.log('C123Server: Received config push:', data)
 
     // Check if assets changed compared to localStorage
-    // Only save and reload if there are actual changes
+    // Handle three cases for each asset:
+    // - string: Set to new URL (if valid)
+    // - null: Reset to default (clear from localStorage)
+    // - undefined: No change (keep current value)
     let hasAssetChanges = false
     const currentAssets = loadAssets() ?? {}
-    const newAssets: AssetConfig = {}
+    const newAssets: AssetConfig = { ...currentAssets }
+    const clearedAssets: Array<keyof AssetConfig> = []
 
-    if (data.assets?.logoUrl && isValidAssetUrl(data.assets.logoUrl)) {
+    // Handle logoUrl
+    if (data.assets?.logoUrl === null) {
+      // Explicit reset - clear from localStorage
+      if (currentAssets.logoUrl) {
+        clearedAssets.push('logoUrl')
+        delete newAssets.logoUrl
+        hasAssetChanges = true
+      }
+    } else if (data.assets?.logoUrl && isValidAssetUrl(data.assets.logoUrl)) {
+      // New value - update
       newAssets.logoUrl = data.assets.logoUrl
       if (currentAssets.logoUrl !== data.assets.logoUrl) {
         hasAssetChanges = true
       }
     }
-    if (data.assets?.partnerLogoUrl && isValidAssetUrl(data.assets.partnerLogoUrl)) {
+    // undefined = no change, keep current value
+
+    // Handle partnerLogoUrl
+    if (data.assets?.partnerLogoUrl === null) {
+      if (currentAssets.partnerLogoUrl) {
+        clearedAssets.push('partnerLogoUrl')
+        delete newAssets.partnerLogoUrl
+        hasAssetChanges = true
+      }
+    } else if (data.assets?.partnerLogoUrl && isValidAssetUrl(data.assets.partnerLogoUrl)) {
       newAssets.partnerLogoUrl = data.assets.partnerLogoUrl
       if (currentAssets.partnerLogoUrl !== data.assets.partnerLogoUrl) {
         hasAssetChanges = true
       }
     }
-    if (data.assets?.footerImageUrl && isValidAssetUrl(data.assets.footerImageUrl)) {
+
+    // Handle footerImageUrl
+    if (data.assets?.footerImageUrl === null) {
+      if (currentAssets.footerImageUrl) {
+        clearedAssets.push('footerImageUrl')
+        delete newAssets.footerImageUrl
+        hasAssetChanges = true
+      }
+    } else if (data.assets?.footerImageUrl && isValidAssetUrl(data.assets.footerImageUrl)) {
       newAssets.footerImageUrl = data.assets.footerImageUrl
       if (currentAssets.footerImageUrl !== data.assets.footerImageUrl) {
         hasAssetChanges = true
       }
     }
 
-    // Only save if there are actual changes
-    if (hasAssetChanges && Object.keys(newAssets).length > 0) {
-      saveAssets(newAssets)
-      console.log('C123Server: Saved changed assets to localStorage:', newAssets)
+    // Apply asset changes
+    if (hasAssetChanges) {
+      // Clear individual assets that were reset
+      for (const key of clearedAssets) {
+        clearAsset(key)
+        console.log(`C123Server: Cleared asset ${key} from localStorage (reset to default)`)
+      }
+      // Save remaining/updated assets (if any)
+      if (Object.keys(newAssets).length > 0) {
+        saveAssets(newAssets)
+        console.log('C123Server: Saved changed assets to localStorage:', newAssets)
+      }
     }
 
     // Apply configuration changes by updating URL parameters and reloading

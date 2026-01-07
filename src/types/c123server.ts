@@ -220,14 +220,19 @@ export interface C123ForceRefreshMessage extends C123ServerMessage<C123ForceRefr
 
 /**
  * Asset URLs for scoreboard branding (nested in ConfigPush)
+ *
+ * Values can be:
+ * - string: URL (http/https), relative path, or data URI (data:image/...)
+ * - null: Explicit reset to default (client should clear localStorage for this key)
+ * - undefined: No change (client keeps current value)
  */
 export interface C123AssetUrls {
-  /** Main logo URL (top-left corner). Can be relative, absolute, or data URI. */
-  logoUrl?: string
-  /** Partner/sponsor logo URL (top-right corner). Can be relative, absolute, or data URI. */
-  partnerLogoUrl?: string
-  /** Footer sponsor banner URL. Can be relative, absolute, or data URI. */
-  footerImageUrl?: string
+  /** Main logo URL (top-left corner). Can be relative, absolute, or data URI. null = reset to default. */
+  logoUrl?: string | null
+  /** Partner/sponsor logo URL (top-right corner). Can be relative, absolute, or data URI. null = reset to default. */
+  partnerLogoUrl?: string | null
+  /** Footer sponsor banner URL. Can be relative, absolute, or data URI. null = reset to default. */
+  footerImageUrl?: string | null
 }
 
 export interface C123ConfigPushData {
