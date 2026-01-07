@@ -10,6 +10,23 @@
 | Fáze H: OnCourse vylepšení a scrollToFinished | ✅ Hotovo |
 | Fáze I: Server-assigned clientId persistence | ✅ Hotovo |
 | **Fáze J: Dokumentace** | ✅ Hotovo |
+| **Fáze K: Údržba dokumentace** | ✅ Hotovo |
+
+---
+
+## Fáze K - Údržba dokumentace
+
+### Kontext
+
+Ekosystémová dokumentace byla reorganizována do `../analysis/`.
+Projektová dokumentace V3 zůstává v `docs/`.
+
+### Úkoly (podle potřeby)
+
+| Krok | Status | Popis |
+|------|--------|-------|
+| K1 | ✅ | Zkontrolováno - všechny odkazy na analysis/ platné |
+| K2 | ✅ | Doplněn coverage příkaz a rozšířena CI/CD sekce v testing.md |
 
 ---
 
@@ -36,7 +53,7 @@ Vytvořit kompletní dokumentaci pro budoucí návrat k projektu. Dva typy:
 | docs/architecture.md | ✅ OK | ConfigPush, typy |
 | docs/timing.md | ✅ OK | Konstanty, flow |
 | docs/troubleshooting.md | ✅ OK | Běžné problémy |
-| docs/testing.md | ⚠️ Základní | Rozšířit o coverage, CI |
+| docs/testing.md | ✅ Hotovo | Coverage, CI/CD detaily |
 | docs/SolvingBR1BR2.md | ✅ OK | Analytický dokument |
 
 ---

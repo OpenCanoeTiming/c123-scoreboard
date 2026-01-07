@@ -13,6 +13,9 @@ npm test
 # Unit testy - single run
 npm test -- --run
 
+# Unit testy - s coverage reportem
+npm test -- --run --coverage
+
 # Integrační test CLI vs C123 (vyžaduje mock servery)
 npm run test:providers
 
@@ -311,13 +314,30 @@ afterEach(() => {
 
 ## CI/CD
 
-Testy běží automaticky při:
+### Lokální simulace CI
 
-- **Pre-commit hook** (pokud nastaven): `npm run lint`
-- **PR checks**: `npm test -- --run && npm run build`
-
-Pro lokální simulaci CI:
+Před commitem spusť kompletní validaci:
 
 ```bash
 npm run lint && npm test -- --run && npm run build
 ```
+
+### Pre-commit checklist
+
+1. `npm run lint` - žádné ESLint chyby
+2. `npm test -- --run` - všechny testy projdou
+3. `npm run build` - build proběhne bez chyb
+
+### Coverage report
+
+```bash
+npm test -- --run --coverage
+```
+
+Coverage report se generuje do složky `coverage/`. Otevři `coverage/index.html` pro HTML report.
+
+**Cílové pokrytí:**
+- Utility funkce: 80%+
+- Mappery: 90%+
+- Providers: 70%+
+- Komponenty: 60%+
