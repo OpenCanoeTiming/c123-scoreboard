@@ -258,6 +258,22 @@ Chronologický záznam vývoje, zjištění a řešení problémů.
 
 ---
 
+## 2026-01-07 - Fáze K: Údržba dokumentace
+
+**K1: Kontrola odkazů na analysis/**
+- Všechny odkazy platné po reorganizaci ekosystémové dokumentace
+- `../analysis/recordings/`, `../analysis/captures/` - OK
+
+**K2: Rozšíření testing.md**
+- Přidán příkaz `npm test -- --run --coverage`
+- Rozšířena CI/CD sekce o pre-commit checklist a coverage targets
+
+**Konsolidace PLAN.md**
+- Redukce z 248 → 72 řádků (71%)
+- Odstraněny hotové checklisty, ponechán pouze přehled
+
+---
+
 ## Uzavření vývoje V3
 
 Canoe Scoreboard V3 je funkčně kompletní:
