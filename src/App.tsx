@@ -4,24 +4,22 @@ import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
 import { C123ServerProvider } from '@/providers/C123ServerProvider'
 import type { DataProvider } from '@/providers/types'
-import { useLayout, useAssets } from '@/hooks'
+import { useLayout } from '@/hooks/useLayout'
+import { useAssets } from '@/hooks/useAssets'
 import {
   discoverC123Server,
   isC123Server,
   normalizeServerUrl,
   PROBE_TIMEOUT,
 } from '@/providers/utils/discovery-client'
-import {
-  ScoreboardLayout,
-  TopBar,
-  Title,
-  CurrentCompetitor,
-  ResultsList,
-  TimeDisplay,
-  Footer,
-  ConnectionStatus,
-  ErrorBoundary,
-} from '@/components'
+import { ScoreboardLayout } from '@/components/Layout'
+import { TopBar, Title } from '@/components/EventInfo'
+import { CurrentCompetitor } from '@/components/CurrentCompetitor'
+import { ResultsList } from '@/components/ResultsList'
+import { TimeDisplay } from '@/components/TimeDisplay'
+import { Footer } from '@/components/Footer'
+import { ConnectionStatus } from '@/components/ConnectionStatus'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 /**
  * Parse URL parameters for app configuration

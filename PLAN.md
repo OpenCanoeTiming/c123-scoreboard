@@ -84,7 +84,7 @@ Optimalizace podle [Vercel React Best Practices](https://github.com/vercel-labs/
 **Problém:** `src/components/index.ts` a `src/hooks/index.ts` jsou barrel files, zpomalují HMR a cold start.
 
 **Kroky:**
-- [ ] L.1.1 Nahradit barrel importy v `App.tsx` přímými importy
+- [x] L.1.1 Nahradit barrel importy v `App.tsx` přímými importy
 - [ ] L.1.2 Nahradit barrel importy v ostatních komponentách
 - [ ] L.1.3 Odstranit nebo deprecovat `components/index.ts`
 - [ ] L.1.4 Odstranit nebo deprecovat `hooks/index.ts`
