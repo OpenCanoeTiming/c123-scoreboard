@@ -1,4 +1,4 @@
-import { useLayout } from '@/hooks'
+import { useLayout } from '@/hooks/useLayout'
 import { getRunNumber } from '@/utils/raceUtils'
 import styles from './Title.module.css'
 

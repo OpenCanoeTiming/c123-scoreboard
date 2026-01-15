@@ -79,17 +79,17 @@
 
 Optimalizace podle [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices).
 
-### L.1 - Barrel file imports (CRITICAL)
+### L.1 - Barrel file imports (CRITICAL) ✅
 
-**Problém:** `src/components/index.ts` a `src/hooks/index.ts` jsou barrel files, zpomalují HMR a cold start.
+**Problém:** `src/components/index.ts` a `src/hooks/index.ts` byly barrel files, zpomalovaly HMR a cold start.
 
 **Kroky:**
 - [x] L.1.1 Nahradit barrel importy v `App.tsx` přímými importy
-- [ ] L.1.2 Nahradit barrel importy v ostatních komponentách
-- [ ] L.1.3 Odstranit nebo deprecovat `components/index.ts`
-- [ ] L.1.4 Odstranit nebo deprecovat `hooks/index.ts`
-- [ ] L.1.5 Ověřit build (`npm run build`)
-- [ ] L.1.6 Spustit unit testy (`npm run test`)
+- [x] L.1.2 Nahradit barrel importy v ostatních komponentách
+- [x] L.1.3 Odstranit `components/index.ts`
+- [x] L.1.4 Odstranit `hooks/index.ts`
+- [x] L.1.5 Ověřit build (`npm run build`)
+- [x] L.1.6 Spustit unit testy (`npm run test`)
 - [ ] L.1.7 Spustit Playwright testy (`npm run test:e2e`)
 
 ### L.2 - Context splitting (MEDIUM)

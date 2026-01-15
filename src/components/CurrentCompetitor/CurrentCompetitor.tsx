@@ -4,7 +4,7 @@ import type { OnCourseCompetitor } from '@/types'
 import { formatName } from '@/utils/formatName'
 import { createGateClassGetter } from '@/utils/getGateClass'
 import { getPenaltyGates } from '@/providers/utils/parseGates'
-import { useLayout } from '@/hooks'
+import { useLayout } from '@/hooks/useLayout'
 
 /**
  * Props for CurrentCompetitor component

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useLayout } from '@/hooks'
+import { useLayout } from '@/hooks/useLayout'
 import { DEFAULT_ASSETS } from '@/utils/assetStorage'
 import styles from './TopBar.module.css'
 

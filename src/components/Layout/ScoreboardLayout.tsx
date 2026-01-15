@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode, type CSSProperties } from 'react'
-import { useLayout } from '@/hooks'
+import { useLayout } from '@/hooks/useLayout'
 import styles from './ScoreboardLayout.module.css'
 
 /**
