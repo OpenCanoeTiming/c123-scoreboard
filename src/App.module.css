@@ -1,0 +1,130 @@
+/* App.module.css - Styles for DiscoveryScreen and ErrorScreen */
+
+/* Shared layout container */
+.screenContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg-primary, #000);
+  color: var(--color-text-primary, #fff);
+  font-family: var(--font-family-primary, system-ui, sans-serif);
+}
+
+/* Header area - matches scoreboard header */
+.header {
+  height: var(--header-height, 80px);
+  background-color: var(--color-bg-secondary, #111);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerLogo {
+  height: 60%;
+  opacity: 0.8;
+}
+
+/* Main content area */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* Footer area - matches scoreboard footer */
+.footer {
+  height: var(--footer-height, 60px);
+  background-color: var(--color-bg-secondary, #111);
+}
+
+/* Discovery screen specific */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-text-highlight, #4CAF50);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.discoveryTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.discoverySubtitle {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* Error screen specific */
+.errorMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.errorIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 107, 107, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.errorTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #ff6b6b;
+}
+
+.errorMessage {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+.helpBox {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+}
+
+.helpTitle {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.helpItem {
+  margin-bottom: 0.3rem;
+}
+
+.helpItem:last-child {
+  margin-bottom: 0;
+}

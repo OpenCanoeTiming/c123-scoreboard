@@ -20,6 +20,7 @@ import { TimeDisplay } from '@/components/TimeDisplay'
 import { Footer } from '@/components/Footer'
 import { ConnectionStatus } from '@/components/ConnectionStatus'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import styles from './App.module.css'
 
 /**
  * Parse URL parameters for app configuration
@@ -259,80 +260,27 @@ function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): Disco
  */
 function DiscoveryScreen() {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      backgroundColor: 'var(--color-bg-primary, #000)',
-      color: 'var(--color-text-primary, #fff)',
-      fontFamily: 'var(--font-family-primary, system-ui, sans-serif)',
-    }}>
-      {/* Header area - matches scoreboard header */}
-      <header style={{
-        height: 'var(--header-height, 80px)',
-        backgroundColor: 'var(--color-bg-secondary, #111)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
+    <div className={styles.screenContainer}>
+      <header className={styles.header}>
         <img
           src="/assets/logo.svg"
           alt="Logo"
-          style={{ height: '60%', opacity: 0.8 }}
+          className={styles.headerLogo}
           onError={(e) => { e.currentTarget.style.display = 'none' }}
         />
       </header>
 
-      {/* Main content area - centered message */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-      }}>
-        {/* Loading spinner */}
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid rgba(255, 255, 255, 0.2)',
-          borderTopColor: 'var(--color-text-highlight, #4CAF50)',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          marginBottom: '1.5rem',
-        }} />
-
-        <div style={{
-          fontSize: '1.5rem',
-          fontWeight: 500,
-          marginBottom: '0.5rem',
-          textAlign: 'center',
-        }}>
+      <main className={styles.main}>
+        <div className={styles.spinner} />
+        <div className={styles.discoveryTitle}>
           Hledám výsledkový systém...
         </div>
-
-        <div style={{
-          fontSize: '0.9rem',
-          opacity: 0.6,
-          textAlign: 'center',
-        }}>
+        <div className={styles.discoverySubtitle}>
           Prohledávám síť pro C123 Server
         </div>
       </main>
 
-      {/* Footer area - matches scoreboard footer */}
-      <footer style={{
-        height: 'var(--footer-height, 60px)',
-        backgroundColor: 'var(--color-bg-secondary, #111)',
-      }} />
-
-      {/* Keyframe animation for spinner */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      <footer className={styles.footer} />
     </div>
   )
 }
@@ -342,93 +290,30 @@ function DiscoveryScreen() {
  */
 function ErrorScreen({ message }: { message: string }) {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      backgroundColor: 'var(--color-bg-primary, #000)',
-      color: 'var(--color-text-primary, #fff)',
-      fontFamily: 'var(--font-family-primary, system-ui, sans-serif)',
-    }}>
-      {/* Header area */}
-      <header style={{
-        height: 'var(--header-height, 80px)',
-        backgroundColor: 'var(--color-bg-secondary, #111)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
+    <div className={styles.screenContainer}>
+      <header className={styles.header}>
         <img
           src="/assets/logo.svg"
           alt="Logo"
-          style={{ height: '60%', opacity: 0.8 }}
+          className={styles.headerLogo}
           onError={(e) => { e.currentTarget.style.display = 'none' }}
         />
       </header>
 
-      {/* Main content area */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        textAlign: 'center',
-      }}>
-        {/* Error icon */}
-        <div style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '50%',
-          backgroundColor: 'rgba(255, 107, 107, 0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '1.5rem',
-          fontSize: '1.5rem',
-        }}>
-          ⚠
-        </div>
+      <main className={styles.errorMain}>
+        <div className={styles.errorIcon}>⚠</div>
+        <div className={styles.errorTitle}>Chyba připojení</div>
+        <div className={styles.errorMessage}>{message}</div>
 
-        <div style={{
-          fontSize: '1.5rem',
-          fontWeight: 500,
-          marginBottom: '0.5rem',
-          color: '#ff6b6b',
-        }}>
-          Chyba připojení
-        </div>
-
-        <div style={{
-          fontSize: '1rem',
-          opacity: 0.9,
-          marginBottom: '2rem',
-          maxWidth: '400px',
-        }}>
-          {message}
-        </div>
-
-        <div style={{
-          fontSize: '0.85rem',
-          opacity: 0.6,
-          textAlign: 'left',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          padding: '1rem 1.5rem',
-          borderRadius: '8px',
-        }}>
-          <div style={{ marginBottom: '0.5rem', fontWeight: 500 }}>Možnosti:</div>
-          <div style={{ marginBottom: '0.3rem' }}>• ?server=192.168.1.50:27123 - C123 Server</div>
-          <div style={{ marginBottom: '0.3rem' }}>• ?server=192.168.1.50:8081 - CLI nástroj</div>
-          <div>• ?source=replay - Testovací data</div>
+        <div className={styles.helpBox}>
+          <div className={styles.helpTitle}>Možnosti:</div>
+          <div className={styles.helpItem}>• ?server=192.168.1.50:27123 - C123 Server</div>
+          <div className={styles.helpItem}>• ?server=192.168.1.50:8081 - CLI nástroj</div>
+          <div className={styles.helpItem}>• ?source=replay - Testovací data</div>
         </div>
       </main>
 
-      {/* Footer area */}
-      <footer style={{
-        height: 'var(--footer-height, 60px)',
-        backgroundColor: 'var(--color-bg-secondary, #111)',
-      }} />
+      <footer className={styles.footer} />
     </div>
   )
 }
