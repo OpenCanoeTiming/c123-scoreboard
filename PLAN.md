@@ -11,6 +11,7 @@
 | I | Server-assigned clientId persistence | ✅ |
 | J | Kompletní dokumentace | ✅ |
 | K | Údržba dokumentace | ✅ |
+| L | React Best Practices refaktoring | 🔄 |
 
 ---
 
@@ -69,3 +70,69 @@
 | `../analysis/` | Ekosystémová dokumentace |
 | `../analysis/recordings/` | Nahrávky pro vývoj |
 | `../canoe-scoreboard-v2/` | V2 reference (READONLY) |
+
+---
+
+## Fáze L - React Best Practices refaktoring
+
+**Tag před refaktorem:** `v3.0.0-pre-refactor`
+
+Optimalizace podle [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices).
+
+### L.1 - Barrel file imports (CRITICAL)
+
+**Problém:** `src/components/index.ts` a `src/hooks/index.ts` jsou barrel files, zpomalují HMR a cold start.
+
+**Kroky:**
+- [ ] L.1.1 Nahradit barrel importy v `App.tsx` přímými importy
+- [ ] L.1.2 Nahradit barrel importy v ostatních komponentách
+- [ ] L.1.3 Odstranit nebo deprecovat `components/index.ts`
+- [ ] L.1.4 Odstranit nebo deprecovat `hooks/index.ts`
+- [ ] L.1.5 Ověřit build (`npm run build`)
+- [ ] L.1.6 Spustit unit testy (`npm run test`)
+- [ ] L.1.7 Spustit Playwright testy (`npm run test:e2e`)
+
+### L.2 - Context splitting (MEDIUM)
+
+**Problém:** `ScoreboardContext` obsahuje vše - komponenty se re-renderují i při změnách, které nepotřebují.
+
+**Kroky:**
+- [ ] L.2.1 Analyzovat které komponenty potřebují které části stavu
+- [ ] L.2.2 Rozdělit na `ConnectionContext` (status, error)
+- [ ] L.2.3 Rozdělit na `ResultsContext` (results, raceName, raceId)
+- [ ] L.2.4 Rozdělit na `CompetitorContext` (currentCompetitor, onCourse, departing)
+- [ ] L.2.5 Aktualizovat `ScoreboardProvider` jako composite provider
+- [ ] L.2.6 Aktualizovat všechny komponenty na nové context hooks
+- [ ] L.2.7 Ověřit build (`npm run build`)
+- [ ] L.2.8 Spustit unit testy (`npm run test`)
+- [ ] L.2.9 Spustit Playwright testy (`npm run test:e2e`)
+- [ ] L.2.10 Manuální smoke test v prohlížeči
+
+### L.3 - Inline styles cleanup (LOW)
+
+**Problém:** `DiscoveryScreen` a `ErrorScreen` v `App.tsx` mají 100+ řádků inline stylů.
+
+**Kroky:**
+- [ ] L.3.1 Vytvořit `App.module.css` pro discovery/error styly
+- [ ] L.3.2 Přesunout styly z `DiscoveryScreen`
+- [ ] L.3.3 Přesunout styly z `ErrorScreen`
+- [ ] L.3.4 Ověřit vizuální shodu (screenshot comparison)
+- [ ] L.3.5 Spustit Playwright testy
+
+### L.4 - Finální validace
+
+- [ ] L.4.1 Full Playwright test suite
+- [ ] L.4.2 Manuální test všech layoutů (vertical, ledwall)
+- [ ] L.4.3 Test reconnect scenářů
+- [ ] L.4.4 Test BR2 zobrazení
+- [ ] L.4.5 Performance profiling (React DevTools)
+- [ ] L.4.6 Bundle size comparison (před/po)
+- [ ] L.4.7 Aktualizovat dokumentaci (pokud potřeba)
+- [ ] L.4.8 Commit a tag `v3.1.0`
+
+### Rollback strategie
+
+Pokud refaktoring způsobí neočekávané problémy:
+```bash
+git checkout v3.0.0-pre-refactor
+```
