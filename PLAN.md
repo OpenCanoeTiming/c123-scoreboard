@@ -94,21 +94,41 @@ Optimalizace podle [Vercel React Best Practices](https://github.com/vercel-labs/
 
 **Poznámka k e2e testům:** E2e testy mají infrastrukturní problémy (chybějící replay data, obsazené porty), ale tyto problémy existovaly i před refaktorem a nejsou způsobeny změnami v importech.
 
-### L.2 - Context splitting (MEDIUM)
+### L.2 - Context splitting (MEDIUM) ⏭️ PŘESKOČENO
 
 **Problém:** `ScoreboardContext` obsahuje vše - komponenty se re-renderují i při změnách, které nepotřebují.
 
+**Analýza (L.2.1):**
+
+Využití contextu v komponentách:
+| Komponenta/Hook | Používané části stavu |
+|-----------------|----------------------|
+| App.tsx | status, initialDataReceived, title, raceName, raceId, dayTime, currentCompetitor, departingCompetitor, results, visibility |
+| useAutoScroll | onCourse |
+| useDeparting | departingCompetitor, departedAt |
+| useHighlight | highlightBib, highlightTimestamp |
+| ResultsList | raceId |
+| DebugView | Vše (debug) |
+
+**Závěr:** Rozdělení contextu není vhodné kvůli silnému propojení reduceru:
+- `SET_RESULTS` čte/modifikuje: activeRaceId, lastActiveRaceId, pendingHighlightBib, highlightBib, departingCompetitor
+- `SET_ON_COURSE` čte/modifikuje: results, raceName, raceId, pendingHighlightBib, departingCompetitor
+
+Tato logika zajišťuje:
+1. Filtrování výsledků podle aktivního závodu (race switching)
+2. Highlight synchronizaci s výsledky (pending → triggered)
+3. Departing competitor cleanup po highlight
+
+Rozdělení by vyžadovalo buď duplikaci stavu (anti-pattern) nebo kompletní refaktoring na event-driven architekturu.
+
+**Doporučení:** Ponechat jednotný context. Re-render overhead je minimální díky:
+- React batching
+- Memoizovaným komponentám (ResultRow)
+- Většina komponent čte jen malou část stavu
+
 **Kroky:**
-- [ ] L.2.1 Analyzovat které komponenty potřebují které části stavu
-- [ ] L.2.2 Rozdělit na `ConnectionContext` (status, error)
-- [ ] L.2.3 Rozdělit na `ResultsContext` (results, raceName, raceId)
-- [ ] L.2.4 Rozdělit na `CompetitorContext` (currentCompetitor, onCourse, departing)
-- [ ] L.2.5 Aktualizovat `ScoreboardProvider` jako composite provider
-- [ ] L.2.6 Aktualizovat všechny komponenty na nové context hooks
-- [ ] L.2.7 Ověřit build (`npm run build`)
-- [ ] L.2.8 Spustit unit testy (`npm run test`)
-- [ ] L.2.9 Spustit Playwright testy (`npm run test:e2e`)
-- [ ] L.2.10 Manuální smoke test v prohlížeči
+- [x] L.2.1 Analyzovat které komponenty potřebují které části stavu
+- [⏭️] L.2.2-L.2.10 Přeskočeno - context splitting není vhodný pro tento případ
 
 ### L.3 - Inline styles cleanup (LOW)
 
