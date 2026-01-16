@@ -151,6 +151,18 @@ test.describe('CLI vs C123Server Visual Comparison', () => {
       return
     }
 
+    // Kill any stale processes from previous test runs
+    console.log('\n=== Cleaning up stale processes ===')
+    const { execSync } = await import('child_process')
+    try {
+      // Kill processes listening on our test ports
+      execSync(`fuser -k ${CLI_WS_PORT}/tcp ${TCP_PORT}/tcp ${C123_SERVER_PORT}/tcp 2>/dev/null || true`, { stdio: 'ignore' })
+      // Small delay to allow ports to be released
+      await delay(500)
+    } catch {
+      // Ignore errors - ports might already be free
+    }
+
     console.log('\n=== Starting mock servers ===')
     console.log(`Recording: ${RECORDING_PATH}`)
 

@@ -30,7 +30,7 @@ test.describe('Performance Metrics', () => {
 
   test('measures FPS during replay playback - vertical', async ({ page }) => {
     // Use fast replay to stress-test rendering
-    await page.goto('/?type=vertical&speed=50')
+    await page.goto('/?source=replay&type=vertical&speed=50')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
 
     // Wait for some data to load
@@ -94,7 +94,7 @@ test.describe('Performance Metrics', () => {
   })
 
   test('measures FPS during replay playback - ledwall', async ({ page }) => {
-    await page.goto('/?type=ledwall&speed=50')
+    await page.goto('/?source=replay&type=ledwall&speed=50')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
 
     await page.waitForFunction(
@@ -156,7 +156,7 @@ test.describe('Performance Metrics', () => {
     const client = await page.context().newCDPSession(page)
     await client.send('Performance.enable')
 
-    await page.goto('/?type=vertical&speed=20')
+    await page.goto('/?source=replay&type=vertical&speed=20')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
 
     // Initial memory measurement
@@ -208,7 +208,7 @@ test.describe('Performance Metrics', () => {
   test('measures initial load time', async ({ page }) => {
     const startTime = Date.now()
 
-    await page.goto('/?type=vertical&speed=100&pauseAfter=150')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=150')
     await page.waitForLoadState('domcontentloaded')
 
     const domContentLoaded = Date.now() - startTime
@@ -242,7 +242,7 @@ test.describe('Performance Metrics', () => {
 
   test('measures render performance during rapid updates', async ({ page }) => {
     // Use maximum speed to stress-test updates
-    await page.goto('/?type=vertical&speed=100')
+    await page.goto('/?source=replay&type=vertical&speed=100')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
 
     await page.waitForFunction(
@@ -309,7 +309,7 @@ test.describe('Performance Metrics', () => {
 test.describe('Bundle Size Analysis', () => {
   test('reports dev bundle size (unbundled modules)', async ({ page }) => {
     // Navigate to the app
-    await page.goto('/?type=vertical&speed=100&pauseAfter=10')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=10')
     await page.waitForLoadState('load')
 
     // Get all loaded resources
@@ -491,7 +491,7 @@ test.describe('Lighthouse Audit', () => {
 
   test('measures Web Vitals (simulated Lighthouse)', async ({ page }) => {
     // Navigate to app with stable data
-    await page.goto('/?type=vertical&speed=100&pauseAfter=150&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=150&disableScroll=true')
     await page.waitForLoadState('load')
 
     // Wait for data to appear

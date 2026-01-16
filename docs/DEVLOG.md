@@ -284,3 +284,35 @@ Canoe Scoreboard V3 je funkčně kompletní:
 - **Asset management** - customizace log a bannerů
 - **725+ testů** - robustní testovací pokrytí
 - **Kompletní dokumentace** - pro uživatele i vývojáře
+
+---
+
+## 2026-01-16 - Fáze M: E2E testy - opravy infrastruktury
+
+**Identifikované problémy:**
+1. Chybějící `source=replay` v URL - ReplayProvider se neaktivoval
+2. Port conflicts v mock serverech
+3. Nesprávné CSS selektory (`div[class*="row"]` → `[data-bib]`)
+4. Nízké `pauseAfter` hodnoty (první `top` zpráva je 33. ws/tcp zpráva)
+5. Zastaralé grid columns expectations
+
+**Provedené opravy:**
+- Přidán `source=replay` do visual, dynamic, layout, scroll, performance spec souborů
+- Přidán port cleanup (`fuser -k`) do cli-vs-c123.spec.ts
+- Aktualizovány selektory na `[data-bib]`
+- Zvýšen `pauseAfter` ze 50 na 500
+- Aktualizovány expectations (vertical: 5 columns, ledwall: 5 columns)
+- Regenerovány visual snapshots
+
+**Výsledky:**
+- Před: ~45 passed, většina timeoutů
+- Po: 49 passed (single worker), 22 skipped, 5 failed
+
+**Zbývající problémy** (dokumentovány v PLAN.md Fáze M):
+- M.1: cli-vs-c123 mock server infrastruktura (C123 Server connection)
+- M.2: layout dynamic resize test
+- M.3: performance rapid updates timeout
+- M.4: scroll testy timing issues
+- M.5: displayRows scaling test
+
+**Poznámka:** Recording data (`rec-2025-12-28T09-34-10.jsonl`) má 5970 zpráv, první `top` zpráva s výsledky je na řádku 104 (33. ws/tcp zpráva po filtrování).

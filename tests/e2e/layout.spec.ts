@@ -16,9 +16,10 @@ import { test, expect, Page } from '@playwright/test'
 async function waitForDataLoad(page: Page, timeout = 30000) {
   await page.waitForLoadState('domcontentloaded')
   await page.waitForSelector('[data-testid="results-list"]', { timeout })
+  // Wait for actual data rows (rows have data-bib attribute)
   await page.waitForFunction(() => {
     const list = document.querySelector('[data-testid="results-list"]')
-    return list && list.querySelectorAll('div[class*="row"]').length > 1
+    return list && list.querySelectorAll('[data-bib]').length > 1
   }, { timeout })
   await page.waitForTimeout(1000)
 }
@@ -40,7 +41,7 @@ const layoutConfigs: LayoutConfig[] = [
     width: 1080,
     height: 1920,
     type: 'vertical',
-    expectedColumns: 6,
+    expectedColumns: 5, // rank, bib, name, time (with penalty badge), behind
     showFooter: true,
     screenshotName: 'layout-vertical-1080x1920.png',
   },
@@ -49,7 +50,7 @@ const layoutConfigs: LayoutConfig[] = [
     width: 768,
     height: 384,
     type: 'ledwall',
-    expectedColumns: 5,
+    expectedColumns: 5, // rank, bib, name, penalty, time
     showFooter: false,
     screenshotName: 'layout-ledwall-768x384.png',
   },
@@ -58,7 +59,7 @@ const layoutConfigs: LayoutConfig[] = [
     width: 1920,
     height: 480,
     type: 'ledwall',
-    expectedColumns: 5,
+    expectedColumns: 5, // rank, bib, name, penalty, time
     showFooter: false,
     screenshotName: 'layout-ledwall-1920x480.png',
   },
@@ -69,7 +70,7 @@ for (const config of layoutConfigs) {
     test('displays layout with correct components', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
       // Need more messages for competitor to have dtStart (starts around message 190)
-      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
+      await page.goto(`/?source=replay&type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
       await waitForDataLoad(page)
 
       // Main components should be visible
@@ -89,13 +90,14 @@ for (const config of layoutConfigs) {
 
     test('results grid has correct number of columns', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
-      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=50&disableScroll=true`)
+      await page.goto(`/?source=replay&type=${config.type}&speed=100&pauseAfter=500&disableScroll=true`)
       await waitForDataLoad(page)
 
       const gridStyle = await page.evaluate(() => {
         const list = document.querySelector('[data-testid="results-list"]')
         if (!list) return null
-        const row = list.querySelector('div[class*="row"]')
+        // Result rows have data-bib attribute
+        const row = list.querySelector('[data-bib]')
         if (!row) return null
         return window.getComputedStyle(row).gridTemplateColumns
       })
@@ -108,7 +110,7 @@ for (const config of layoutConfigs) {
     test('screenshot for reference', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
       // Need more messages for competitor to have dtStart (starts around message 190)
-      await page.goto(`/?type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
+      await page.goto(`/?source=replay&type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
       await waitForDataLoad(page)
       await page.waitForTimeout(1000)
 
@@ -123,7 +125,7 @@ for (const config of layoutConfigs) {
 test.describe('Layout: Ledwall specific', () => {
   test('all content fits in viewport (768×384)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     const hasScroll = await page.evaluate(() => {
@@ -135,7 +137,7 @@ test.describe('Layout: Ledwall specific', () => {
 
   test('wide ledwall has more rows than standard', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 480 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     const wideRowCount = await page.evaluate(() => {
@@ -159,7 +161,7 @@ test.describe('Layout: Dynamic resize', () => {
   test('switches from vertical to ledwall on resize', async ({ page }) => {
     // Start with vertical
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify vertical layout (footer visible)
@@ -194,7 +196,7 @@ test.describe('Layout: Dynamic resize', () => {
   test('switches from ledwall to vertical on resize', async ({ page }) => {
     // Start with ledwall
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify ledwall layout (footer hidden)
@@ -202,7 +204,7 @@ test.describe('Layout: Dynamic resize', () => {
 
     // Resize to vertical dimensions
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Footer should now be visible in vertical
@@ -211,7 +213,7 @@ test.describe('Layout: Dynamic resize', () => {
 
   test('handles rapid resize changes', async ({ page }) => {
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Rapid resize sequence
@@ -238,7 +240,7 @@ test.describe('Layout: Dynamic resize', () => {
 test.describe('Layout: displayRows scaling (Phase 11)', () => {
   test('applies CSS transform when displayRows is set', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that transform is applied
@@ -258,7 +260,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
     const viewportHeight = 1080
     await page.setViewportSize({ width: viewportWidth, height: viewportHeight })
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that layout fills viewport height
@@ -277,7 +279,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows=3 applies scale transform', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Get scale factor from transform matrix
@@ -300,7 +302,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('no scaling when displayRows is not set', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that no transform is applied
@@ -317,7 +319,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
   test('screenshot with displayRows=5 on 1920x1080', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
     await waitForDataLoad(page)
     await page.waitForTimeout(1000)
 
@@ -329,7 +331,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
   // Edge case tests for displayRows validation (min: 3, max: 20)
   test('displayRows below minimum (2) is clamped to 3', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=2&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=2&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Should still render properly with clamped value
@@ -345,7 +347,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows at minimum (3) applies transform', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     const scaleInfo = await page.evaluate(() => {
@@ -365,7 +367,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows at maximum (20) applies transform', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=20&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=20&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     const scaleInfo = await page.evaluate(() => {
@@ -385,7 +387,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows above maximum (25) is clamped to 20', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=25&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=25&speed=100&pauseAfter=50&disableScroll=true')
     await waitForDataLoad(page)
 
     // Should still render properly with clamped value

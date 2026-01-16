@@ -13,10 +13,11 @@ import { test, expect } from '@playwright/test'
 test.describe('Vertical Layout', () => {
   test.beforeEach(async ({ page }) => {
     // Use replay with high speed to quickly load data
+    // source=replay uses ReplayProvider with recorded data
     // type=vertical forces vertical layout
     // pauseAfter=50 stops playback after 50 messages for stable screenshots
     // disableScroll=true prevents auto-scroll for stable screenshots
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
     // Wait for DOM to be ready
     await page.waitForLoadState('domcontentloaded')
     // Wait for results-list container to appear (always rendered)
@@ -50,7 +51,7 @@ test.describe('Vertical Layout', () => {
 
   test('oncourse renders correctly', async ({ page }) => {
     // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
-    await page.goto('/?type=vertical&speed=100&pauseAfter=250&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=250&disableScroll=true')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
     await page.waitForTimeout(1000)
 
@@ -75,9 +76,10 @@ test.describe('Vertical Layout', () => {
 test.describe('Ledwall Layout', () => {
   test.beforeEach(async ({ page }) => {
     // Use replay with high speed, type=ledwall forces ledwall layout
+    // source=replay uses ReplayProvider with recorded data
     // pauseAfter=50 stops playback after 50 messages for stable screenshots
     // disableScroll=true prevents auto-scroll for stable screenshots
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
     // Wait for DOM to be ready
     await page.waitForLoadState('domcontentloaded')
     // Wait for results-list container to appear (always rendered)
@@ -111,7 +113,7 @@ test.describe('Ledwall Layout', () => {
 
   test('oncourse renders correctly', async ({ page }) => {
     // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=250&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=250&disableScroll=true')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
     await page.waitForTimeout(1000)
 

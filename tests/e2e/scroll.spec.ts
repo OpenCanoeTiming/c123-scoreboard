@@ -12,21 +12,18 @@ import { test, expect, Page } from '@playwright/test'
  * disables auto-scroll. These tests need to override that setting.
  */
 
-// Override reduced motion setting for scroll tests
-test.use({
-  launchOptions: {
-    args: [], // Remove --force-prefers-reduced-motion
-  },
-})
+// Note: Reduced motion is enabled globally for stable screenshots.
+// Scroll tests use disableScroll=true anyway, so scroll animation is not tested here.
 
 // Helper to wait for data load
 async function waitForDataLoad(page: Page, timeout = 30000) {
   await page.waitForLoadState('domcontentloaded')
   await page.waitForSelector('[data-testid="results-list"]', { timeout })
+  // Wait for actual data rows to appear (rows have data-bib attribute)
   await page.waitForFunction(
     () => {
       const list = document.querySelector('[data-testid="results-list"]')
-      return list && list.querySelectorAll('div[class*="row"]').length > 10
+      return list && list.querySelectorAll('[data-bib]').length > 1
     },
     { timeout }
   )
@@ -72,7 +69,7 @@ test.describe('Auto-scroll behavior', () => {
 
   test('results list is visible and functional', async ({ page }) => {
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=200&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify results list is visible
@@ -88,7 +85,7 @@ test.describe('Auto-scroll behavior', () => {
 
   test('ledwall with displayRows renders correctly', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?type=ledwall&displayRows=5&speed=100&pauseAfter=200&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify results list is visible and has fixed height for scrolling
@@ -113,7 +110,7 @@ test.describe('Auto-scroll behavior', () => {
 test.describe('Scroll row spacing calculation', () => {
   test('measures actual row spacing including margins', async ({ page }) => {
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?type=vertical&speed=100&pauseAfter=100&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Measure row spacing

@@ -11,7 +11,8 @@ import { test, expect } from '@playwright/test'
 test.describe('Data Loading', () => {
   test('shows connection status during initial load', async ({ page }) => {
     // Go to page with slow speed to see connection status
-    await page.goto('/?type=vertical&speed=1')
+    // source=replay uses ReplayProvider with recorded data
+    await page.goto('/?source=replay&type=vertical&speed=1')
 
     // Should show loading/connecting state initially
     await page.waitForLoadState('domcontentloaded')
@@ -37,7 +38,7 @@ test.describe('Highlight Behavior', () => {
     // which may not be present in all test recordings.
     // Use replay without pauseAfter to let playback continue
     // Speed up to reach a highlight event quickly
-    await page.goto('/?type=vertical&speed=50')
+    await page.goto('/?source=replay&type=vertical&speed=50')
 
     await page.waitForLoadState('domcontentloaded')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
@@ -69,7 +70,7 @@ test.describe('Highlight Behavior', () => {
 test.describe('Current Competitor', () => {
   test('shows current competitor data', async ({ page }) => {
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?type=vertical&speed=100&pauseAfter=250')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=250')
 
     await page.waitForLoadState('domcontentloaded')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
@@ -86,7 +87,7 @@ test.describe('Current Competitor', () => {
 
   test('running indicator pulses for active competitor', async ({ page }) => {
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?type=vertical&speed=100&pauseAfter=250')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=250')
 
     await page.waitForLoadState('domcontentloaded')
     await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
@@ -108,7 +109,7 @@ test.describe('Current Competitor', () => {
 
 test.describe('Layout Switching', () => {
   test('vertical layout shows footer', async ({ page }) => {
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForTimeout(1000)
 
@@ -117,7 +118,7 @@ test.describe('Layout Switching', () => {
   })
 
   test('ledwall layout hides footer', async ({ page }) => {
-    await page.goto('/?type=ledwall&speed=100&pauseAfter=50')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForTimeout(1000)
 
@@ -128,7 +129,7 @@ test.describe('Layout Switching', () => {
 
 test.describe('Results List', () => {
   test('displays multiple result rows', async ({ page }) => {
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForFunction(
       () => {
@@ -147,7 +148,7 @@ test.describe('Results List', () => {
   })
 
   test('shows rank, bib, name, time for each result', async ({ page }) => {
-    await page.goto('/?type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForFunction(
       () => {
