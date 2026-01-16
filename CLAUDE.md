@@ -1,8 +1,10 @@
-# Claude Code Instructions - Canoe Scoreboard V3
+# Claude Code Instructions - C123 Scoreboard
 
 ## Projekt
 
-Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracující plnohodnotně s daty poskytované vrstvou C123 server.
+Real-time scoreboard pro kanoistické slalomové závody. Pracuje s daty z C123 serveru.
+
+**GitHub:** OpenCanoeTiming/c123-scoreboard | **Licence:** MIT
 
 ---
 
@@ -10,13 +12,13 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 
 | Účel | Cesta |
 |------|-------|
-| **Tento projekt** | `/workspace/csb-v2/canoe-scoreboard-v3/` |
+| **Tento projekt** | `/workspace/timing/c123-scoreboard/` |
 | **Implementační plán** | `./PLAN.md` |
 | **Dokumentace** | `./docs/` |
-| **Scoreboard V2** | `../canoe-scoreboard-v2/` (READONLY - reference) |
-| **Starý projekt V1** | `../canoe-scoreboard-original/` (READONLY - reference) |
-| **Analýza** | `../analysis/` (důležitá reference) |
-| **C123 Server** | `../c123-server/` (důležitá reference) |
+| **C123 Server** | `../c123-server/` |
+| **Protokol docs** | `../c123-protocol-docs/` |
+| **Design system** | `../timing-design-system/` |
+| **Legacy V1** | `/workspace/personal/canoe-scoreboard-original/` (archiv) |
 
 ### Projektová dokumentace
 
@@ -30,9 +32,9 @@ Real-time scoreboard pro kanoistické slalomové závody. Nová verze pracujíc�
 
 ### Externí reference
 
-- **`../c123-server/docs`** - dokumentace C123 rozhraní
-- **`../analysis`** - dokumentace k implementaci V2
-- **`../analysis/captures/xboardtest02_jarni_v1.xml`** - XML struktura, BR1/BR2 formát
+- **`../c123-server/docs`** - dokumentace C123 WebSocket API
+- **`../c123-protocol-docs`** - dokumentace C123 protokolu a XML formátu
+- **`../c123-protocol-docs/captures/`** - XML vzorky pro testování
 
 ---
 
@@ -69,7 +71,7 @@ Detaily viz [docs/architecture.md](docs/architecture.md).
 
 **Nahrávka pro vývoj:**
 ```bash
-../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl
 ```
 
 **Deníček:** Zapisovat průběh do [docs/DEVLOG.md](docs/DEVLOG.md).
