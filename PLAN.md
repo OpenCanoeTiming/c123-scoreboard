@@ -1,323 +1,323 @@
 # Canoe Scoreboard V3
 
-## Stav projektu
+## Project Status
 
-| Fáze | Popis | Status |
-|------|-------|--------|
-| A-E | Základní funkčnost, testy, opravy | ✅ |
-| F | C123 integrace (ConfigPush, assets, ForceRefresh) | ✅ |
-| G | BR1/BR2 merge zobrazení | ✅ |
-| H | OnCourse vylepšení, scrollToFinished | ✅ |
+| Phase | Description | Status |
+|-------|-------------|--------|
+| A-E | Basic functionality, tests, fixes | ✅ |
+| F | C123 integration (ConfigPush, assets, ForceRefresh) | ✅ |
+| G | BR1/BR2 merge display | ✅ |
+| H | OnCourse improvements, scrollToFinished | ✅ |
 | I | Server-assigned clientId persistence | ✅ |
-| J | Kompletní dokumentace | ✅ |
-| K | Údržba dokumentace | ✅ |
-| L | React Best Practices refaktoring | ✅ |
-| M | E2E testy - opravy infrastruktury | 🔄 Částečně |
+| J | Complete documentation | ✅ |
+| K | Documentation maintenance | ✅ |
+| L | React Best Practices refactoring | ✅ |
+| M | E2E tests - infrastructure fixes | 🔄 Partial |
 
 ---
 
-## Implementované funkce
+## Implemented Features
 
-### Fáze F - C123 integrace
+### Phase F - C123 Integration
 
 - ConfigPush (type, displayRows, customTitle, scrollToFinished)
 - Asset management (logoUrl, partnerLogoUrl, footerImageUrl)
 - ForceRefresh handler
-- ClientState response s capabilities
+- ClientState response with capabilities
 
-### Fáze G - BR1/BR2 merge
+### Phase G - BR1/BR2 Merge
 
-- Detekce BR2 závodů (`isBR2Race()`, `getClassId()`)
-- BR2Manager s REST API cache a merge logikou
-- Dva sloupce výsledků s `.worseRun` stylingem
+- BR2 race detection (`isBR2Race()`, `getClassId()`)
+- BR2Manager with REST API cache and merge logic
+- Two result columns with `.worseRun` styling
 - WebSocket `Total` = best of both runs
 
-### Fáze H - OnCourse & scroll
+### Phase H - OnCourse & Scroll
 
-- Vertical OnCourse zobrazuje jednoho závodníka
-- `?scrollToFinished=false` vypne scroll při dojetí
+- Vertical OnCourse displays one competitor
+- `?scrollToFinished=false` disables scroll on finish
 
-### Fáze I - clientId persistence
+### Phase I - clientId Persistence
 
-- Server přiřadí clientId přes ConfigPush
+- Server assigns clientId via ConfigPush
 - Fallback: URL param → localStorage → IP-based
 
 ---
 
-## Dokumentace
+## Documentation
 
-| Dokument | Popis |
-|----------|-------|
-| [README.md](README.md) | Uživatelská příručka |
-| [docs/architecture.md](docs/architecture.md) | Architektura, data flow |
-| [docs/components.md](docs/components.md) | React komponenty |
+| Document | Description |
+|----------|-------------|
+| [README.md](README.md) | User guide |
+| [docs/architecture.md](docs/architecture.md) | Architecture, data flow |
+| [docs/components.md](docs/components.md) | React components |
 | [docs/data-providers.md](docs/data-providers.md) | Provider interface |
-| [docs/configuration.md](docs/configuration.md) | Remote konfigurace |
-| [docs/url-parameters.md](docs/url-parameters.md) | URL parametry |
-| [docs/development.md](docs/development.md) | Vývojářský průvodce |
-| [docs/testing.md](docs/testing.md) | Testování a CI/CD |
-| [docs/timing.md](docs/timing.md) | Timing konstanty |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | Řešení problémů |
-| [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) | BR1/BR2 analýza |
-| [docs/DEVLOG.md](docs/DEVLOG.md) | Deníček vývoje |
+| [docs/configuration.md](docs/configuration.md) | Remote configuration |
+| [docs/url-parameters.md](docs/url-parameters.md) | URL parameters |
+| [docs/development.md](docs/development.md) | Developer guide |
+| [docs/testing.md](docs/testing.md) | Testing and CI/CD |
+| [docs/timing.md](docs/timing.md) | Timing constants |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Problem solving |
+| [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) | BR1/BR2 analysis |
+| [docs/DEVLOG.md](docs/DEVLOG.md) | Development log |
 
 ---
 
-## Externí reference
+## External References
 
-| Cesta | Popis |
-|-------|-------|
-| `../c123-server/docs/` | C123 Server dokumentace |
-| `../analysis/` | Ekosystémová dokumentace |
-| `../analysis/recordings/` | Nahrávky pro vývoj |
+| Path | Description |
+|------|-------------|
+| `../c123-server/docs/` | C123 Server documentation |
+| `../analysis/` | Ecosystem documentation |
+| `../analysis/recordings/` | Recordings for development |
 | `../canoe-scoreboard-v2/` | V2 reference (READONLY) |
 
 ---
 
-## Fáze L - React Best Practices refaktoring
+## Phase L - React Best Practices Refactoring
 
-**Tag před refaktorem:** `v3.0.0-pre-refactor`
+**Tag before refactoring:** `v3.0.0-pre-refactor`
 
-Optimalizace podle [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices).
+Optimizations based on [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices).
 
-### L.1 - Barrel file imports (CRITICAL) ✅
+### L.1 - Barrel File Imports (CRITICAL) ✅
 
-**Problém:** `src/components/index.ts` a `src/hooks/index.ts` byly barrel files, zpomalovaly HMR a cold start.
+**Problem:** `src/components/index.ts` and `src/hooks/index.ts` were barrel files, slowing HMR and cold start.
 
-**Kroky:**
-- [x] L.1.1 Nahradit barrel importy v `App.tsx` přímými importy
-- [x] L.1.2 Nahradit barrel importy v ostatních komponentách
-- [x] L.1.3 Odstranit `components/index.ts`
-- [x] L.1.4 Odstranit `hooks/index.ts`
-- [x] L.1.5 Ověřit build (`npm run build`)
-- [x] L.1.6 Spustit unit testy (`npm run test`) - 725 testů prošlo
-- [x] L.1.7 Spustit Playwright testy (`npm run test:e2e`)
+**Steps:**
+- [x] L.1.1 Replace barrel imports in `App.tsx` with direct imports
+- [x] L.1.2 Replace barrel imports in other components
+- [x] L.1.3 Remove `components/index.ts`
+- [x] L.1.4 Remove `hooks/index.ts`
+- [x] L.1.5 Verify build (`npm run build`)
+- [x] L.1.6 Run unit tests (`npm run test`) - 725 tests passed
+- [x] L.1.7 Run Playwright tests (`npm run test:e2e`)
 
-**Poznámka k e2e testům:** E2e testy měly infrastrukturní problémy - viz **Fáze M** pro podrobnosti a provedené opravy.
+**Note on e2e tests:** E2e tests had infrastructure problems - see **Phase M** for details and fixes performed.
 
-### L.2 - Context splitting (MEDIUM) ⏭️ PŘESKOČENO
+### L.2 - Context Splitting (MEDIUM) ⏭️ SKIPPED
 
-**Problém:** `ScoreboardContext` obsahuje vše - komponenty se re-renderují i při změnách, které nepotřebují.
+**Problem:** `ScoreboardContext` contains everything - components re-render even on changes they don't need.
 
-**Analýza (L.2.1):**
+**Analysis (L.2.1):**
 
-Využití contextu v komponentách:
-| Komponenta/Hook | Používané části stavu |
-|-----------------|----------------------|
+Context usage in components:
+| Component/Hook | Used State Parts |
+|----------------|------------------|
 | App.tsx | status, initialDataReceived, title, raceName, raceId, dayTime, currentCompetitor, departingCompetitor, results, visibility |
 | useAutoScroll | onCourse |
 | useDeparting | departingCompetitor, departedAt |
 | useHighlight | highlightBib, highlightTimestamp |
 | ResultsList | raceId |
-| DebugView | Vše (debug) |
+| DebugView | Everything (debug) |
 
-**Závěr:** Rozdělení contextu není vhodné kvůli silnému propojení reduceru:
-- `SET_RESULTS` čte/modifikuje: activeRaceId, lastActiveRaceId, pendingHighlightBib, highlightBib, departingCompetitor
-- `SET_ON_COURSE` čte/modifikuje: results, raceName, raceId, pendingHighlightBib, departingCompetitor
+**Conclusion:** Context splitting is not suitable due to strong reducer coupling:
+- `SET_RESULTS` reads/modifies: activeRaceId, lastActiveRaceId, pendingHighlightBib, highlightBib, departingCompetitor
+- `SET_ON_COURSE` reads/modifies: results, raceName, raceId, pendingHighlightBib, departingCompetitor
 
-Tato logika zajišťuje:
-1. Filtrování výsledků podle aktivního závodu (race switching)
-2. Highlight synchronizaci s výsledky (pending → triggered)
-3. Departing competitor cleanup po highlight
+This logic ensures:
+1. Filtering results by active race (race switching)
+2. Highlight synchronization with results (pending → triggered)
+3. Departing competitor cleanup after highlight
 
-Rozdělení by vyžadovalo buď duplikaci stavu (anti-pattern) nebo kompletní refaktoring na event-driven architekturu.
+Splitting would require either state duplication (anti-pattern) or complete refactoring to event-driven architecture.
 
-**Doporučení:** Ponechat jednotný context. Re-render overhead je minimální díky:
+**Recommendation:** Keep unified context. Re-render overhead is minimal due to:
 - React batching
-- Memoizovaným komponentám (ResultRow)
-- Většina komponent čte jen malou část stavu
+- Memoized components (ResultRow)
+- Most components read only a small part of state
 
-**Kroky:**
-- [x] L.2.1 Analyzovat které komponenty potřebují které části stavu
-- [⏭️] L.2.2-L.2.10 Přeskočeno - context splitting není vhodný pro tento případ
+**Steps:**
+- [x] L.2.1 Analyze which components need which parts of state
+- [⏭️] L.2.2-L.2.10 Skipped - context splitting not suitable for this case
 
-### L.3 - Inline styles cleanup (LOW) ✅
+### L.3 - Inline Styles Cleanup (LOW) ✅
 
-**Problém:** `DiscoveryScreen` a `ErrorScreen` v `App.tsx` měly 100+ řádků inline stylů.
+**Problem:** `DiscoveryScreen` and `ErrorScreen` in `App.tsx` had 100+ lines of inline styles.
 
-**Kroky:**
-- [x] L.3.1 Vytvořit `App.module.css` pro discovery/error styly
-- [x] L.3.2 Přesunout styly z `DiscoveryScreen`
-- [x] L.3.3 Přesunout styly z `ErrorScreen`
-- [x] L.3.4 Ověřit build a unit testy (725 testů prošlo)
-- [⏭️] L.3.5 Playwright testy - přesunuto do L.4 (finální validace)
+**Steps:**
+- [x] L.3.1 Create `App.module.css` for discovery/error styles
+- [x] L.3.2 Move styles from `DiscoveryScreen`
+- [x] L.3.3 Move styles from `ErrorScreen`
+- [x] L.3.4 Verify build and unit tests (725 tests passed)
+- [⏭️] L.3.5 Playwright tests - moved to L.4 (final validation)
 
-### L.4 - Finální validace ✅
+### L.4 - Final Validation ✅
 
-- [x] L.4.1 Full Playwright test suite - infrastrukturní problémy (existovaly před refaktorem)
-- [x] L.4.2 Manuální test všech layoutů - unit testy pokryté
-- [x] L.4.3 Test reconnect scenářů - unit testy pokryté
-- [x] L.4.4 Test BR2 zobrazení - unit testy pokryté
-- [x] L.4.5 Performance profiling - 725 unit testů prošlo
+- [x] L.4.1 Full Playwright test suite - infrastructure issues (existed before refactoring)
+- [x] L.4.2 Manual test of all layouts - covered by unit tests
+- [x] L.4.3 Test reconnect scenarios - covered by unit tests
+- [x] L.4.4 Test BR2 display - covered by unit tests
+- [x] L.4.5 Performance profiling - 725 unit tests passed
 - [x] L.4.6 Bundle size comparison:
   - JS: 441.65 kB → 440.34 kB (-1.31 kB) ✅
-  - CSS: 17.27 kB → 19.12 kB (+1.85 kB, extrakce inline stylů)
-- [x] L.4.7 Aktualizovat dokumentaci
-- [x] L.4.8 Commit a tag `v3.1.0`
+  - CSS: 17.27 kB → 19.12 kB (+1.85 kB, inline style extraction)
+- [x] L.4.7 Update documentation
+- [x] L.4.8 Commit and tag `v3.1.0`
 
-### Rollback strategie
+### Rollback Strategy
 
-Pokud refaktoring způsobí neočekávané problémy:
+If refactoring causes unexpected problems:
 ```bash
 git checkout v3.0.0-pre-refactor
 ```
 
 ---
 
-## Fáze M - E2E testy - opravy infrastruktury
+## Phase M - E2E Tests - Infrastructure Fixes
 
-**Datum:** 2025-01-16
+**Date:** 2025-01-16
 
-### Identifikované problémy
+### Identified Problems
 
-E2E testy měly několik infrastrukturních problémů:
+E2E tests had several infrastructure issues:
 
-1. **Chybějící `source=replay`** - Testy používaly URL bez parametru `source=replay`, takže ReplayProvider se neaktivoval a aplikace šla do auto-discovery
-2. **Port conflicts** - Mock servery v cli-vs-c123.spec.ts zanechávaly běžící procesy
-3. **Nesprávné selektory** - `div[class*="row"]` nefungovalo spolehlivě s CSS modules
-4. **Nízké pauseAfter hodnoty** - První `top` zpráva s výsledky přichází až jako 33. ws/tcp zpráva
-5. **Zastaralé expectations** - Grid columns počty se změnily (vertical: 5, ledwall: 5)
-6. **Race conditions** - Paralelní běh testů způsoboval nestabilitu
+1. **Missing `source=replay`** - Tests used URLs without `source=replay` parameter, so ReplayProvider didn't activate and app went into auto-discovery
+2. **Port conflicts** - Mock servers in cli-vs-c123.spec.ts left running processes
+3. **Incorrect selectors** - `div[class*="row"]` didn't work reliably with CSS modules
+4. **Low pauseAfter values** - First `top` message with results comes as 33rd ws/tcp message
+5. **Outdated expectations** - Grid column counts changed (vertical: 5, ledwall: 5)
+6. **Race conditions** - Parallel test execution caused instability
 
-### Provedené opravy ✅
+### Fixes Performed ✅
 
-| Soubor | Oprava |
-|--------|--------|
-| `visual.spec.ts` | Přidán `source=replay` do všech URL |
-| `dynamic.spec.ts` | Přidán `source=replay` do všech URL |
-| `layout.spec.ts` | Přidán `source=replay`, opraveny expectations (5 columns), změněn selektor na `[data-bib]` |
-| `scroll.spec.ts` | Přidán `source=replay`, zvýšen `pauseAfter` na 500, změněn selektor na `[data-bib]` |
-| `performance.spec.ts` | Přidán `source=replay` do všech URL |
-| `cli-vs-c123.spec.ts` | Přidán cleanup starých procesů pomocí `fuser -k` před startem mock serverů |
+| File | Fix |
+|------|-----|
+| `visual.spec.ts` | Added `source=replay` to all URLs |
+| `dynamic.spec.ts` | Added `source=replay` to all URLs |
+| `layout.spec.ts` | Added `source=replay`, fixed expectations (5 columns), changed selector to `[data-bib]` |
+| `scroll.spec.ts` | Added `source=replay`, increased `pauseAfter` to 500, changed selector to `[data-bib]` |
+| `performance.spec.ts` | Added `source=replay` to all URLs |
+| `cli-vs-c123.spec.ts` | Added cleanup of old processes using `fuser -k` before starting mock servers |
 
-### Aktuální stav testů
+### Current Test Status
 
 ```
 49 passed (single worker)
-22 skipped (vyžadují externí CLI/V1 server)
+22 skipped (require external CLI/V1 server)
 5 failed
-3 did not run (závislosti na selhávajících)
+3 did not run (dependencies on failing tests)
 ```
 
-### Zbývající problémy 🔄
+### Remaining Issues 🔄
 
-#### M.1 - cli-vs-c123.spec.ts mock infrastruktura
+#### M.1 - cli-vs-c123.spec.ts Mock Infrastructure
 
-**Problém:** C123 Server se nepřipojuje správně k mock TCP serveru.
+**Problem:** C123 Server doesn't connect correctly to mock TCP server.
 
-**Podrobnosti:**
-- Mock TCP server (`scripts/mock-c123-tcp.ts`) posílá XML zprávy na port 27334
-- C123 Server (`../c123-server/`) se připojuje ale ihned reportuje "reconnecting..."
+**Details:**
+- Mock TCP server (`scripts/mock-c123-tcp.ts`) sends XML messages on port 27334
+- C123 Server (`../c123-server/`) connects but immediately reports "reconnecting..."
 - Log: `ERR [Server] File not found: /tmp/nonexistent-test.xml`
 
-**Příčina:** C123 Server očekává XML soubor, ne přímé TCP spojení.
+**Cause:** C123 Server expects XML file, not direct TCP connection.
 
-**Řešení:**
-- [ ] M.1.1 Analyzovat jak C123 Server používá TCP source vs XML source
-- [ ] M.1.2 Upravit test setup tak, aby C123 Server používal TcpSource místo XmlFileSource
-- [ ] M.1.3 Nebo: Vytvořit dočasný XML soubor s daty z mock TCP
+**Solution:**
+- [ ] M.1.1 Analyze how C123 Server uses TCP source vs XML source
+- [ ] M.1.2 Modify test setup so C123 Server uses TcpSource instead of XmlFileSource
+- [ ] M.1.3 Or: Create temporary XML file with data from mock TCP
 
-**Workaround:** Test lze skipnout pokud C123 Server není dostupný - má auto-skip logiku.
+**Workaround:** Test can be skipped if C123 Server is not available - has auto-skip logic.
 
-#### M.2 - layout dynamic resize test
+#### M.2 - Layout Dynamic Resize Test
 
-**Problém:** Test "switches from vertical to ledwall on resize" selhává.
+**Problem:** Test "switches from vertical to ledwall on resize" fails.
 
-**Podrobnosti:**
-- Test mění viewport z 1080×1920 na 768×384
-- Očekává změnu layoutu z vertical na ledwall
-- Selhává na assertion po resize
+**Details:**
+- Test changes viewport from 1080×1920 to 768×384
+- Expects layout change from vertical to ledwall
+- Fails on assertion after resize
 
-**Možné příčiny:**
-1. Layout switching není okamžité
-2. CSS media queries mají jiné breakpointy
-3. JavaScript layout detection má delay
+**Possible causes:**
+1. Layout switching is not immediate
+2. CSS media queries have different breakpoints
+3. JavaScript layout detection has delay
 
-**Řešení:**
-- [ ] M.2.1 Přidat `page.waitForTimeout()` po resize
-- [ ] M.2.2 Nebo: Čekat na změnu CSS class/data attributu
-- [ ] M.2.3 Ověřit breakpointy v `useLayoutMode.ts`
+**Solution:**
+- [ ] M.2.1 Add `page.waitForTimeout()` after resize
+- [ ] M.2.2 Or: Wait for CSS class/data attribute change
+- [ ] M.2.3 Verify breakpoints in `useLayoutMode.ts`
 
-#### M.3 - performance rapid updates timeout
+#### M.3 - Performance Rapid Updates Timeout
 
-**Problém:** Test "measures render performance during rapid updates" timeoutuje po 60s.
+**Problem:** Test "measures render performance during rapid updates" times out after 60s.
 
-**Podrobnosti:**
-- Test používá `requestAnimationFrame` loop pro měření
-- Loop čeká na 300 frames (~5s při 60fps)
-- Ale podmínka `frames < 300` nikdy není false kvůli chybě v kódu
+**Details:**
+- Test uses `requestAnimationFrame` loop for measurement
+- Loop waits for 300 frames (~5s at 60fps)
+- But condition `frames < 300` is never false due to code bug
 
-**Příčina:** V kódu je `let paintCount = 0` ale pak `paintCount = frames` není na správném místě (přepsání const).
+**Cause:** Code has `let paintCount = 0` but then `paintCount = frames` isn't in the right place (const overwrite).
 
-**Řešení:**
-- [ ] M.3.1 Opravit logiku měření v testu
-- [ ] M.3.2 Nebo: Zvýšit timeout na 120s
-- [ ] M.3.3 Nebo: Zjednodušit metriku (pouze FPS, ne paint count)
+**Solution:**
+- [ ] M.3.1 Fix measurement logic in test
+- [ ] M.3.2 Or: Increase timeout to 120s
+- [ ] M.3.3 Or: Simplify metric (only FPS, not paint count)
 
-#### M.4 - scroll testy timing issues
+#### M.4 - Scroll Tests Timing Issues
 
-**Problém:** Testy "results list is visible" a "ledwall with displayRows" intermitentně selhávají.
+**Problem:** Tests "results list is visible" and "ledwall with displayRows" intermittently fail.
 
-**Podrobnosti:**
-- `waitForDataLoad` projde (najde `[data-bib]` elementy)
-- Následný `page.evaluate` vrací 0 elementů
-- Stránka zobrazuje "Zatím žádné výsledky"
+**Details:**
+- `waitForDataLoad` passes (finds `[data-bib]` elements)
+- Following `page.evaluate` returns 0 elements
+- Page shows "No results yet"
 
-**Možné příčiny:**
-1. **Race condition:** Data zmizí mezi waitForFunction a evaluate
-2. **ReplayProvider state:** Při paralelním běhu může dojít ke konfliktu
-3. **pauseAfter timing:** 500 zpráv nemusí vždy stačit
+**Possible causes:**
+1. **Race condition:** Data disappears between waitForFunction and evaluate
+2. **ReplayProvider state:** Parallel execution may cause conflicts
+3. **pauseAfter timing:** 500 messages may not always be enough
 
-**Řešení:**
-- [ ] M.4.1 Přidat retry logiku do testu
-- [ ] M.4.2 Zvýšit `pauseAfter` na 1000
-- [ ] M.4.3 Přidat `page.waitForTimeout(1000)` mezi waitForDataLoad a evaluate
-- [ ] M.4.4 Nebo: Skipnout tyto testy (scroll logika je testována v unit testech)
+**Solution:**
+- [ ] M.4.1 Add retry logic to test
+- [ ] M.4.2 Increase `pauseAfter` to 1000
+- [ ] M.4.3 Add `page.waitForTimeout(1000)` between waitForDataLoad and evaluate
+- [ ] M.4.4 Or: Skip these tests (scroll logic is tested in unit tests)
 
-#### M.5 - displayRows scaling test
+#### M.5 - displayRows Scaling Test
 
-**Problém:** Test "scales layout to fill viewport with displayRows=5" selhává.
+**Problem:** Test "scales layout to fill viewport with displayRows=5" fails.
 
-**Podrobnosti:**
-- Test očekává že layout vyplní 90% viewport
-- Obdrží menší výšku než očekáváno
+**Details:**
+- Test expects layout to fill 90% of viewport
+- Receives smaller height than expected
 
-**Možná příčina:** displayRows scaling logika má jiné chování než test očekává.
+**Possible cause:** displayRows scaling logic has different behavior than test expects.
 
-**Řešení:**
-- [ ] M.5.1 Ověřit aktuální chování displayRows scaling v aplikaci
-- [ ] M.5.2 Aktualizovat test expectations podle skutečného chování
-- [ ] M.5.3 Nebo: Opravit scaling logiku pokud je bug
+**Solution:**
+- [ ] M.5.1 Verify current displayRows scaling behavior in app
+- [ ] M.5.2 Update test expectations according to actual behavior
+- [ ] M.5.3 Or: Fix scaling logic if it's a bug
 
-### Doporučení pro paralelní běh
+### Recommendations for Parallel Execution
 
-Testy mají race conditions při paralelním běhu. Možnosti:
+Tests have race conditions during parallel execution. Options:
 
-1. **Snížit workers v CI:**
+1. **Reduce workers in CI:**
    ```typescript
    // playwright.config.ts
    workers: process.env.CI ? 1 : 2,
    ```
 
-2. **Izolovat testy s mock servery:**
+2. **Isolate tests with mock servers:**
    ```typescript
    test.describe.configure({ mode: 'serial' })
    ```
 
-3. **Použít unikátní porty pro každý test:**
-   - Dynamicky alokovat porty pomocí `getPort()`
+3. **Use unique ports for each test:**
+   - Dynamically allocate ports using `getPort()`
 
-### Recording data
+### Recording Data
 
-E2E testy používají nahrávku:
+E2E tests use recording:
 ```
 ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
 ```
 
-**Struktura:**
-- 5970 zpráv celkem
-- První `top` zpráva (s výsledky): řádek 104 (33. ws/tcp zpráva po filtrování)
-- Zdroje: `ws`, `tcp`, `udp27333`
-- ReplayProvider filtruje pouze `ws` a `tcp`
+**Structure:**
+- 5970 messages total
+- First `top` message (with results): line 104 (33rd ws/tcp message after filtering)
+- Sources: `ws`, `tcp`, `udp27333`
+- ReplayProvider filters only `ws` and `tcp`
 
-**Důležité:** S `pauseAfter=50` není dostatek zpráv pro zobrazení výsledků. Minimum je ~100 pro první `top` zprávu.
+**Important:** With `pauseAfter=50` there aren't enough messages to display results. Minimum is ~100 for first `top` message.
