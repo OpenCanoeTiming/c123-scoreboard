@@ -1,4 +1,4 @@
-# Canoe Scoreboard
+# C123 Scoreboard
 
 Real-time scoreboard for canoe slalom races. Connects to C123 Server for live timing data.
 
