@@ -34,7 +34,8 @@ Real-time scoreboard pro kanoistické slalomové závody. Pracuje s daty z C123 
 
 - **`../c123-server/docs`** - dokumentace C123 WebSocket API
 - **`../c123-protocol-docs`** - dokumentace C123 protokolu a XML formátu
-- **`../c123-protocol-docs/captures/`** - XML vzorky pro testování
+- **`../c123-protocol-docs/samples/`** - Statické XML vzorky pro referenci
+- **`../c123-protocol-docs/recordings/`** - JSONL nahrávky pro vývoj a testování
 
 ---
 

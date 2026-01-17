@@ -30,7 +30,7 @@ import { CLIProvider } from '../providers/CLIProvider'
 import { C123ServerProvider } from '../providers/C123ServerProvider'
 
 // Recording path
-const RECORDING_PATH = '../analysis/recordings/rec-2025-12-28T09-34-10.jsonl'
+const RECORDING_PATH = '../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl'
 
 // Test ports (different from defaults to avoid conflicts)
 const CLI_WS_PORT = 8091

@@ -7,7 +7,7 @@
  * Usage:
  *   const orchestrator = new TestOrchestrator()
  *   await orchestrator.setup({
- *     recording: '../analysis/recordings/rec-2025-12-28T09-34-10.jsonl',
+ *     recording: '../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl',
  *     cliPort: 8091,
  *     tcpPort: 27334,
  *     c123ServerPort: 27124

@@ -95,10 +95,10 @@ src/
 
 ```bash
 # Mock TCP server (Canoe123 protokol)
-npm run mock:tcp -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+npm run mock:tcp -- -f ../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl
 
 # Mock WS server (CLI protokol)
-npm run mock:ws -- -f ../analysis/recordings/rec-2025-12-28T09-34-10.jsonl
+npm run mock:ws -- -f ../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl
 ```
 
 Mock servery přehrávají nahrávky ze závodů a umožňují testování bez živého C123 serveru.
@@ -109,7 +109,7 @@ Mock servery přehrávají nahrávky ze závodů a umožňují testování bez �
 
 | Nahrávka | Popis |
 |----------|-------|
-| `../analysis/recordings/rec-2025-12-28T09-34-10.jsonl` | Úvodní nahrávka s TCP (Canoe123) i WS (CLI) daty |
+| `../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl` | Úvodní nahrávka s TCP (Canoe123) i WS (CLI) daty |
 
 Formát JSONL obsahuje timestampy a data z obou protokolů pro synchronní replay.
 
