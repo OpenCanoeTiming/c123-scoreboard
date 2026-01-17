@@ -1,75 +1,97 @@
-# Canoe Scoreboard V3
+# Canoe Scoreboard
 
-Real-time scoreboard for canoe slalom races. New version with full C123 Server support and dual run BR1/BR2 display.
+Real-time scoreboard for canoe slalom races. Connects to C123 Server for live timing data.
 
-## Key Changes from V2
+## Features
 
-- **C123ServerProvider** as primary data source (WebSocket JSON protocol)
-- **BR1/BR2 merge display** - shows both times for dual-run races
-- **ConfigPush** - remote configuration via C123 Server (layout, assets, clientId)
-- **Asset management** - logos and banners via ConfigPush or URL parameters
-- **scrollToFinished** - optional disable scroll on competitor finish
-- **Server-assigned clientId** - persistence via localStorage
+- **Zero configuration** - Auto-discovers C123 Server on the network
+- **Two layouts** - Vertical (portrait TV) and Ledwall (wide LED panels)
+- **BR1/BR2 display** - Shows both run times for dual-run races
+- **Remote configuration** - Manage displays from C123 Server admin
+- **Custom assets** - Logos and banners via admin or URL parameters
+- **Finish highlight** - Automatic scroll and highlight on competitor finish
 
 ## Quick Start
 
 ```bash
-# Install
 npm install
-
-# Development with replay data
 npm run dev
+```
 
-# Production build
+Opens at http://localhost:5173 with sample replay data.
+
+### Connect to C123 Server
+
+```
+http://localhost:5173/?server=192.168.1.50:27123
+```
+
+Or let auto-discovery find the server:
+
+```
+http://localhost:5173/
+```
+
+## Deployment
+
+### Build for Production
+
+```bash
 npm run build
 ```
 
-After running `npm run dev`, the scoreboard starts at http://localhost:5173 with sample data.
+Deploy the `dist/` folder to any web server.
 
-## Installation
+### Raspberry Pi (FullPageOS)
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [npm](https://www.npmjs.com/) v9+
-
-### Setup
-
-```bash
-git clone <repository-url>
-cd canoe-scoreboard-v3
-npm install
-```
+1. Build and deploy `dist/` to a web server
+2. Install [FullPageOS](https://github.com/guysoft/FullPageOS) on Raspberry Pi
+3. Set URL in `/boot/firmware/fullpageos.txt`:
+   ```
+   http://[webserver]/scoreboard/?server=[c123-server]:27123
+   ```
+4. For vertical display, set `DISPLAY_ORIENTATION=left` in start script
+5. Reboot
 
 ## URL Parameters
 
+### Essential
+
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
-| `type` | `vertical`, `ledwall` | auto | Layout mode (auto-detected by aspect ratio) |
-| `displayRows` | `3-20` | auto | Number of result rows (ledwall scaling) |
-| `customTitle` | text | - | Custom title (overrides event name) |
-| `scrollToFinished` | `true`, `false` | `true` | Scroll to finished competitor |
-| `disableScroll` | `true` | `false` | Disable auto-scroll (for screenshots) |
-| `clientId` | text | - | Client identification for C123 Server |
 | `server` | `host:port` | auto-discover | C123 Server address |
-| `source` | `c123`, `cli`, `replay` | `c123` | Data source |
-| `host` | `ip:port` | - | CLI server address (legacy) |
-| `speed` | number | `10` | Replay speed |
-| `loop` | `true`, `false` | `true` | Replay loop |
-| `logoUrl` | URL | `/assets/logo.svg` | Logo (top left corner) |
-| `partnerLogoUrl` | URL | `/assets/partners.png` | Partner logo (top right corner) |
-| `footerImageUrl` | URL | `/assets/footer.png` | Footer banner (vertical only) |
+| `type` | `vertical`, `ledwall` | auto | Layout mode |
+| `displayRows` | `3-20` | auto | Number of result rows |
 
-### URL Examples
+### Customization
 
-**C123 Server (recommended):**
-```
-?server=192.168.1.50:27123
-```
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `customTitle` | text | - | Override event name |
+| `logoUrl` | URL | `/assets/logo.svg` | Top left logo |
+| `partnerLogoUrl` | URL | `/assets/partners.png` | Top right logo |
+| `footerImageUrl` | URL | `/assets/footer.png` | Footer banner (vertical) |
+
+### Behavior
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `scrollToFinished` | `true`, `false` | `true` | Scroll to finished competitor |
+| `clientId` | text | - | Client ID for remote config |
+
+### Development
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `source` | `c123`, `replay` | `c123` | Data source |
+| `speed` | number | `10` | Replay speed multiplier |
+| `loop` | `true`, `false` | `true` | Loop replay |
+
+### Examples
 
 **Vertical display with custom title:**
 ```
-?type=vertical&customTitle=National%20Championship%202025&server=192.168.1.50:27123
+?type=vertical&customTitle=Czech%20Cup%202025&server=192.168.1.50:27123
 ```
 
 **Ledwall with 5 large rows:**
@@ -77,17 +99,7 @@ npm install
 ?type=ledwall&displayRows=5&server=192.168.1.50:27123
 ```
 
-**Without scroll on finish (highlight only):**
-```
-?scrollToFinished=false&server=192.168.1.50:27123
-```
-
-**Legacy CLI source:**
-```
-?source=cli&host=192.168.1.100:8081
-```
-
-**Development replay:**
+**Development with slow replay:**
 ```
 ?source=replay&speed=1&loop=true
 ```
@@ -96,300 +108,121 @@ npm install
 
 ### Vertical (Portrait)
 
-For portrait TV displays (1080×1920 recommended).
+For portrait displays (1080x1920 recommended):
 
-- Full TopBar with logo and partners
+- Full header with logo and partners
 - All columns: Rank, Bib, Name, Penalties, Time, Gap
 - Footer with sponsors
-- BR1/BR2: two columns with times from both runs
+- BR1/BR2: Two columns showing both run times
 
 ### Ledwall (Landscape)
 
-For LED panels (768×384 or similar wide aspect ratio).
+For LED panels (wide aspect ratio):
 
-- Compact TopBar
-- Optimized columns (without gap)
-- No footer
-- BR1/BR2: only current run penalties hidden (may be from different run)
+- Compact header
+- Essential columns only
+- Scales to fill viewport based on `displayRows`
 
-**Detection:** Aspect ratio ≥ 1.5 → ledwall, otherwise vertical.
+**Auto-detection:** Aspect ratio >= 1.5 uses ledwall, otherwise vertical.
 
-### Ledwall Scaling (displayRows)
+## Remote Configuration
 
-For distant viewers, use `displayRows` for larger rows:
+C123 Server admin can push configuration to connected scoreboards:
 
-```
-?type=ledwall&displayRows=5    # 5 large rows
-?type=ledwall&displayRows=8    # 8 medium rows
-```
+- Layout type and row count
+- Custom title
+- Asset URLs (logos, banners)
+- Scroll behavior
 
-The entire layout scales to exactly fill the viewport.
+Changes apply immediately without page reload. See C123 Server documentation for details.
 
-## Data Sources
+## BR1/BR2 Display
 
-### C123ServerProvider (Primary)
+For dual-run (Best Run) races, the scoreboard:
 
-Connects to C123 Server via WebSocket (port 27123) and receives JSON messages.
-
-**Features:**
-- Auto-discovery of server on network
-- Automatic reconnect with exponential backoff
-- REST API sync after reconnect
-- BR1/BR2 merge - displays both times for dual-run races
-- ConfigPush - remote configuration
-- ForceRefresh - remote reload
-
-**URL:**
-```
-?server=192.168.1.50:27123
-```
-
-### CLIProvider (Fallback)
-
-Legacy WebSocket connection to CanoeLiveInterface.
-
-```
-?source=cli&host=192.168.1.100:8081
-```
-
-### ReplayProvider (Development)
-
-Plays back recorded races for development and testing.
-
-```
-?source=replay&speed=10&loop=true
-```
-
-Recordings are in `public/recordings/`.
+1. Detects BR2 race automatically
+2. Fetches BR1 results from REST API
+3. Displays both run times with the worse run muted
 
 ## Asset Management
 
 ### Default Assets
 
-| File | Description | Recommended Size |
-|------|-------------|------------------|
-| `public/assets/logo.svg` | Event/Club logo (top left) | SVG or 200px height |
-| `public/assets/partners.png` | Partner logos (top right) | 400×100px |
-| `public/assets/footer.png` | Footer banner (vertical only) | 1080×200px |
+Place files in `public/assets/`:
+
+| File | Description | Size |
+|------|-------------|------|
+| `logo.svg` | Event logo (top left) | SVG or 200px height |
+| `partners.png` | Partner logos (top right) | 400x100px |
+| `footer.png` | Footer banner (vertical) | 1080x200px |
 
 ### Custom Assets
 
 **Priority (highest first):**
-1. localStorage (saved from ConfigPush)
+1. Remote config from C123 Server
 2. URL parameters
 3. Default assets
 
-**Via URL parameters:**
-```
-?logoUrl=/custom/logo.png&partnerLogoUrl=https://example.com/partners.png
-```
-
-**Via ConfigPush (from C123 Server):**
-```json
-{
-  "type": "ConfigPush",
-  "data": {
-    "assets": {
-      "logoUrl": "/custom/logo.png",
-      "partnerLogoUrl": "https://example.com/partners.png",
-      "footerImageUrl": "data:image/png;base64,..."
-    }
-  }
-}
-```
-
-Data URIs are only allowed via ConfigPush (URL parameters would be too long).
-
-## BR1/BR2 Display
-
-For dual-run (Best Run) races, the scoreboard automatically:
-
-1. **Detects BR2 race** by RaceId (`_BR2_` suffix)
-2. **Loads BR1 data** from REST API
-3. **Displays both times** in two columns
-
-**Vertical layout:**
-- Two columns: BR1 and BR2
-- Worse run has muted color (`.worseRun`)
-- Penalties shown for both runs
-
-**Ledwall layout:**
-- Shows only overall time (best of both)
-- Penalties hidden (may be from different run than displayed time)
-
-**Details:** see [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md)
-
-## Deployment
-
-### Web Server
+## Development
 
 ```bash
+# Development server
+npm run dev
+
+# Build
 npm run build
-# Deploy `dist/` contents to web server
-```
 
-**nginx configuration:**
-```nginx
-server {
-    listen 80;
-    root /var/www/scoreboard;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-**Subdirectory deployment:**
-```bash
-VITE_BASE_URL=/scoreboard/ npm run build
-```
-
-### Raspberry Pi (FullPageOS)
-
-1. Build and deploy `dist/` to web server
-2. Install [FullPageOS](https://github.com/guysoft/FullPageOS) on Raspberry Pi
-3. Configure URL in `/boot/firmware/fullpageos.txt`:
-   ```
-   http://[server]/scoreboard/?type=vertical&server=[c123-ip]:27123
-   ```
-4. For vertical display, set orientation in `/home/timing/scripts/start_gui`:
-   ```
-   DISPLAY_ORIENTATION=left
-   ```
-5. Restart Raspberry Pi
-
-## ConfigPush (Remote Configuration)
-
-C123 Server can send configuration via WebSocket:
-
-```json
-{
-  "type": "ConfigPush",
-  "data": {
-    "clientId": "display-1",
-    "type": "vertical",
-    "displayRows": 10,
-    "customTitle": "National Championship 2025",
-    "scrollToFinished": true,
-    "assets": {
-      "logoUrl": "/custom/logo.png",
-      "partnerLogoUrl": "/custom/partners.png",
-      "footerImageUrl": "/custom/footer.png"
-    }
-  }
-}
-```
-
-Scoreboard responds with `ClientState` message containing current configuration and capabilities.
-
-**Supported capabilities:**
-- `configPush` - accepts ConfigPush messages
-- `forceRefresh` - accepts ForceRefresh for reload
-- `clientIdPush` - accepts server-assigned clientId
-- `scrollToFinished` - supports disable scroll on finish
-- `assetManagement` - accepts custom assets
-
-## Testing
-
-```bash
-# Unit tests (Vitest)
+# Tests
 npm test
 
-# E2E tests (Playwright)
+# E2E tests
 npm run test:e2e
-
-# All tests
-npm run test:all
-
-# Watch mode
-npm run test:watch
 ```
-
-**Coverage:**
-- 559+ unit tests
-- 82+ E2E tests
-- Visual regression testing with Playwright snapshots
 
 ## Architecture
-
-### DataProvider Pattern
-
-```
-DataProvider (interface)
-├── C123ServerProvider  - WebSocket to C123 Server (primary)
-├── CLIProvider         - WebSocket to CLI server (fallback)
-└── ReplayProvider      - Recording playback (development)
-```
-
-### Component Structure
-
-```
-App
-└── ScoreboardProvider (context)
-    └── ScoreboardLayout
-        ├── TopBar (logo, partners)
-        ├── TimeDisplay (time of day)
-        ├── Title (event name, category)
-        ├── CurrentCompetitor (on course with gates)
-        ├── OnCourseDisplay (next competitors - vertical only)
-        ├── ResultsList (scrollable results table)
-        └── Footer (sponsors - vertical only)
-```
-
-### Project Structure
 
 ```
 src/
 ├── components/      # React components
-├── context/         # ScoreboardContext (state management)
-├── hooks/           # Custom hooks (useLayout, useAutoScroll, useAssets)
-├── providers/       # DataProvider implementations
-│   └── utils/       # API client, mapper, BR2Manager
-├── styles/          # CSS (variables, reset, fonts)
+├── context/         # State management
+├── hooks/           # useLayout, useAutoScroll, useAssets
+├── providers/       # C123ServerProvider, ReplayProvider
+├── styles/          # CSS
 ├── types/           # TypeScript definitions
-└── utils/           # Utility functions (assetStorage)
+└── utils/           # Utilities
 
 public/
 ├── assets/          # Default logos and banners
-└── recordings/      # JSONL replay files
-
-tests/
-├── e2e/             # Playwright E2E tests
-└── benchmarks/      # Performance benchmarks
+└── recordings/      # Replay files for development
 ```
-
-## Troubleshooting
-
-See [docs/troubleshooting.md](docs/troubleshooting.md)
-
-**Common issues:**
-- Scoreboard not connecting → check `?server=` parameter or auto-discovery
-- Wrong ranking → C123 system sends data, wait for update
-- Missing BR1 data → REST API delayed, wait a few seconds
-- Assets not loading → check URL and CORS headers
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [docs/architecture.md](docs/architecture.md) | Architecture and data flow |
-| [docs/timing.md](docs/timing.md) | Timing constants and flow |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | Problem solving |
-| [docs/testing.md](docs/testing.md) | Testing |
-| [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) | BR1/BR2 merge analysis |
 
 ## Requirements
 
 - Node.js 18+
 - Modern browser (Chrome, Firefox, Safari, Edge)
-- For production: C123 Server or CLI server
+- C123 Server for production use
+
+## Troubleshooting
+
+**Scoreboard not connecting**
+- Check `?server=` parameter or wait for auto-discovery
+- Verify C123 Server is running and accessible
+
+**Wrong ranking or missing data**
+- C123 system sends data periodically, wait for next update
+- For BR2, REST API may have slight delay
+
+**Assets not loading**
+- Check URL paths and CORS headers
+- Try absolute URLs
+
+## Documentation
+
+- [docs/architecture.md](docs/architecture.md) - Architecture and data flow
+- [docs/timing.md](docs/timing.md) - Timing constants
+- [docs/troubleshooting.md](docs/troubleshooting.md) - Problem solving
+- [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) - BR1/BR2 merge details
 
 ## License
 
-MIT - for canoe slalom races.
-
-## Acknowledgments
-
-- CanoeLiveInterface and original scoreboard: Martin "Mako" Šlachta (STiming)
-- Canoe123 timing system: Siwidata
-- Czech Canoe Federation
+MIT
