@@ -41,7 +41,8 @@ Real-time scoreboard pro kanoistické slalomové závody. Pracuje s daty z C123 
 
 ## Jazyk
 
-- Komunikace a dokumentace: **čeština**
+- Komunikace s uživatelem: **čeština**
+- Dokumentace (README, docs): **angličtina**
 - Kód, komentáře, commit messages: **angličtina**
 
 ---

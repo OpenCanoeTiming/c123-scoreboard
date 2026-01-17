@@ -1,32 +1,32 @@
 # Canoe Scoreboard V3
 
-Real-time scoreboard pro kanoistické slalomové závody. Nová verze s plnohodnotnou podporou C123 Server a zobrazením obou jízd BR1/BR2.
+Real-time scoreboard for canoe slalom races. New version with full C123 Server support and dual run BR1/BR2 display.
 
-## Hlavní změny oproti V2
+## Key Changes from V2
 
-- **C123ServerProvider** jako primární zdroj dat (WebSocket JSON protokol)
-- **BR1/BR2 merge zobrazení** - při závodech se dvěma jízdami zobrazí oba časy
-- **ConfigPush** - vzdálená konfigurace přes C123 Server (layout, assets, clientId)
-- **Asset management** - loga a bannery přes ConfigPush nebo URL parametry
-- **scrollToFinished** - volitelné vypnutí scrollu při dojetí závodníka
-- **Server-assigned clientId** - persistence přes localStorage
+- **C123ServerProvider** as primary data source (WebSocket JSON protocol)
+- **BR1/BR2 merge display** - shows both times for dual-run races
+- **ConfigPush** - remote configuration via C123 Server (layout, assets, clientId)
+- **Asset management** - logos and banners via ConfigPush or URL parameters
+- **scrollToFinished** - optional disable scroll on competitor finish
+- **Server-assigned clientId** - persistence via localStorage
 
 ## Quick Start
 
 ```bash
-# Instalace
+# Install
 npm install
 
-# Development s replay daty
+# Development with replay data
 npm run dev
 
 # Production build
 npm run build
 ```
 
-Po spuštění `npm run dev` se scoreboard spustí na http://localhost:5173 s ukázkovými daty.
+After running `npm run dev`, the scoreboard starts at http://localhost:5173 with sample data.
 
-## Instalace
+## Installation
 
 ### Prerequisites
 
@@ -41,43 +41,43 @@ cd canoe-scoreboard-v3
 npm install
 ```
 
-## URL parametry
+## URL Parameters
 
-| Parametr | Hodnoty | Default | Popis |
-|----------|---------|---------|-------|
-| `type` | `vertical`, `ledwall` | auto | Layout mód (detekce podle aspect ratio) |
-| `displayRows` | `3-20` | auto | Počet řádků výsledků (ledwall scaling) |
-| `customTitle` | text | - | Vlastní titulek (přepíše event name) |
-| `scrollToFinished` | `true`, `false` | `true` | Scroll na dojetého závodníka |
-| `disableScroll` | `true` | `false` | Vypne auto-scroll (pro screenshoty) |
-| `clientId` | text | - | Identifikace klienta pro C123 Server |
-| `server` | `host:port` | auto-discover | Adresa C123 Serveru |
-| `source` | `c123`, `cli`, `replay` | `c123` | Zdroj dat |
-| `host` | `ip:port` | - | Adresa CLI serveru (legacy) |
-| `speed` | number | `10` | Rychlost replay |
-| `loop` | `true`, `false` | `true` | Opakování replay |
-| `logoUrl` | URL | `/assets/logo.svg` | Logo (levý horní roh) |
-| `partnerLogoUrl` | URL | `/assets/partners.png` | Partner logo (pravý horní roh) |
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `type` | `vertical`, `ledwall` | auto | Layout mode (auto-detected by aspect ratio) |
+| `displayRows` | `3-20` | auto | Number of result rows (ledwall scaling) |
+| `customTitle` | text | - | Custom title (overrides event name) |
+| `scrollToFinished` | `true`, `false` | `true` | Scroll to finished competitor |
+| `disableScroll` | `true` | `false` | Disable auto-scroll (for screenshots) |
+| `clientId` | text | - | Client identification for C123 Server |
+| `server` | `host:port` | auto-discover | C123 Server address |
+| `source` | `c123`, `cli`, `replay` | `c123` | Data source |
+| `host` | `ip:port` | - | CLI server address (legacy) |
+| `speed` | number | `10` | Replay speed |
+| `loop` | `true`, `false` | `true` | Replay loop |
+| `logoUrl` | URL | `/assets/logo.svg` | Logo (top left corner) |
+| `partnerLogoUrl` | URL | `/assets/partners.png` | Partner logo (top right corner) |
 | `footerImageUrl` | URL | `/assets/footer.png` | Footer banner (vertical only) |
 
-### Příklady URL
+### URL Examples
 
-**C123 Server (doporučeno):**
+**C123 Server (recommended):**
 ```
 ?server=192.168.1.50:27123
 ```
 
-**Vertical display s custom titulkem:**
+**Vertical display with custom title:**
 ```
-?type=vertical&customTitle=MČR%202025&server=192.168.1.50:27123
+?type=vertical&customTitle=National%20Championship%202025&server=192.168.1.50:27123
 ```
 
-**Ledwall s 5 velkými řádky:**
+**Ledwall with 5 large rows:**
 ```
 ?type=ledwall&displayRows=5&server=192.168.1.50:27123
 ```
 
-**Bez scrollu při dojetí (pouze highlight):**
+**Without scroll on finish (highlight only):**
 ```
 ?scrollToFinished=false&server=192.168.1.50:27123
 ```
@@ -92,52 +92,52 @@ npm install
 ?source=replay&speed=1&loop=true
 ```
 
-## Layout módy
+## Layout Modes
 
 ### Vertical (Portrait)
 
-Pro TV displeje na výšku (1080×1920 doporučeno).
+For portrait TV displays (1080×1920 recommended).
 
-- Plný TopBar s logem a partnery
-- Všechny sloupce: Pořadí, Číslo, Jméno, Penalizace, Čas, Ztráta
-- Footer se sponzory
-- BR1/BR2: dva sloupce s časy obou jízd
+- Full TopBar with logo and partners
+- All columns: Rank, Bib, Name, Penalties, Time, Gap
+- Footer with sponsors
+- BR1/BR2: two columns with times from both runs
 
 ### Ledwall (Landscape)
 
-Pro LED panely (768×384 nebo podobný široký poměr).
+For LED panels (768×384 or similar wide aspect ratio).
 
-- Kompaktní TopBar
-- Optimalizované sloupce (bez ztráty)
-- Bez footeru
-- BR1/BR2: pouze penalizace aktuální jízdy skryty (mohou být z jiné jízdy)
+- Compact TopBar
+- Optimized columns (without gap)
+- No footer
+- BR1/BR2: only current run penalties hidden (may be from different run)
 
-**Detekce:** Aspect ratio ≥ 1.5 → ledwall, jinak vertical.
+**Detection:** Aspect ratio ≥ 1.5 → ledwall, otherwise vertical.
 
 ### Ledwall Scaling (displayRows)
 
-Pro vzdálené diváky použijte `displayRows` pro větší řádky:
+For distant viewers, use `displayRows` for larger rows:
 
 ```
-?type=ledwall&displayRows=5    # 5 velkých řádků
-?type=ledwall&displayRows=8    # 8 středních řádků
+?type=ledwall&displayRows=5    # 5 large rows
+?type=ledwall&displayRows=8    # 8 medium rows
 ```
 
-Celý layout se škáluje tak, aby přesně vyplnil viewport.
+The entire layout scales to exactly fill the viewport.
 
-## Zdroje dat (Data Sources)
+## Data Sources
 
-### C123ServerProvider (Primární)
+### C123ServerProvider (Primary)
 
-Připojuje se k C123 Server přes WebSocket (port 27123) a přijímá JSON zprávy.
+Connects to C123 Server via WebSocket (port 27123) and receives JSON messages.
 
-**Funkce:**
-- Auto-discovery serveru v síti
-- Automatické reconnect s exponential backoff
-- REST API sync po reconnectu
-- BR1/BR2 merge - zobrazí oba časy při závodech se dvěma jízdami
-- ConfigPush - vzdálená konfigurace
-- ForceRefresh - vzdálený reload
+**Features:**
+- Auto-discovery of server on network
+- Automatic reconnect with exponential backoff
+- REST API sync after reconnect
+- BR1/BR2 merge - displays both times for dual-run races
+- ConfigPush - remote configuration
+- ForceRefresh - remote reload
 
 **URL:**
 ```
@@ -146,7 +146,7 @@ Připojuje se k C123 Server přes WebSocket (port 27123) a přijímá JSON zprá
 
 ### CLIProvider (Fallback)
 
-Legacy WebSocket připojení k CanoeLiveInterface.
+Legacy WebSocket connection to CanoeLiveInterface.
 
 ```
 ?source=cli&host=192.168.1.100:8081
@@ -154,37 +154,37 @@ Legacy WebSocket připojení k CanoeLiveInterface.
 
 ### ReplayProvider (Development)
 
-Přehrává nahrané závody pro vývoj a testování.
+Plays back recorded races for development and testing.
 
 ```
 ?source=replay&speed=10&loop=true
 ```
 
-Nahrávky jsou v `public/recordings/`.
+Recordings are in `public/recordings/`.
 
-## Asset management
+## Asset Management
 
-### Výchozí assety
+### Default Assets
 
-| Soubor | Popis | Doporučená velikost |
-|--------|-------|---------------------|
-| `public/assets/logo.svg` | Event/Club logo (vlevo nahoře) | SVG nebo 200px výška |
-| `public/assets/partners.png` | Partner loga (vpravo nahoře) | 400×100px |
+| File | Description | Recommended Size |
+|------|-------------|------------------|
+| `public/assets/logo.svg` | Event/Club logo (top left) | SVG or 200px height |
+| `public/assets/partners.png` | Partner logos (top right) | 400×100px |
 | `public/assets/footer.png` | Footer banner (vertical only) | 1080×200px |
 
-### Vlastní assety
+### Custom Assets
 
-**Priorita (nejvyšší první):**
-1. localStorage (uloženo z ConfigPush)
-2. URL parametry
-3. Výchozí assety
+**Priority (highest first):**
+1. localStorage (saved from ConfigPush)
+2. URL parameters
+3. Default assets
 
-**Přes URL parametry:**
+**Via URL parameters:**
 ```
 ?logoUrl=/custom/logo.png&partnerLogoUrl=https://example.com/partners.png
 ```
 
-**Přes ConfigPush (z C123 Server):**
+**Via ConfigPush (from C123 Server):**
 ```json
 {
   "type": "ConfigPush",
@@ -198,26 +198,26 @@ Nahrávky jsou v `public/recordings/`.
 }
 ```
 
-Data URI jsou povoleny pouze přes ConfigPush (URL parametry by byly příliš dlouhé).
+Data URIs are only allowed via ConfigPush (URL parameters would be too long).
 
-## BR1/BR2 zobrazení
+## BR1/BR2 Display
 
-Při závodech se dvěma jízdami (Best Run) scoreboard automaticky:
+For dual-run (Best Run) races, the scoreboard automatically:
 
-1. **Detekuje BR2 závod** podle RaceId (`_BR2_` suffix)
-2. **Načte BR1 data** z REST API
-3. **Zobrazí oba časy** ve dvou sloupcích
+1. **Detects BR2 race** by RaceId (`_BR2_` suffix)
+2. **Loads BR1 data** from REST API
+3. **Displays both times** in two columns
 
 **Vertical layout:**
-- Dva sloupce: BR1 a BR2
-- Horší jízda má tlumenou barvu (`.worseRun`)
-- Penalizace zobrazeny u obou jízd
+- Two columns: BR1 and BR2
+- Worse run has muted color (`.worseRun`)
+- Penalties shown for both runs
 
 **Ledwall layout:**
-- Zobrazuje pouze celkový čas (best of both)
-- Penalizace skryty (mohou být z jiné jízdy než zobrazený čas)
+- Shows only overall time (best of both)
+- Penalties hidden (may be from different run than displayed time)
 
-**Detaily:** viz [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md)
+**Details:** see [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md)
 
 ## Deployment
 
@@ -225,10 +225,10 @@ Při závodech se dvěma jízdami (Best Run) scoreboard automaticky:
 
 ```bash
 npm run build
-# Deploy obsahu `dist/` na web server
+# Deploy `dist/` contents to web server
 ```
 
-**nginx konfigurace:**
+**nginx configuration:**
 ```nginx
 server {
     listen 80;
@@ -246,21 +246,21 @@ VITE_BASE_URL=/scoreboard/ npm run build
 
 ### Raspberry Pi (FullPageOS)
 
-1. Build a nasaďte `dist/` na web server
-2. Nainstalujte [FullPageOS](https://github.com/guysoft/FullPageOS) na Raspberry Pi
-3. Konfigurujte URL v `/boot/firmware/fullpageos.txt`:
+1. Build and deploy `dist/` to web server
+2. Install [FullPageOS](https://github.com/guysoft/FullPageOS) on Raspberry Pi
+3. Configure URL in `/boot/firmware/fullpageos.txt`:
    ```
    http://[server]/scoreboard/?type=vertical&server=[c123-ip]:27123
    ```
-4. Pro vertical display nastavte orientaci v `/home/timing/scripts/start_gui`:
+4. For vertical display, set orientation in `/home/timing/scripts/start_gui`:
    ```
    DISPLAY_ORIENTATION=left
    ```
-5. Restartujte Raspberry Pi
+5. Restart Raspberry Pi
 
-## ConfigPush (Vzdálená konfigurace)
+## ConfigPush (Remote Configuration)
 
-C123 Server může posílat konfiguraci přes WebSocket:
+C123 Server can send configuration via WebSocket:
 
 ```json
 {
@@ -269,7 +269,7 @@ C123 Server může posílat konfiguraci přes WebSocket:
     "clientId": "display-1",
     "type": "vertical",
     "displayRows": 10,
-    "customTitle": "MČR 2025",
+    "customTitle": "National Championship 2025",
     "scrollToFinished": true,
     "assets": {
       "logoUrl": "/custom/logo.png",
@@ -280,25 +280,25 @@ C123 Server může posílat konfiguraci přes WebSocket:
 }
 ```
 
-Scoreboard odpoví `ClientState` zprávou s aktuální konfigurací a capabilities.
+Scoreboard responds with `ClientState` message containing current configuration and capabilities.
 
-**Podporované capabilities:**
-- `configPush` - přijímá ConfigPush zprávy
-- `forceRefresh` - přijímá ForceRefresh pro reload
-- `clientIdPush` - přijímá server-assigned clientId
-- `scrollToFinished` - podporuje vypnutí scrollu při dojetí
-- `assetManagement` - přijímá custom assety
+**Supported capabilities:**
+- `configPush` - accepts ConfigPush messages
+- `forceRefresh` - accepts ForceRefresh for reload
+- `clientIdPush` - accepts server-assigned clientId
+- `scrollToFinished` - supports disable scroll on finish
+- `assetManagement` - accepts custom assets
 
-## Testování
+## Testing
 
 ```bash
-# Unit testy (Vitest)
+# Unit tests (Vitest)
 npm test
 
-# E2E testy (Playwright)
+# E2E tests (Playwright)
 npm run test:e2e
 
-# Všechny testy
+# All tests
 npm run test:all
 
 # Watch mode
@@ -306,90 +306,90 @@ npm run test:watch
 ```
 
 **Coverage:**
-- 559+ unit testů
-- 82+ E2E testů
-- Visual regression testing s Playwright snapshoty
+- 559+ unit tests
+- 82+ E2E tests
+- Visual regression testing with Playwright snapshots
 
-## Architektura
+## Architecture
 
 ### DataProvider Pattern
 
 ```
 DataProvider (interface)
-├── C123ServerProvider  - WebSocket k C123 Server (primární)
-├── CLIProvider         - WebSocket k CLI server (fallback)
-└── ReplayProvider      - Přehrávání nahrávek (development)
+├── C123ServerProvider  - WebSocket to C123 Server (primary)
+├── CLIProvider         - WebSocket to CLI server (fallback)
+└── ReplayProvider      - Recording playback (development)
 ```
 
-### Struktura komponent
+### Component Structure
 
 ```
 App
 └── ScoreboardProvider (context)
     └── ScoreboardLayout
         ├── TopBar (logo, partners)
-        ├── TimeDisplay (denní čas)
-        ├── Title (event name, kategorie)
-        ├── CurrentCompetitor (na trati s brankami)
-        ├── OnCourseDisplay (další závodníci - vertical only)
-        ├── ResultsList (scrollable tabulka výsledků)
-        └── Footer (sponzoři - vertical only)
+        ├── TimeDisplay (time of day)
+        ├── Title (event name, category)
+        ├── CurrentCompetitor (on course with gates)
+        ├── OnCourseDisplay (next competitors - vertical only)
+        ├── ResultsList (scrollable results table)
+        └── Footer (sponsors - vertical only)
 ```
 
-### Struktura projektu
+### Project Structure
 
 ```
 src/
-├── components/      # React komponenty
+├── components/      # React components
 ├── context/         # ScoreboardContext (state management)
 ├── hooks/           # Custom hooks (useLayout, useAutoScroll, useAssets)
-├── providers/       # DataProvider implementace
+├── providers/       # DataProvider implementations
 │   └── utils/       # API client, mapper, BR2Manager
 ├── styles/          # CSS (variables, reset, fonts)
-├── types/           # TypeScript definice
-└── utils/           # Utility funkce (assetStorage)
+├── types/           # TypeScript definitions
+└── utils/           # Utility functions (assetStorage)
 
 public/
-├── assets/          # Výchozí loga a bannery
-└── recordings/      # JSONL replay soubory
+├── assets/          # Default logos and banners
+└── recordings/      # JSONL replay files
 
 tests/
-├── e2e/             # Playwright E2E testy
-└── benchmarks/      # Performance benchmarky
+├── e2e/             # Playwright E2E tests
+└── benchmarks/      # Performance benchmarks
 ```
 
 ## Troubleshooting
 
-Viz [docs/troubleshooting.md](docs/troubleshooting.md)
+See [docs/troubleshooting.md](docs/troubleshooting.md)
 
-**Časté problémy:**
-- Scoreboard se nepřipojuje → zkontrolujte `?server=` parametr nebo auto-discovery
-- Špatné pořadí → C123 systém posílá data, čekejte na aktualizaci
-- Chybí BR1 data → REST API zpožděné, čekejte pár sekund
-- Assety se nenačítají → zkontrolujte URL a CORS hlavičky
+**Common issues:**
+- Scoreboard not connecting → check `?server=` parameter or auto-discovery
+- Wrong ranking → C123 system sends data, wait for update
+- Missing BR1 data → REST API delayed, wait a few seconds
+- Assets not loading → check URL and CORS headers
 
-## Dokumentace
+## Documentation
 
-| Dokument | Popis |
-|----------|-------|
-| [docs/architecture.md](docs/architecture.md) | Architektura a data flow |
-| [docs/timing.md](docs/timing.md) | Timing konstanty a flow |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | Řešení problémů |
-| [docs/testing.md](docs/testing.md) | Testování |
-| [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) | BR1/BR2 merge analýza |
+| Document | Description |
+|----------|-------------|
+| [docs/architecture.md](docs/architecture.md) | Architecture and data flow |
+| [docs/timing.md](docs/timing.md) | Timing constants and flow |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Problem solving |
+| [docs/testing.md](docs/testing.md) | Testing |
+| [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) | BR1/BR2 merge analysis |
 
 ## Requirements
 
 - Node.js 18+
-- Moderní prohlížeč (Chrome, Firefox, Safari, Edge)
-- Pro produkci: C123 Server nebo CLI server
+- Modern browser (Chrome, Firefox, Safari, Edge)
+- For production: C123 Server or CLI server
 
 ## License
 
-Private - pro kanoistické slalomové závody.
+MIT - for canoe slalom races.
 
 ## Acknowledgments
 
-- CanoeLiveInterface a původní scoreboard: Martin „Mako" Šlachta (STiming)
+- CanoeLiveInterface and original scoreboard: Martin "Mako" Šlachta (STiming)
 - Canoe123 timing system: Siwidata
-- Český svaz kanoistiky
+- Czech Canoe Federation
