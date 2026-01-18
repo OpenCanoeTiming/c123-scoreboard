@@ -2,13 +2,13 @@
 
 Real-time scoreboard for canoe slalom races. Connects to C123 Server for live timing data.
 
-| Vertical Layout | LED-wall Layout |
+| Vertical Display Layout | LED-wall Layout |
 |:---------------:|:--------------:|
 | ![Vertical](docs/screenshots/vertical.png) | ![Ledwall](docs/screenshots/ledwall.png) |
 
 ## Features
 
-- **Zero configuration** - Auto-discovers C123 Server on the network
+- **Zero configuration** - Auto-discovers [C123 Server](https://github.com/OpenCanoeTiming/c123-server) on the network
 - **Two layouts** - Vertical (portrait TV) and Ledwall (wide LED panels)
 - **BR1/BR2 display** - Shows both run times for dual-run races
 - **Remote configuration** - Manage displays from C123 Server admin
@@ -103,16 +103,11 @@ Deploy the `dist/` folder to any web server.
 ?type=ledwall&displayRows=5&server=192.168.1.50:27123
 ```
 
-**Development with slow replay:**
-```
-?source=replay&speed=1&loop=true
-```
-
 ## Layout Modes
 
 ### Vertical (Portrait)
 
-For portrait displays (1080x1920 recommended):
+For portrait displays (1080x1920 recommended), but fully responsive:
 
 - Full header with logo and partners
 - All columns: Rank, Bib, Name, Penalties, Time, Gap
@@ -121,7 +116,7 @@ For portrait displays (1080x1920 recommended):
 
 ### Ledwall (Landscape)
 
-For LED panels (wide aspect ratio):
+For LED panels (wide aspect ratio), but fully responsive:
 
 - Compact header
 - Essential columns only
