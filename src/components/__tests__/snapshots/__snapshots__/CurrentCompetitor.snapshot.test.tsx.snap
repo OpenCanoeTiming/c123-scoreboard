@@ -3,7 +3,7 @@
 exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - ahead of leader 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -46,7 +46,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
 exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - behind leader 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -89,7 +89,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
 exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - exactly on pace 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -132,7 +132,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
 exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match snapshot - no TTB info 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -175,7 +175,7 @@ exports[`CurrentCompetitor snapshots > TTB (Time To Beat) states > should match 
 exports[`CurrentCompetitor snapshots > basic states > should match snapshot - departing competitor 1`] = `
 <div>
   <div
-    class="_container_610b2e _departing_610b2e"
+    class="_container_610b2e _vertical_610b2e _departing_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -218,7 +218,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - de
 exports[`CurrentCompetitor snapshots > basic states > should match snapshot - finished competitor 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -261,7 +261,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - fi
 exports[`CurrentCompetitor snapshots > basic states > should match snapshot - hidden 1`] = `
 <div>
   <div
-    class="_container_610b2e _hidden_610b2e"
+    class="_container_610b2e _vertical_610b2e _hidden_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -306,7 +306,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - nu
 exports[`CurrentCompetitor snapshots > basic states > should match snapshot - running competitor 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -349,7 +349,7 @@ exports[`CurrentCompetitor snapshots > basic states > should match snapshot - ru
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - all gates clear 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -392,7 +392,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - multiple penalties mixed 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -450,7 +450,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - no gates (empty string) 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -493,7 +493,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - partially completed gates 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -541,7 +541,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - single miss (50s) 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -589,7 +589,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > gate penalty states > should match snapshot - single touch (2s) 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -637,7 +637,7 @@ exports[`CurrentCompetitor snapshots > gate penalty states > should match snapsh
 exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - country code as club 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -680,7 +680,7 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
 exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - long name 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div
@@ -723,7 +723,7 @@ exports[`CurrentCompetitor snapshots > name formatting > should match snapshot -
 exports[`CurrentCompetitor snapshots > name formatting > should match snapshot - short name 1`] = `
 <div>
   <div
-    class="_container_610b2e"
+    class="_container_610b2e _vertical_610b2e"
     data-testid="oncourse"
   >
     <div

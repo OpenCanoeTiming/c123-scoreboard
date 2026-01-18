@@ -27,6 +27,7 @@
   background-color: var(--color-bg-secondary);
   padding: 0;  /* Match original v1 - no padding on header */
   overflow: visible;  /* Allow absolutely positioned elements to overflow */
+  border-bottom: 3px solid var(--color-accent);
 }
 
 /* Ledwall mode - header contains TopBar with overlaid Title and TimeDisplay */

@@ -13,6 +13,7 @@
 | K | Documentation maintenance | ✅ |
 | L | React Best Practices refactoring | ✅ |
 | M | E2E tests - infrastructure fixes | 🔄 Partial |
+| N | Visual facelift (typography, BR2 layout) | 📋 Planned |
 
 ---
 
@@ -321,3 +322,98 @@ E2E tests use recording:
 - ReplayProvider filters only `ws` and `tcp`
 
 **Important:** With `pauseAfter=50` there aren't enough messages to display results. Minimum is ~100 for first `top` message.
+
+---
+
+## Phase N - Visual Facelift
+
+**Tag before changes:** `v2-pre-facelift`
+
+**Preview:** `design-preview.html` (delete after implementation)
+
+### Goal
+
+Improve readability and visual identity across the scoreboard:
+1. Industrial Stadium typography (Bebas Neue + Oswald + Barlow Condensed)
+2. Refined BR2 two-column layout for LED displays
+
+### N.1 - Typography Overhaul
+
+**New Fonts:**
+| Font | Usage |
+|------|-------|
+| Bebas Neue | Event title (uppercase, high impact) |
+| Oswald | Category/run number, headings |
+| Barlow Condensed | Competitor names (condensed for more text) |
+| JetBrains Mono | Times/numbers (keep current) |
+
+**Steps:**
+- [ ] N.1.1 Download font files to `public/fonts/`
+  - `BebasNeue-Regular.ttf`
+  - `Oswald-Medium.ttf`, `Oswald-SemiBold.ttf`
+  - `BarlowCondensed-SemiBold.ttf`
+- [ ] N.1.2 Add @font-face declarations to `src/styles/fonts.css`
+- [ ] N.1.3 Add font-family variables to `src/styles/variables.css`:
+  ```css
+  --font-family-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-family-heading: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-family-primary: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  ```
+- [ ] N.1.4 Update `Title.module.css` - apply Bebas Neue, uppercase, letter-spacing
+- [ ] N.1.5 Update `ResultsList.module.css` - apply Barlow Condensed to names
+- [ ] N.1.6 Add header accent line to `ScoreboardLayout.module.css`:
+  ```css
+  .header { border-bottom: 3px solid var(--color-accent); }
+  ```
+
+### N.2 - BR2 Layout Refinement
+
+**Changes:**
+| Current | New | Reason |
+|---------|-----|--------|
+| Gap 8px | Gap 16px | More breathing room between columns |
+| Absolute badge | Inline badge | Cleaner layout, no overflow |
+| Opacity 0.5 | Opacity 0.65 | Better LED readability |
+| +2 penalty format | 2 penalty format | Cleaner, number is self-explanatory |
+| Font-weight 500 | Font-weight 600 | Better LED visibility |
+
+**Steps:**
+- [ ] N.2.1 Update grid in `ResultsList.module.css`:
+  ```css
+  .row.br2Row {
+    grid-template-columns: 56px 48px 1fr 145px 145px 95px;
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-sm);
+  }
+  ```
+- [ ] N.2.2 Refactor `.runCell` to inline flex (remove absolute positioning)
+- [ ] N.2.3 Update `.runPenaltyBadge` to inline-flex with min-width
+- [ ] N.2.4 Change `.worseRun` opacity from 0.5 to 0.65
+- [ ] N.2.5 Add badge color variables to `variables.css`:
+  ```css
+  --color-penalty-badge-bg: rgba(200, 144, 80, 0.2);
+  --color-penalty-badge-text: var(--color-penalty-touch);
+  ```
+- [ ] N.2.6 Update `ResultRow.tsx` - remove `+` from penalty badge
+- [ ] N.2.7 Remove manual margin hacks (nth-child rules)
+
+### N.3 - Verification
+
+- [ ] N.3.1 Run dev server and check typography renders
+- [ ] N.3.2 Test vertical layout with BR2 data
+- [ ] N.3.3 Test ledwall layout
+- [ ] N.3.4 Compare readability on simulated LED resolution
+- [ ] N.3.5 Run unit tests
+- [ ] N.3.6 Build and check bundle size
+
+### N.4 - Cleanup
+
+- [ ] N.4.1 Delete `design-preview.html`
+- [ ] N.4.2 Commit with message: `feat: industrial stadium typography and BR2 layout refinement`
+- [ ] N.4.3 Tag as `v3.2.0`
+
+### Rollback
+
+```bash
+git checkout v2-pre-facelift
+```

@@ -23,6 +23,10 @@
   --color-penalty-miss: #b06060;   /* 50s penalty - muted red */
   --color-penalty-clear: #808080;  /* 0 penalty - neutral gray */
 
+  /* BR2 penalty badges - warm accent for visibility on LED */
+  --color-penalty-badge-bg: rgba(200, 144, 80, 0.2);
+  --color-penalty-badge-text: var(--color-penalty-touch);
+
   /* Colors - Status */
   --color-success: #33cc33;
   --color-warning: #ff9900;
@@ -40,8 +44,11 @@
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
 
-  /* Typography */
-  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Typography - Industrial Stadium */
+  --font-family-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-family-heading: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-family-primary: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-family-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Consolas', monospace;
 
   --font-size-xs: 12px;
@@ -59,6 +66,9 @@
   --result-penalty-size: 24px;
   --result-time-size: 32px;
   --result-behind-size: 24px;
+
+  /* BR2 vertical - smaller times to balance with Barlow Condensed names */
+  --result-time-size-br2: 26px;
 
   /* Result row font sizes - Ledwall layout (from analysis/06-styly.md) */
   --result-rank-size-ledwall: 36px;

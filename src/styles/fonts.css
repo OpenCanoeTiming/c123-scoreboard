@@ -1,5 +1,40 @@
 /* Font-face declarations */
 
+/* Bebas Neue - Display font for titles */
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/BebasNeue-Regular.ttf') format('truetype');
+}
+
+/* Oswald - Headings and categories */
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Oswald-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Oswald-SemiBold.ttf') format('truetype');
+}
+
+/* Barlow Condensed - Competitor names */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/BarlowCondensed-SemiBold.ttf') format('truetype');
+}
+
 /* Inter - Primary UI font */
 @font-face {
   font-family: 'Inter';

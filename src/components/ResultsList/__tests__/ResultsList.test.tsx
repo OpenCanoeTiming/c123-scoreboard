@@ -141,9 +141,9 @@ describe('ResultsList', () => {
 
       // Vertical layout uses RunTimeCell - penalties shown as badges after time
       // Zero penalty: no badge shown
-      // Non-zero penalty: shown as +N badge
-      expect(screen.getByText('+2')).toBeInTheDocument() // 2s penalty as badge
-      expect(screen.getByText('+50')).toBeInTheDocument() // 50s penalty as badge
+      // Non-zero penalty: shown as N badge (no + prefix)
+      expect(screen.getByText('2')).toBeInTheDocument() // 2s penalty as badge
+      expect(screen.getByText('50')).toBeInTheDocument() // 50s penalty as badge
     })
 
     it('renders behind times with + prefix', () => {
@@ -227,8 +227,8 @@ describe('ResultsList', () => {
       const results = [createResult({ pen: 2, behind: '1.23' })]
       render(<ResultsList results={results} />)
 
-      // Vertical layout: penalty shown as badge (+N), behind visible
-      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
+      // Vertical layout: penalty shown as badge (N), behind visible
+      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as badge
       expect(screen.getByText('+1.23')).toBeInTheDocument()
     })
   })
@@ -309,18 +309,19 @@ describe('ResultRow', () => {
       expect(screen.getByText('1.')).toBeInTheDocument() // Rank with dot
       expect(screen.getByText('42')).toBeInTheDocument()
       expect(screen.getByText('NOVAK Jiri')).toBeInTheDocument()
-      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
+      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as badge (no + prefix)
       expect(screen.getByText('90.50')).toBeInTheDocument()
       expect(screen.getByText('+0.50')).toBeInTheDocument()
     })
 
-    it('does not render badge for zero penalty', () => {
+    it('renders invisible badge spacer for zero penalty', () => {
       const result = createResult({ pen: 0 })
       const { container } = render(<ResultRow result={result} />)
 
-      // Zero penalty: no badge shown in vertical layout
+      // Zero penalty: invisible spacer shown for alignment in vertical layout
       const badges = container.querySelectorAll('[class*="runPenaltyBadge"]')
-      expect(badges.length).toBe(0)
+      expect(badges.length).toBe(1)
+      expect(badges[0].className).toContain('runPenaltyBadgeSpacer')
     })
   })
 
@@ -432,7 +433,7 @@ describe('ResultRow', () => {
       const result = createResult({ pen: 2, behind: '1.50' })
       render(<ResultRow result={result} />)
 
-      expect(screen.getByText('+2')).toBeInTheDocument() // Penalty as badge
+      expect(screen.getByText('2')).toBeInTheDocument() // Penalty as badge (no + prefix)
       expect(screen.getByText('+1.50')).toBeInTheDocument()
     })
   })

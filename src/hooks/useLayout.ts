@@ -47,7 +47,7 @@ const LAYOUT_CONFIG = {
     minRowHeight: 44,
     maxRowHeight: 56,
     targetRowHeight: 48,
-    currentCompetitorHeight: 200, // Approximate height for current competitor section
+    currentCompetitorHeight: 200, // CurrentCompetitor ~82px + OnCourseDisplay ~76px + buffer (~160px typical)
     minVisibleRows: 8,
     maxVisibleRows: 25,
   },

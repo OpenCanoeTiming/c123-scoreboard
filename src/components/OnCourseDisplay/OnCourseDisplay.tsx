@@ -83,7 +83,7 @@ export function OnCourseDisplay({
   }
 
   return (
-    <div className={styles.container} data-testid="oncourse-display">
+    <div className={`${styles.container} ${styles[layoutMode]}`} data-testid="oncourse-display">
       {filteredCompetitors.map((competitor) => (
         <OnCourseRow
           key={competitor.bib}

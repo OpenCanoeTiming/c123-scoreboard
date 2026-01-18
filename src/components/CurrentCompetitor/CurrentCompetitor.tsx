@@ -64,7 +64,7 @@ export function CurrentCompetitor({
   }
 
   // Container classes
-  const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}${isDeparting ? ` ${styles.departing}` : ''}`
+  const containerClasses = `${styles.container} ${styles[layoutMode]}${!visible ? ` ${styles.hidden}` : ''}${isDeparting ? ` ${styles.departing}` : ''}`
 
   // Display raw total time (not formatted) to match original v1 style
   const displayTime = (competitor.total || competitor.time || '').trim()

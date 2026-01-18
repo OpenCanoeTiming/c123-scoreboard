@@ -7,6 +7,11 @@
   width: 100%;
 }
 
+/* Vertical layout container - more breathing room */
+.container.vertical {
+  margin-bottom: 10px;
+}
+
 /* Single competitor row */
 .row {
   display: grid;
@@ -141,7 +146,8 @@
 /* === VERTICAL LAYOUT === */
 .row.vertical {
   grid-template-columns: 80px minmax(200px, 1fr) minmax(100px, auto) 160px;
-  height: 45px;
+  height: 54px;
+  margin: 6px 0;
 }
 
 .row.vertical > div {

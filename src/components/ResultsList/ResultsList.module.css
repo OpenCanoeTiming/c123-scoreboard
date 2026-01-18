@@ -87,8 +87,9 @@
 .name {
   font-family: var(--font-family-primary);
   font-size: var(--result-name-size);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-primary);
+  letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -212,77 +213,87 @@
 
 /* ============================================================================
    BR2 Layout - Two run columns (BR1 and BR2) for merged display
-   Grid: 60px 45px 1fr 150px 150px 120px (rank, bib, name, run1, run2, behind)
-   Behind wider for values like "+447.65"
+   Grid: 56px 48px 1fr 145px 145px 95px (rank, bib, name, run1, run2, behind)
+   Doubled gap (16px) for better breathing room on LED displays
    ============================================================================ */
 
 .row.br2Row {
-  grid-template-columns: 60px 45px 1fr 150px 150px 120px;
-  gap: var(--spacing-sm);
-  padding-right: 10px;
+  grid-template-columns: 56px 48px 1fr 145px 145px 95px;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-sm);
 }
 
-/* Extra spacing between run columns (run2 is 5th child) and before behind */
-.row.br2Row > :nth-child(5) {
-  margin-left: 15px;
-}
-
-.row.br2Row .behind {
-  margin-left: 8px;
-}
-
-/* Run cell - time with optional penalty badge */
+/* Run cell - inline flex layout with gap for badge */
 .runCell {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 6px;
-  padding-right: 38px; /* Space for badge */
+  gap: 6px;
+  padding: 0 4px;
 }
 
-/* Run time */
+/* Run time - increased weight for LED visibility */
 .runTime {
   font-family: var(--font-family-mono);
   font-size: var(--result-time-size);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-primary);
   text-align: right;
 }
 
-/* Penalty badge - absolutely positioned, fixed width */
+/* BR2 vertical - smaller times to balance with Barlow Condensed names */
+.row.br2Row .runTime {
+  font-size: var(--result-time-size-br2);
+}
+
+.row.br2Row .behind {
+  font-size: 20px;
+}
+
+/* Penalty badge - inline flex, no absolute positioning */
 .runPenaltyBadge {
-  position: absolute;
-  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-family-mono);
-  font-size: calc(var(--result-time-size) * 0.5);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background-color: rgba(255, 255, 255, 0.12);
-  padding: 1px 0;
+  font-size: calc(var(--result-time-size) * 0.55);
+  font-weight: 600;
+  color: var(--color-penalty-badge-text);
+  background-color: var(--color-penalty-badge-bg);
+  padding: 2px 4px;
   border-radius: 3px;
-  width: 32px;
-  text-align: center;
+  min-width: 34px;
 }
 
-/* Large penalties (+100 and above) - smaller font to fit */
+/* Large penalties (100 and above) - smaller font to fit */
 .runPenaltyBadgeLarge {
-  font-size: calc(var(--result-time-size) * 0.4);
+  font-size: calc(var(--result-time-size) * 0.45);
 }
 
-/* Worse run - dimmed appearance */
-.worseRun {
-  opacity: 0.5;
-}
-
-.worseRun .runPenaltyBadge,
-.worseRun .runTime {
+/* Better run badge - subtle gray, doesn't compete for attention */
+.runPenaltyBadgeBetter {
+  background-color: rgba(255, 255, 255, 0.08);
   color: var(--color-text-muted);
 }
 
-/* BR2 behind column - right aligned */
-.row.br2Row .behind {
-  text-align: right;
+/* Badge spacer - invisible placeholder for alignment when pen=0 */
+.runPenaltyBadgeSpacer {
+  visibility: hidden;
+}
+
+/* Worse run - subtle dimming (65%) for LED readability */
+.worseRun {
+  opacity: 0.65;
+}
+
+.worseRun .runTime {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.worseRun .runPenaltyBadge {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-muted);
 }
 
 /* ============================================================================

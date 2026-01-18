@@ -19,6 +19,11 @@
   transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
+/* Vertical layout container - more breathing room */
+.vertical {
+  margin-bottom: 12px;
+}
+
 .container.hidden {
   opacity: 0;
   transform: translateY(-10px);
@@ -163,7 +168,8 @@
 /* === VERTICAL LAYOUT === */
 .row.vertical {
   grid-template-columns: 80px minmax(200px, 1fr) minmax(100px, auto) 160px;
-  height: 45px;
+  height: 54px;
+  margin: 8px 0;
 }
 
 .row.vertical > div {

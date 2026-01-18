@@ -29,6 +29,11 @@ exports[`ResultRow snapshots > basic states > should match snapshot - highlighte
       >
         95.32
       </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
+      </span>
     </div>
     <div
       class="_behind_ec9a59"
@@ -66,6 +71,11 @@ exports[`ResultRow snapshots > basic states > should match snapshot - leader (no
       >
         95.32
       </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
+      </span>
     </div>
     <div
       class="_behind_ec9a59"
@@ -102,6 +112,11 @@ exports[`ResultRow snapshots > basic states > should match snapshot - with behin
         class="_runTime_ec9a59"
       >
         97.45
+      </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
       </span>
     </div>
     <div
@@ -142,6 +157,11 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - behin
       >
         95.32
       </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
+      </span>
     </div>
   </div>
 </div>
@@ -176,6 +196,11 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - both 
       >
         95.32
       </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
+      </span>
     </div>
   </div>
 </div>
@@ -209,6 +234,11 @@ exports[`ResultRow snapshots > column visibility > should match snapshot - penal
         class="_runTime_ec9a59"
       >
         95.32
+      </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
       </span>
     </div>
     <div
@@ -352,6 +382,11 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - long na
       >
         95.32
       </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
+      </span>
     </div>
     <div
       class="_behind_ec9a59"
@@ -388,6 +423,11 @@ exports[`ResultRow snapshots > name formatting > should match snapshot - short n
         class="_runTime_ec9a59"
       >
         95.32
+      </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
       </span>
     </div>
     <div
@@ -427,9 +467,8 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 2s touch
         97.32
       </span>
       <span
-        class="_runPenaltyBadge_ec9a59"
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeBetter_ec9a59"
       >
-        +
         2
       </span>
     </div>
@@ -470,9 +509,8 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 4s doubl
         99.32
       </span>
       <span
-        class="_runPenaltyBadge_ec9a59"
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeBetter_ec9a59"
       >
-        +
         4
       </span>
     </div>
@@ -513,9 +551,8 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 50s miss
         145.32
       </span>
       <span
-        class="_runPenaltyBadge_ec9a59"
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeBetter_ec9a59"
       >
-        +
         50
       </span>
     </div>
@@ -556,9 +593,8 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 52s comb
         147.32
       </span>
       <span
-        class="_runPenaltyBadge_ec9a59"
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeBetter_ec9a59"
       >
-        +
         52
       </span>
     </div>
@@ -599,9 +635,8 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - 100s mul
         195.32
       </span>
       <span
-        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeLarge_ec9a59"
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeLarge_ec9a59 _runPenaltyBadgeBetter_ec9a59"
       >
-        +
         100
       </span>
     </div>
@@ -640,6 +675,11 @@ exports[`ResultRow snapshots > penalty states > should match snapshot - zero pen
         class="_runTime_ec9a59"
       >
         95.32
+      </span>
+      <span
+        class="_runPenaltyBadge_ec9a59 _runPenaltyBadgeSpacer_ec9a59"
+      >
+        0
       </span>
     </div>
     <div

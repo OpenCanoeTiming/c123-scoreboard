@@ -113,17 +113,24 @@ function RunTimeCell({
     )
   }
 
-  // Valid run - time with penalty badge after (if > 0)
+  // Valid run - time with penalty badge (always shown for alignment)
   const pen = run.pen ?? 0
-  const badgeClass = pen >= 100
-    ? `${styles.runPenaltyBadge} ${styles.runPenaltyBadgeLarge}`
-    : styles.runPenaltyBadge
+
+  // Build badge classes
+  let badgeClass = styles.runPenaltyBadge
+  if (pen >= 100) badgeClass += ` ${styles.runPenaltyBadgeLarge}`
+  if (pen === 0) {
+    // Invisible spacer for alignment
+    badgeClass += ` ${styles.runPenaltyBadgeSpacer}`
+  } else if (isBetter) {
+    // Subtle gray for better run - doesn't compete for attention
+    badgeClass += ` ${styles.runPenaltyBadgeBetter}`
+  }
+
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
       <span className={styles.runTime}>{run.total}</span>
-      {pen > 0 && (
-        <span className={badgeClass}>+{pen}</span>
-      )}
+      <span className={badgeClass}>{pen > 0 ? pen : '0'}</span>
     </div>
   )
 }

@@ -15,13 +15,14 @@
 }
 
 .text {
-  font-family: var(--font-family-primary);
+  font-family: var(--font-family-display);
   font-size: var(--font-size-3xl);  /* 48px - same for vertical and ledwall */
-  font-weight: 600;
+  font-weight: 400;
   color: var(--color-text-primary);
   text-align: center;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   /* Handle long titles */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -30,12 +31,15 @@
 }
 
 .category {
-  /* Category inherits text styles, positioned inline */
+  /* Category uses heading font, positioned inline */
+  font-family: var(--font-family-heading);
+  font-weight: 600;
   position: relative;
 }
 
 .runNumber {
   /* Run number - smaller, aligned to baseline */
+  font-family: var(--font-family-heading);
   font-size: 0.6em;
   font-weight: 500;
   color: var(--color-text-secondary);  /* Off-white */
