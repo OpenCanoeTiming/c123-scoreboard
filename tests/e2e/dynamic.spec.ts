@@ -25,7 +25,7 @@ test.describe('Data Loading', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -47,7 +47,7 @@ test.describe('Highlight Behavior', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -129,18 +129,18 @@ test.describe('Layout Switching', () => {
 
 test.describe('Results List', () => {
   test('displays multiple result rows', async ({ page }) => {
-    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
 
     const results = page.getByTestId('results-list')
-    const rows = results.locator('div[class*="row"]')
+    const rows = results.locator('[data-bib]')
 
     // Should have header row + at least a few result rows
     const count = await rows.count()
@@ -148,12 +148,12 @@ test.describe('Results List', () => {
   })
 
   test('shows rank, bib, name, time for each result', async ({ page }) => {
-    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
     await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -161,7 +161,7 @@ test.describe('Results List', () => {
     const results = page.getByTestId('results-list')
 
     // No header row in original v1 - check that data rows exist directly
-    const dataRows = results.locator('div[class*="row"]')
+    const dataRows = results.locator('[data-bib]')
     const count = await dataRows.count()
     expect(count).toBeGreaterThan(0)
   })

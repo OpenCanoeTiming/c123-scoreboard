@@ -18,7 +18,7 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5174',
     trace: 'on-first-retry',
     // Disable CSS animations for stable screenshots
     // This prevents "Failed to take two consecutive stable screenshots" errors
@@ -47,8 +47,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
+    command: 'npm run dev -- --port 5174',
+    url: 'http://localhost:5174',
     reuseExistingServer: !process.env.CI,
   },
 })

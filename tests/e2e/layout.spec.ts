@@ -125,7 +125,7 @@ for (const config of layoutConfigs) {
 test.describe('Layout: Ledwall specific', () => {
   test('all content fits in viewport (768×384)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     const hasScroll = await page.evaluate(() => {
@@ -137,12 +137,12 @@ test.describe('Layout: Ledwall specific', () => {
 
   test('wide ledwall has more rows than standard', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 480 })
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     const wideRowCount = await page.evaluate(() => {
       const list = document.querySelector('[data-testid="results-list"]')
-      return list ? list.querySelectorAll('div[class*="row"]').length : 0
+      return list ? list.querySelectorAll('[data-bib]').length : 0
     })
 
     await page.setViewportSize({ width: 768, height: 384 })
@@ -150,7 +150,7 @@ test.describe('Layout: Ledwall specific', () => {
 
     const standardRowCount = await page.evaluate(() => {
       const list = document.querySelector('[data-testid="results-list"]')
-      return list ? list.querySelectorAll('div[class*="row"]').length : 0
+      return list ? list.querySelectorAll('[data-bib]').length : 0
     })
 
     expect(wideRowCount).toBeGreaterThanOrEqual(standardRowCount)
@@ -161,7 +161,7 @@ test.describe('Layout: Dynamic resize', () => {
   test('switches from vertical to ledwall on resize', async ({ page }) => {
     // Start with vertical
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?source=replay&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify vertical layout (footer visible)
@@ -171,7 +171,7 @@ test.describe('Layout: Dynamic resize', () => {
     const verticalColumns = await page.evaluate(() => {
       const list = document.querySelector('[data-testid="results-list"]')
       if (!list) return 0
-      const row = list.querySelector('div[class*="row"]')
+      const row = list.querySelector('[data-bib]')
       if (!row) return 0
       return window.getComputedStyle(row).gridTemplateColumns.split(' ').filter(s => s.trim()).length
     })
@@ -184,7 +184,7 @@ test.describe('Layout: Dynamic resize', () => {
     const ledwallColumns = await page.evaluate(() => {
       const list = document.querySelector('[data-testid="results-list"]')
       if (!list) return 0
-      const row = list.querySelector('div[class*="row"]')
+      const row = list.querySelector('[data-bib]')
       if (!row) return 0
       return window.getComputedStyle(row).gridTemplateColumns.split(' ').filter(s => s.trim()).length
     })
@@ -196,7 +196,7 @@ test.describe('Layout: Dynamic resize', () => {
   test('switches from ledwall to vertical on resize', async ({ page }) => {
     // Start with ledwall
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Verify ledwall layout (footer hidden)
@@ -204,7 +204,7 @@ test.describe('Layout: Dynamic resize', () => {
 
     // Resize to vertical dimensions
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Footer should now be visible in vertical
@@ -213,7 +213,7 @@ test.describe('Layout: Dynamic resize', () => {
 
   test('handles rapid resize changes', async ({ page }) => {
     await page.setViewportSize({ width: 1080, height: 1920 })
-    await page.goto('/?source=replay&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Rapid resize sequence
@@ -240,7 +240,7 @@ test.describe('Layout: Dynamic resize', () => {
 test.describe('Layout: displayRows scaling (Phase 11)', () => {
   test('applies CSS transform when displayRows is set', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that transform is applied
@@ -279,7 +279,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows=3 applies scale transform', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Get scale factor from transform matrix
@@ -302,7 +302,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('no scaling when displayRows is not set', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 384 })
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Check that no transform is applied
@@ -331,7 +331,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
   // Edge case tests for displayRows validation (min: 3, max: 20)
   test('displayRows below minimum (2) is clamped to 3', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=2&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=2&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Should still render properly with clamped value
@@ -347,7 +347,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows at minimum (3) applies transform', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=3&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     const scaleInfo = await page.evaluate(() => {
@@ -367,7 +367,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows at maximum (20) applies transform', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=20&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=20&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     const scaleInfo = await page.evaluate(() => {
@@ -387,7 +387,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
 
   test('displayRows above maximum (25) is clamped to 20', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/?source=replay&type=ledwall&displayRows=25&speed=100&pauseAfter=50&disableScroll=true')
+    await page.goto('/?source=replay&type=ledwall&displayRows=25&speed=100&pauseAfter=500&disableScroll=true')
     await waitForDataLoad(page)
 
     // Should still render properly with clamped value

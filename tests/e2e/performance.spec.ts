@@ -37,7 +37,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -100,7 +100,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -221,7 +221,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -248,7 +248,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )
@@ -499,7 +499,7 @@ test.describe('Lighthouse Audit', () => {
     await page.waitForFunction(
       () => {
         const list = document.querySelector('[data-testid="results-list"]')
-        return list && list.querySelectorAll('div[class*="row"]').length > 1
+        return list && list.querySelectorAll('[data-bib]').length > 1
       },
       { timeout: 30000 }
     )

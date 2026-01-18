@@ -357,7 +357,10 @@ function scoreboardReducer(
       // This prevents showing results from previous category when new category starts
       // Condition: new active race exists, differs from currently displayed results,
       // and we have results to clear
-      if (newActiveRaceId && newActiveRaceId !== state.raceId && state.results.length > 0) {
+      // NOTE: We only clear if state.raceId is set. CLI/replay messages don't provide
+      // RaceId in top messages, so results have raceId: ''. Without this check,
+      // oncourse messages would wipe CLI results when they arrive with a raceId.
+      if (newActiveRaceId && state.raceId && newActiveRaceId !== state.raceId && state.results.length > 0) {
         newState.results = []
         newState.raceName = ''
         newState.raceId = ''

@@ -22,14 +22,16 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.10",
     "@eslint/js": "^9.39.1",
+    "@fontsource/barlow-condensed": "^5.2.8",
+    "@fontsource/bebas-neue": "^5.2.7",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/node": "^24.10.4",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.5.10",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -37,10 +39,10 @@
     "globals": "^16.5.0",
     "jsdom": "^27.4.0",
     "lighthouse": "^12.8.2",
+    "tsx": "^4.19.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "tsx": "^4.19.0",
     "vitest": "^4.0.16",
     "ws": "^8.18.0"
   }
