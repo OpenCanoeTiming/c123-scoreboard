@@ -2,6 +2,10 @@
 
 Real-time scoreboard for canoe slalom races. Connects to C123 Server for live timing data.
 
+| Vertical Layout | Ledwall Layout |
+|:---------------:|:--------------:|
+| ![Vertical](docs/screenshots/vertical.png) | ![Ledwall](docs/screenshots/ledwall.png) |
+
 ## Features
 
 - **Zero configuration** - Auto-discovers C123 Server on the network
