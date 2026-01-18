@@ -203,9 +203,9 @@ describe('ResultsList', () => {
       const results = [createResult({ pen: 2, behind: '1.23' })]
       const { container } = render(<ResultsList results={results} />)
 
-      // Original v1 shows penalty but HIDES behind on ledwall layout
+      // Ledwall hides both penalty and behind columns (saves space, consistent for BR1/BR2)
       const penaltyCells = container.querySelectorAll('[class*="penalty"]')
-      expect(penaltyCells.length).toBe(1)
+      expect(penaltyCells.length).toBe(0)
       // Behind column should be hidden in ledwall mode
       expect(screen.queryByText('+1.23')).not.toBeInTheDocument()
     })

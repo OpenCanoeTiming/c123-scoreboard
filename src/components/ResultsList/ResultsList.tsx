@@ -47,7 +47,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const { disableScroll, layoutMode, displayRows, rowHeight } = useLayout()
   const { raceId } = useScoreboard()
 
-  // Detect BR2 race for merged display
+  // Detect BR2 race for merged display (two-column times on vertical)
   const isBR2 = isBR2Race(raceId)
 
   // Auto-scroll through results when no highlight is active
@@ -71,10 +71,10 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   }, [displayRows, rowHeight])
 
   // Whether to show behind column (hidden on ledwall, shown on vertical)
-  // Note: Penalty column is always shown on both layouts (matches original v1)
-  // Exception: BR2 ledwall hides penalty because it may be from a different run than the displayed time
+  // Penalty column hidden on ledwall - saves space and avoids confusion in BR2
+  // where displayed time may be from different run than the penalty
   const showBehind = layoutMode !== 'ledwall'
-  const showPenalty = !(layoutMode === 'ledwall' && isBR2)
+  const showPenalty = layoutMode !== 'ledwall'
 
   // Container classes
   const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}`
