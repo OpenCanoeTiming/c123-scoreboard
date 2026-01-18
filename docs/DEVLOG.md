@@ -316,3 +316,60 @@ Canoe Scoreboard V3 is functionally complete:
 - M.5: displayRows scaling test
 
 **Note:** Recording data (`rec-2025-12-28T09-34-10.jsonl`) has 5970 messages, first `top` message with results is on line 104 (33rd ws/tcp message after filtering).
+
+---
+
+## 2026-01-18 - Phase N: Visual Facelift
+
+**Goal:** Improve readability and visual identity for LED displays.
+
+### Typography Overhaul
+
+Added "Industrial Stadium" font stack:
+- **Bebas Neue** - display titles (uppercase, high impact, letter-spacing 0.08em)
+- **Oswald** - category headings (Medium + SemiBold weights)
+- **Barlow Condensed** - competitor names (condensed for more text)
+- **JetBrains Mono** - times/numbers (unchanged)
+
+Font files added to `public/fonts/`, @font-face declarations in `fonts.css`.
+
+### BR2 Layout Refinements
+
+| Change | Before | After | Reason |
+|--------|--------|-------|--------|
+| Grid gap | 8px | 16px | Breathing room on LED |
+| Badge position | absolute | inline flex | Cleaner, no overflow |
+| Worse run opacity | 0.5 | 0.65 | Better LED readability |
+| Penalty format | +2 | 2 | Number is self-explanatory |
+| Time font weight | 500 | 600/400 | Better/worse distinction |
+| BR2 time size | 32px | 26px | Balance with Barlow names |
+| Badge alignment | missing when pen=0 | invisible spacer | Consistent column width |
+
+### Additional Changes
+
+- Header accent line (3px `--color-accent` border)
+- CurrentCompetitor/OnCourseDisplay: increased row height (45px → 54px) and margins for vertical layout
+- Better run badge: subtle gray instead of orange (doesn't compete for attention)
+- Worse run badge: muted gray styling
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `public/fonts/` | Added Bebas Neue, Oswald, Barlow Condensed |
+| `src/styles/fonts.css` | @font-face declarations |
+| `src/styles/variables.css` | Font variables, badge colors, BR2 time size |
+| `src/components/EventInfo/Title.module.css` | Bebas Neue, uppercase, letter-spacing |
+| `src/components/Layout/ScoreboardLayout.module.css` | Header accent line |
+| `src/components/ResultsList/ResultsList.module.css` | BR2 grid, badges, contrast |
+| `src/components/ResultsList/ResultRow.tsx` | Badge logic, spacer for alignment |
+| `src/components/CurrentCompetitor/` | Row height, margins, layoutMode |
+| `src/components/OnCourseDisplay/` | Row height, margins, layoutMode |
+
+### Testing
+
+- 725 unit tests passing
+- Build: JS 440kB, CSS 20kB
+- Snapshots updated for new styles
+
+**Tag:** `v3.2.0`
