@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Wall Wrapper</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            overflow: hidden;
+        }
+        #content-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="content-frame" title="LED Wall Content"></iframe>
+
+    <script>
+        (function() {
+            var defaultWidth = '1280';
+            var defaultHeight = '720';
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var contentUrl = urlParams.get('url') || '';
+            var width = urlParams.get('width') || defaultWidth;
+            var height = urlParams.get('height') || defaultHeight;
+
+            var iframe = document.getElementById('content-frame');
+            iframe.width = width;
+            iframe.height = height;
+
+            if (!contentUrl) {
+                // Default: load scoreboard from same origin
+                contentUrl = window.location.origin
+                    + window.location.pathname.replace(/\/ledwall\.html$/, '/')
+                    + '?type=ledwall&displayRows=5';
+            }
+
+            // Cache-busting to prevent stale content
+            var cacheBuster = 'cache=' + Date.now();
+            var separator = contentUrl.includes('?') ? '&' : '?';
+            iframe.src = contentUrl + separator + cacheBuster;
+        })();
+    </script>
+</body>
+</html>

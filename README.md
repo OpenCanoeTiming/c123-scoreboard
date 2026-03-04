@@ -103,6 +103,22 @@ Deploy the `dist/` folder to any web server.
 ?type=ledwall&displayRows=5&server=192.168.1.50:27123
 ```
 
+## LED Wall Wrapper
+
+For LED walls where the controller crops a portion of the HDMI signal, a standalone wrapper is included at `/ledwall.html`. It places content in an iframe with exact pixel dimensions matching the physical panel:
+
+```
+http://[server]/ledwall.html?width=768&height=384
+```
+
+Without a `url` parameter, it loads the scoreboard automatically. Use `url` to wrap other content (H2R Graphics, etc.):
+
+```
+http://[server]/ledwall.html?url=http://other-source:8080/output&width=768&height=384
+```
+
+See [docs/ledwall-wrapper.md](docs/ledwall-wrapper.md) for details.
+
 ## Layout Modes
 
 ### Vertical (Portrait)
@@ -221,6 +237,7 @@ public/
 - [docs/timing.md](docs/timing.md) - Timing constants
 - [docs/troubleshooting.md](docs/troubleshooting.md) - Problem solving
 - [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) - BR1/BR2 merge details
+- [docs/ledwall-wrapper.md](docs/ledwall-wrapper.md) - LED wall wrapper usage
 
 ## License
 
