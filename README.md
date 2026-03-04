@@ -48,14 +48,7 @@ Deploy the `dist/` folder to any web server.
 
 ### Raspberry Pi (FullPageOS)
 
-1. Build and deploy `dist/` to a web server
-2. Install [FullPageOS](https://github.com/guysoft/FullPageOS) on Raspberry Pi
-3. Set URL in `/boot/firmware/fullpageos.txt`:
-   ```
-   http://[webserver]/scoreboard/?server=[c123-server]:27123
-   ```
-4. For vertical display, set `DISPLAY_ORIENTATION=left` in start script
-5. Reboot
+For dedicated displays, [FullPageOS](https://github.com/guysoft/FullPageOS) turns a Raspberry Pi into a kiosk that shows the scoreboard fullscreen. See [docs/fullpageos.md](docs/fullpageos.md) for step-by-step setup instructions.
 
 ## URL Parameters
 
@@ -237,6 +230,7 @@ public/
 - [docs/timing.md](docs/timing.md) - Timing constants
 - [docs/troubleshooting.md](docs/troubleshooting.md) - Problem solving
 - [docs/SolvingBR1BR2.md](docs/SolvingBR1BR2.md) - BR1/BR2 merge details
+- [docs/fullpageos.md](docs/fullpageos.md) - FullPageOS deployment on Raspberry Pi
 - [docs/ledwall-wrapper.md](docs/ledwall-wrapper.md) - LED wall wrapper usage
 
 ## License
