@@ -136,6 +136,9 @@ function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
     }
   }
 
+  // Check for investigation star (REST API may send status: "*")
+  const underInvestigation = (row as { status?: string }).status === '*'
+
   // Has valid time
   if (row.total > 0) {
     return {
@@ -143,6 +146,7 @@ function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
       pen: row.pen,
       rank: row.rank,
       status: '' as ResultStatus,
+      underInvestigation,
     }
   }
 
@@ -256,6 +260,7 @@ export function mergeBR1CacheIntoBR2Results(
       run1,
       run2,
       bestRun,
+      underInvestigation: run1?.underInvestigation || run2?.underInvestigation || false,
     }
   })
 }
