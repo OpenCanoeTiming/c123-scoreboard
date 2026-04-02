@@ -349,7 +349,7 @@ describe('br1br2Merger', () => {
       const cache = new Map<string, CachedBR2Data>([
         ['1', {
           run1: { total: '85.00', pen: 0, rank: 1, status: '' },
-          run2: { total: '91.00', pen: 4, rank: 2, status: '*' },
+          run2: { total: '91.00', pen: 4, rank: 2, status: '', underInvestigation: true },
         }],
       ])
 

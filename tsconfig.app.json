@@ -25,16 +25,15 @@
     "noUncheckedSideEffectImports": true,
 
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/components/*": ["src/components/*"],
-      "@/context/*": ["src/context/*"],
-      "@/providers/*": ["src/providers/*"],
-      "@/hooks/*": ["src/hooks/*"],
-      "@/styles/*": ["src/styles/*"],
-      "@/types/*": ["src/types/*"],
-      "@/utils/*": ["src/utils/*"]
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/context/*": ["./src/context/*"],
+      "@/providers/*": ["./src/providers/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/utils/*"]
     }
   },
   "include": ["src"],
