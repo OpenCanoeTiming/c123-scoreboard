@@ -137,7 +137,7 @@ function toRunResult(row: MergedResultRow['run1']): RunResult | undefined {
   }
 
   // Check for investigation star (REST API may send status: "*")
-  const underInvestigation = (row as { status?: string }).status === '*'
+  const underInvestigation = row.status === '*'
 
   // Has valid time
   if (row.total > 0) {
@@ -230,6 +230,7 @@ export function mergeBR1CacheIntoBR2Results(
         pen: br2Pen,
         rank: result.rank,
         status: '',
+        underInvestigation: cachedRun2?.status === '*',
       }
     } else if (cachedRun2) {
       // No live time, but cache has data (competitor ran earlier)
@@ -260,7 +261,7 @@ export function mergeBR1CacheIntoBR2Results(
       run1,
       run2,
       bestRun,
-      underInvestigation: result.underInvestigation || run1?.underInvestigation || run2?.underInvestigation || false,
+      underInvestigation: result.underInvestigation || run1?.underInvestigation || run2?.underInvestigation,
     }
   })
 }

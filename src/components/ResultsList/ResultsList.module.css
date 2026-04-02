@@ -226,6 +226,12 @@
   50% { opacity: 0.4; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .investigationStar {
+    animation: none;
+  }
+}
+
 /* ============================================================================
    BR2 Layout - Two run columns (BR1 and BR2) for merged display
    Grid: 56px 48px 1fr 145px 145px 95px (rank, bib, name, run1, run2, behind)

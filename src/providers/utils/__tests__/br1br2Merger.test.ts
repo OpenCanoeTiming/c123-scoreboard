@@ -284,6 +284,105 @@ describe('br1br2Merger', () => {
       expect(merged[0].bestRun).toBe(1)
     })
 
+    // =========================================================================
+    // Under Investigation propagation through BR2 merge
+    // =========================================================================
+
+    it('propagates underInvestigation from result (WebSocket) to merged output', () => {
+      const results = [
+        createResult({
+          bib: '1',
+          time: '87.00',
+          pen: 0,
+          total: '85.00',
+          underInvestigation: true,
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '' },
+          run2: { total: '91.00', pen: 4, rank: 2, status: '' },
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      expect(merged[0].underInvestigation).toBe(true)
+    })
+
+    it('propagates underInvestigation from run1 in cache', () => {
+      // Cache run1 has underInvestigation set (as produced by toRunResult)
+      const results = [
+        createResult({
+          bib: '1',
+          time: '87.00',
+          pen: 0,
+          total: '85.00',
+          underInvestigation: false,
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '', underInvestigation: true },
+          run2: { total: '91.00', pen: 4, rank: 2, status: '' },
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      expect(merged[0].underInvestigation).toBe(true)
+      expect(merged[0].run1?.underInvestigation).toBe(true)
+      expect(merged[0].run2?.underInvestigation).toBeFalsy()
+    })
+
+    it('propagates underInvestigation from run2 cache (star status in REST API)', () => {
+      // When hasBR2Time is true, run2 is built from WebSocket data
+      // but underInvestigation is checked from cachedRun2.status
+      const results = [
+        createResult({
+          bib: '1',
+          time: '87.00',
+          pen: 0,
+          total: '85.00',
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '' },
+          run2: { total: '91.00', pen: 4, rank: 2, status: '*' },
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      expect(merged[0].underInvestigation).toBe(true)
+      expect(merged[0].run1?.underInvestigation).toBeFalsy()
+      expect(merged[0].run2?.underInvestigation).toBe(true)
+    })
+
+    it('does not set underInvestigation when no star status present', () => {
+      const results = [
+        createResult({
+          bib: '1',
+          time: '87.00',
+          pen: 0,
+          total: '85.00',
+        }),
+      ]
+      const cache = new Map<string, CachedBR2Data>([
+        ['1', {
+          run1: { total: '85.00', pen: 0, rank: 1, status: '' },
+          run2: { total: '91.00', pen: 4, rank: 2, status: '' },
+        }],
+      ])
+
+      const merged = mergeBR1CacheIntoBR2Results(results, cache)
+
+      expect(merged[0].underInvestigation).toBeFalsy()
+      expect(merged[0].run1?.underInvestigation).toBeFalsy()
+      expect(merged[0].run2?.underInvestigation).toBeFalsy()
+    })
+
     it('shows empty BR2 when deleted (no cache, no WebSocket time)', () => {
       // Competitor's BR2 was deleted - neither cache nor WebSocket has data
       const results = [

@@ -85,7 +85,6 @@ function RunTimeCell({
   isBetter: boolean
 }) {
   const opacityClass = isBetter ? '' : styles.worseRun
-  const isUnderInvestigation = run?.underInvestigation
 
   // No run data - show empty
   if (!run) {
@@ -130,9 +129,7 @@ function RunTimeCell({
 
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
-      <span className={styles.runTime}>
-        {run.total}
-      </span>
+      <span className={styles.runTime}>{run.total}</span>
       <span className={badgeClass}>{pen > 0 ? pen : '0'}</span>
     </div>
   )
@@ -169,7 +166,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     const explicitStatus = hasExplicitStatus(result.status)
     const missingTime = hasMissingTime(result)
     const showAsInvalid = explicitStatus || missingTime
-    const isUnderInvestigation = result.underInvestigation || result.run1?.underInvestigation || result.run2?.underInvestigation || false
+    const isUnderInvestigation = result.underInvestigation || result.run1?.underInvestigation || result.run2?.underInvestigation
 
     const rankDisplay = showAsInvalid
       ? ''
