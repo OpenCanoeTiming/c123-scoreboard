@@ -18,6 +18,8 @@ export interface RunResult {
   rank?: number
   /** Status for invalid results */
   status?: ResultStatus
+  /** Result is under investigation by judges (star * in C123) */
+  underInvestigation?: boolean
 }
 
 /**
@@ -40,6 +42,8 @@ export interface Result {
   behind: string
   /** Status for invalid results (DNS, DNF, DSQ). Empty string for valid results. */
   status?: ResultStatus
+  /** Result is under investigation by judges (star * in C123) */
+  underInvestigation?: boolean
 
   // === Raw BR2 time for calculating BR2 total (time + pen) ===
   /** BR2 time without penalty (only set during BR2 races) */

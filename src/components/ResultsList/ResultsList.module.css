@@ -211,6 +211,27 @@
   background-color: transparent;
 }
 
+/* Investigation star indicator - result under review by judges */
+.investigationStar {
+  color: #e8a020;
+  font-weight: 700;
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-right: 0.1em;
+  animation: starPulse 2s ease-in-out infinite;
+}
+
+@keyframes starPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .investigationStar {
+    animation: none;
+  }
+}
+
 /* ============================================================================
    BR2 Layout - Two run columns (BR1 and BR2) for merged display
    Grid: 56px 48px 1fr 145px 145px 95px (rank, bib, name, run1, run2, behind)

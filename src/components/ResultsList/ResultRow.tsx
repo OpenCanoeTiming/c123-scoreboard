@@ -166,6 +166,15 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     const explicitStatus = hasExplicitStatus(result.status)
     const missingTime = hasMissingTime(result)
     const showAsInvalid = explicitStatus || missingTime
+    const isUnderInvestigation = result.underInvestigation || result.run1?.underInvestigation || result.run2?.underInvestigation
+
+    const rankDisplay = showAsInvalid
+      ? ''
+      : `${result.rank}.`
+
+    const nameDisplay = isUnderInvestigation
+      ? <><sup className={styles.investigationStar}>*</sup>{formatName(result.name)}</>
+      : formatName(result.name)
 
     // Check if we have BR2 merged data (run1/run2 populated)
     const hasMergedData = isBR2 && (result.run1 || result.run2)
@@ -197,9 +206,9 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
 
       return (
         <div ref={ref} className={rowClasses} data-bib={result.bib}>
-          <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
+          <div className={styles.rank}>{rankDisplay}</div>
           <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{formatName(result.name)}</div>
+          <div className={styles.name}>{nameDisplay}</div>
           <RunTimeCell run={result.run1} isBetter={run1Better} />
           <RunTimeCell run={result.run2} isBetter={run2Better} />
           {showBehind && (
@@ -222,13 +231,13 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
       // Convert result to RunResult format for RunTimeCell
       const singleRun: RunResult | undefined = showAsInvalid
         ? (explicitStatus ? { total: '', pen: 0, rank: result.rank, status: result.status! } : undefined)
-        : { total: result.total, pen: result.pen, rank: result.rank, status: '' }
+        : { total: result.total, pen: result.pen, rank: result.rank, status: '', underInvestigation: isUnderInvestigation }
 
       return (
         <div ref={ref} className={singleRunClasses} data-bib={result.bib}>
-          <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
+          <div className={styles.rank}>{rankDisplay}</div>
           <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{formatName(result.name)}</div>
+          <div className={styles.name}>{nameDisplay}</div>
           <RunTimeCell run={singleRun} isBetter={true} />
           {showBehind && (
             <div className={styles.behind}>
@@ -242,9 +251,9 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     // Ledwall layout - separate penalty and time columns
     return (
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
-        <div className={styles.rank}>{showAsInvalid ? '' : `${result.rank}.`}</div>
+        <div className={styles.rank}>{rankDisplay}</div>
         <div className={styles.bib}>{result.bib}</div>
-        <div className={styles.name}>{formatName(result.name)}</div>
+        <div className={styles.name}>{nameDisplay}</div>
         {showPenalty && (
           <div className={`${styles.penalty} ${showAsInvalid ? styles.penaltyHidden : getPenaltyClass(result.pen)}`}>
             {showAsInvalid ? '' : result.pen}

@@ -627,6 +627,72 @@ describe('mapResults', () => {
     })
   })
 
+  // =========================================================================
+  // Under Investigation (star *) Status
+  // =========================================================================
+  describe('under investigation star (*) status', () => {
+    it('sets underInvestigation when status is star with valid total', () => {
+      const row = createResultRow({
+        total: '117.27',
+        status: '*',
+        rank: 40,
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR2_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].underInvestigation).toBe(true)
+      expect(result.results[0].status).toBe('') // star is not a status
+      expect(result.results[0].total).toBe('117.27') // time shown normally
+      expect(result.results[0].rank).toBe(40)
+    })
+
+    it('does not set underInvestigation for normal results', () => {
+      const row = createResultRow({
+        total: '78.99',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].underInvestigation).toBe(false)
+    })
+
+    it('does not set underInvestigation for DNS/DNF/DSQ', () => {
+      const row = createResultRow({
+        total: '',
+        status: 'DSQ',
+      })
+      const data: C123ResultsData = {
+        raceId: 'K1M_ST_BR1_6',
+        classId: 'K1M_ST',
+        isCurrent: true,
+        mainTitle: 'K1m',
+        subTitle: '',
+        rows: [row],
+      }
+
+      const result = mapResults(data)
+
+      expect(result.results[0].underInvestigation).toBe(false)
+      expect(result.results[0].status).toBe('DSQ')
+    })
+  })
+
   it('always sets highlightBib to null', () => {
     const data: C123ResultsData = {
       raceId: 'K1M_ST_BR1_6',

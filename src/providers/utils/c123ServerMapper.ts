@@ -157,6 +157,7 @@ function mapResultRow(row: C123ResultRow): Result {
     pen: row.pen,
     behind: row.behind,
     status: getResultStatus(row),
+    underInvestigation: row.status === '*',
     // BR2 fields - pass through for merge calculation
     time: row.time,              // BR2 time without penalty
     prevTime: row.prevTime,      // BR1 time in centiseconds
