@@ -230,7 +230,7 @@ export function mergeBR1CacheIntoBR2Results(
         pen: br2Pen,
         rank: result.rank,
         status: '',
-        underInvestigation: cachedRun2?.status === '*',
+        underInvestigation: cachedRun2?.underInvestigation ?? false,
       }
     } else if (cachedRun2) {
       // No live time, but cache has data (competitor ran earlier)
