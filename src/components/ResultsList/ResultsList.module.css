@@ -215,8 +215,9 @@
 .investigationStar {
   color: #e8a020;
   font-weight: 700;
-  display: inline-block;
-  width: 0.7em;
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-right: 0.1em;
   animation: starPulse 2s ease-in-out infinite;
 }
 

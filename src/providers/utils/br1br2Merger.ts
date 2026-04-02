@@ -260,7 +260,7 @@ export function mergeBR1CacheIntoBR2Results(
       run1,
       run2,
       bestRun,
-      underInvestigation: run1?.underInvestigation || run2?.underInvestigation || false,
+      underInvestigation: result.underInvestigation || run1?.underInvestigation || run2?.underInvestigation || false,
     }
   })
 }

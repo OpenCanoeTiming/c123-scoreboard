@@ -131,7 +131,6 @@ function RunTimeCell({
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
       <span className={styles.runTime}>
-        {isUnderInvestigation && <span className={styles.investigationStar}>*</span>}
         {run.total}
       </span>
       <span className={badgeClass}>{pen > 0 ? pen : '0'}</span>
@@ -174,9 +173,11 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
 
     const rankDisplay = showAsInvalid
       ? ''
-      : isUnderInvestigation
-        ? <><span className={styles.investigationStar}>*</span>{`${result.rank}.`}</>
-        : `${result.rank}.`
+      : `${result.rank}.`
+
+    const nameDisplay = isUnderInvestigation
+      ? <><sup className={styles.investigationStar}>*</sup>{formatName(result.name)}</>
+      : formatName(result.name)
 
     // Check if we have BR2 merged data (run1/run2 populated)
     const hasMergedData = isBR2 && (result.run1 || result.run2)
@@ -210,7 +211,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
         <div ref={ref} className={rowClasses} data-bib={result.bib}>
           <div className={styles.rank}>{rankDisplay}</div>
           <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{formatName(result.name)}</div>
+          <div className={styles.name}>{nameDisplay}</div>
           <RunTimeCell run={result.run1} isBetter={run1Better} />
           <RunTimeCell run={result.run2} isBetter={run2Better} />
           {showBehind && (
@@ -239,7 +240,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
         <div ref={ref} className={singleRunClasses} data-bib={result.bib}>
           <div className={styles.rank}>{rankDisplay}</div>
           <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{formatName(result.name)}</div>
+          <div className={styles.name}>{nameDisplay}</div>
           <RunTimeCell run={singleRun} isBetter={true} />
           {showBehind && (
             <div className={styles.behind}>
@@ -255,7 +256,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
       <div ref={ref} className={rowClasses} data-bib={result.bib}>
         <div className={styles.rank}>{rankDisplay}</div>
         <div className={styles.bib}>{result.bib}</div>
-        <div className={styles.name}>{formatName(result.name)}</div>
+        <div className={styles.name}>{nameDisplay}</div>
         {showPenalty && (
           <div className={`${styles.penalty} ${showAsInvalid ? styles.penaltyHidden : getPenaltyClass(result.pen)}`}>
             {showAsInvalid ? '' : result.pen}
