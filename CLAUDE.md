@@ -2,40 +2,113 @@
 
 ## Project
 
-Real-time scoreboard for canoe slalom races. Works with data from C123 server.
+Real-time scoreboard for canoe slalom races. On-site display for race officials and spectators. Works with data from c123-server via WebSocket.
 
-**GitHub:** OpenCanoeTiming/c123-scoreboard | **License:** MIT
+**GitHub:** OpenCanoeTiming/c123-scoreboard | **License:** MIT | **Status:** Stable
 
 ---
 
-## Paths and Documentation
+## Architecture
+
+Scoreboard uses abstract `DataProvider` interface:
+- **C123ServerProvider** — primary (WebSocket to c123-server)
+- **CLIProvider** — fallback (legacy CLI protocol)
+
+Details in [docs/architecture.md](docs/architecture.md).
+
+---
+
+## Key References
 
 | Purpose | Path |
 |---------|------|
-| **This project** | `/workspace/timing/c123-scoreboard/` |
-| **Implementation plan** | `./PLAN.md` |
-| **Documentation** | `./docs/` |
-| **C123 Server** | `../c123-server/` |
+| **Architecture** | `./docs/architecture.md` |
+| **Timing constants** | `./docs/timing.md` |
+| **Testing** | `./docs/testing.md` |
+| **Troubleshooting** | `./docs/troubleshooting.md` |
+| **Server WebSocket API** | `../c123-server/docs/C123-PROTOCOL.md` |
 | **Protocol docs** | `../c123-protocol-docs/` |
+| **Recordings for testing** | `../c123-protocol-docs/recordings/` |
 | **Design system** | `../timing-design-system/` |
-| **Legacy V1** | `/workspace/personal/canoe-scoreboard-original/` (archive) |
 
-### Project Documentation
+---
 
-| Document | Description |
-|----------|-------------|
-| [docs/architecture.md](docs/architecture.md) | Architecture, data flow, key files |
-| [docs/timing.md](docs/timing.md) | Timing constants and flow diagrams |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | Common problem solutions |
-| [docs/testing.md](docs/testing.md) | Testing commands and coverage |
-| [docs/DEVLOG.md](docs/DEVLOG.md) | Development log |
+## Important Rules
 
-### External References
+1. **Race flow tracking** — display results for the currently running category
+2. **Architecture preservation** — the scoreboard is polished and stable, changes are rare
+3. **XML as live database** — content changes continuously, react via WebSocket
+4. **Keep CLI** — as secondary interface for backward compatibility
 
-- **`../c123-server/docs`** - C123 WebSocket API documentation
-- **`../c123-protocol-docs`** - C123 protocol and XML format documentation
-- **`../c123-protocol-docs/samples/`** - Static XML samples for reference
-- **`../c123-protocol-docs/recordings/`** - JSONL recordings for development and testing
+---
+
+## Development
+
+```bash
+# Install
+npm install
+
+# Dev server
+npm run dev
+
+# Tests
+npm test
+
+# Build
+npm run build
+```
+
+**Testing with recorded data:**
+```bash
+# Start replay server (in c123-protocol-docs)
+cd ../c123-protocol-docs/tools
+node player.js ../recordings/rec-2025-12-28T09-34-10.jsonl --autoplay
+
+# In another terminal — start c123-server
+cd ../c123-server && npm start -- --host localhost
+
+# Scoreboard connects to ws://localhost:27123/ws
+```
+
+---
+
+## Workflow
+
+Issue-driven development. Every change starts with a GitHub issue.
+
+### 1. Rozbor (Analysis)
+- Comment on issue: restate problem, challenge the idea, define scope, identify risks
+- Use `/second-opinion` for non-trivial architectural decisions
+
+### 2. Plan
+- Use Claude Code plan mode to design implementation
+- Post plan summary to issue: key decisions, files to change, approach
+- Get user confirmation before implementation
+
+### 3. Implement
+- Branch from main: `feat/{N}-{slug}` or `fix-{N}-{slug}`
+- Commit incrementally, push regularly
+- Comment on issue with progress updates
+
+### 4. PR & Review
+- Every issue → PR with `Closes #N`
+- Include test plan in PR description
+- Summarize what changed and why
+
+---
+
+## DEVLOG.md
+
+Append-only record of dead ends, surprising problems, and solutions. Never edit existing entries.
+
+```markdown
+## YYYY-MM-DD — Short description
+
+**Problem:** What went wrong or didn't work
+**Attempted:** What was tried
+**Solution:** What actually worked (or: still open)
+**Lesson:** What to remember next time
+```
 
 ---
 
@@ -47,48 +120,6 @@ Real-time scoreboard for canoe slalom races. Works with data from C123 server.
 
 ---
 
-## Architecture (Summary)
-
-Scoreboard uses abstract `DataProvider` interface:
-- **C123ServerProvider** - primary (WebSocket to C123 Server)
-- **CLIProvider** - fallback (legacy CLI protocol)
-
-Details in [docs/architecture.md](docs/architecture.md).
-
----
-
-## Development and Testing
-
-**Process:**
-1. Update documentation as plan and intent
-2. Add steps to `PLAN.md`
-3. Implement in blocks (~70% context per block)
-4. Commit at the latest after each block
-5. Don't do more than one block before clear/compact
-
-**Testing:**
-- Always test V3 against V2 on the same input data
-- Content, behavior, and logic must be COMPLETELY IDENTICAL (except BR1/BR2 merge)
-- Commands in [docs/testing.md](docs/testing.md)
-
-**Recording for development:**
-```bash
-../c123-protocol-docs/recordings/rec-2025-12-28T09-34-10.jsonl
-```
-
-**Development log:** Write progress to [docs/DEVLOG.md](docs/DEVLOG.md).
-
----
-
-## Key Qualities
-
-1. **Race flow tracking** - display results for the currently running category
-2. **Architecture and appearance preservation** - V2 is polished, changes are rare
-3. **XML as live database** - content changes continuously, react via API
-4. **Keep CLI** - as secondary interface for backward compatibility
-
----
-
 ## Commit Message Format
 
 ```
@@ -96,7 +127,3 @@ feat: add TcpSource with reconnect logic
 fix: correct XML parsing for Results
 test: add unit tests for FinishDetector
 ```
-
----
-
-*Detailed implementation plan → see `./PLAN.md`*
