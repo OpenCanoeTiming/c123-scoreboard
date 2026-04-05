@@ -129,7 +129,10 @@ function RunTimeCell({
 
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
-      <span className={styles.runTime}>{run.total}</span>
+      <span className={styles.runTime}>
+        {run.underInvestigation && <sup className={styles.investigationStar}>*</sup>}
+        {run.total}
+      </span>
       <span className={badgeClass}>{pen > 0 ? pen : '0'}</span>
     </div>
   )
@@ -172,9 +175,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
       ? ''
       : `${result.rank}.`
 
-    const nameDisplay = isUnderInvestigation
-      ? <><sup className={styles.investigationStar}>*</sup>{formatName(result.name)}</>
-      : formatName(result.name)
+    const nameDisplay = formatName(result.name)
 
     // Check if we have BR2 merged data (run1/run2 populated)
     const hasMergedData = isBR2 && (result.run1 || result.run2)
@@ -260,6 +261,7 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
           </div>
         )}
         <div className={`${styles.time} ${showAsInvalid ? styles.statusIndicator : ''}`}>
+          {isUnderInvestigation && !showAsInvalid && <sup className={styles.investigationStar}>*</sup>}
           {timeDisplay}
         </div>
         {showBehind && (
