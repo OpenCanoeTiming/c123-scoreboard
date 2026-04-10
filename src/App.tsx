@@ -150,7 +150,7 @@ type DiscoveryState =
 async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promise<DataProvider> {
   // 1. Replay mode (development/testing)
   if (urlParams.source === 'replay') {
-    return new ReplayProvider('/recordings/rec-2025-12-28T09-34-10.jsonl', {
+    return new ReplayProvider('recordings/rec-2025-12-28T09-34-10.jsonl', {
       speed: urlParams.speed,
       sources: ['ws', 'tcp'],
       autoPlay: true,
@@ -263,7 +263,7 @@ function DiscoveryScreen() {
     <div className={styles.screenContainer}>
       <header className={styles.header}>
         <img
-          src="/assets/logo.svg"
+          src="assets/logo.svg"
           alt="Logo"
           className={styles.headerLogo}
           onError={(e) => { e.currentTarget.style.display = 'none' }}
@@ -293,7 +293,7 @@ function ErrorScreen({ message }: { message: string }) {
     <div className={styles.screenContainer}>
       <header className={styles.header}>
         <img
-          src="/assets/logo.svg"
+          src="assets/logo.svg"
           alt="Logo"
           className={styles.headerLogo}
           onError={(e) => { e.currentTarget.style.display = 'none' }}

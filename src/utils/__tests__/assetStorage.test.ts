@@ -37,9 +37,9 @@ describe('assetStorage', () => {
 
   describe('DEFAULT_ASSETS', () => {
     it('should have all required asset URLs', () => {
-      expect(DEFAULT_ASSETS.logoUrl).toBe('/assets/logo.svg')
-      expect(DEFAULT_ASSETS.partnerLogoUrl).toBe('/assets/partners.png')
-      expect(DEFAULT_ASSETS.footerImageUrl).toBe('/assets/footer.png')
+      expect(DEFAULT_ASSETS.logoUrl).toBe('assets/logo.svg')
+      expect(DEFAULT_ASSETS.partnerLogoUrl).toBe('assets/partners.png')
+      expect(DEFAULT_ASSETS.footerImageUrl).toBe('assets/footer.png')
     })
   })
 

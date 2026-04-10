@@ -14,7 +14,7 @@ exports[`Footer snapshots > should match snapshot when visible 1`] = `
       <img
         alt="Sponsor banner"
         class="_sponsorImage_acfd2c"
-        src="/assets/footer.png"
+        src="assets/footer.png"
       />
     </div>
   </div>
@@ -33,7 +33,7 @@ exports[`Footer snapshots > should match snapshot with default props 1`] = `
       <img
         alt="Sponsor banner"
         class="_sponsorImage_acfd2c"
-        src="/assets/footer.png"
+        src="assets/footer.png"
       />
     </div>
   </div>

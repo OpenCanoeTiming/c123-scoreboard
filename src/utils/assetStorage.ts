@@ -23,9 +23,9 @@ export interface AssetConfig {
  * Default asset URLs (used as fallback)
  */
 export const DEFAULT_ASSETS: Required<AssetConfig> = {
-  logoUrl: '/assets/logo.svg',
-  partnerLogoUrl: '/assets/partners.png',
-  footerImageUrl: '/assets/footer.png',
+  logoUrl: 'assets/logo.svg',
+  partnerLogoUrl: 'assets/partners.png',
+  footerImageUrl: 'assets/footer.png',
 }
 
 /**
