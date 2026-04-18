@@ -182,6 +182,17 @@ describe('mapOnCourse', () => {
     expect(mapped.rank).toBe(5)
   })
 
+  it('trims whitespace from bib (right-aligned fixed-width from c123-server XML)', () => {
+    const data: C123OnCourseData = {
+      total: 1,
+      competitors: [createCompetitor({ bib: '  44' })],
+    }
+
+    const result = mapOnCourse(data)
+
+    expect(result.onCourse[0].bib).toBe('44')
+  })
+
   // =========================================================================
   // Partial OnCourse Messages (12.1)
   // =========================================================================
@@ -327,6 +338,21 @@ describe('mapResults', () => {
     expect(result.results[0].givenName).toBe('Jiří')
     expect(result.results[0].total).toBe('78.99')
     expect(result.results[0].behind).toBe('')
+  })
+
+  it('trims whitespace from bib (right-aligned fixed-width from c123-server XML)', () => {
+    const data: C123ResultsData = {
+      raceId: 'K1M_ST_BR2_6',
+      classId: 'K1M_ST',
+      isCurrent: true,
+      mainTitle: 'K1m - střední trať',
+      subTitle: '2nd Run',
+      rows: [createResultRow({ bib: '  44' })],
+    }
+
+    const result = mapResults(data)
+
+    expect(result.results[0].bib).toBe('44')
   })
 
   it('maps multiple result rows', () => {

@@ -25,7 +25,7 @@ import type { ResultsData, OnCourseData, EventInfoData } from '../types'
  */
 function mapOnCourseCompetitor(c: C123OnCourseCompetitor): OnCourseCompetitor {
   return {
-    bib: c.bib,
+    bib: c.bib.trim(),
     name: c.name,
     club: c.club,
     nat: c.nat,
@@ -147,7 +147,7 @@ function getResultStatus(row: C123ResultRow): ResultStatus {
 function mapResultRow(row: C123ResultRow): Result {
   return {
     rank: row.rank,
-    bib: row.bib,
+    bib: row.bib.trim(),
     name: row.name,
     familyName: row.familyName,
     givenName: row.givenName,
