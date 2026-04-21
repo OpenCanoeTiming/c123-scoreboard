@@ -127,3 +127,43 @@ feat: add TcpSource with reconnect logic
 fix: correct XML parsing for Results
 test: add unit tests for FinishDetector
 ```
+
+---
+
+## Versioning & Releases
+
+This project uses **Release Please** (commit-based) for automatic versioning. **Never manually bump `package.json` version or edit `CHANGELOG.md`** — Release Please owns both via its rolling release PR.
+
+### How it works
+
+1. Every push to `main` runs `.github/workflows/release-please.yml`.
+2. Release Please keeps a rolling **release PR** open (label `autorelease: pending`) that aggregates pending changes and proposes the next version.
+3. Merging the release PR creates a commit `chore(main): release X.Y.Z`, tag `vX.Y.Z`, and a GitHub Release with generated CHANGELOG.
+4. Scoreboard is a browser app, not an npm package — there is no `publish.yml`. The GitHub Release is the release artifact.
+
+### Commit types and bump rules
+
+| Commit type | Bump | Shown in CHANGELOG |
+|---|---|---|
+| `feat:` | **minor** | ✓ Features |
+| `fix:` / `perf:` | **patch** | ✓ Bug Fixes / Performance |
+| `feat!:` or `BREAKING CHANGE:` | **major** | ✓ Features |
+| `revert:` / `docs:` | none | ✓ Reverts / Documentation |
+| `chore:` / `ci:` / `test:` / `style:` / `refactor:` / `build:` | **none** | hidden |
+| `chore(deps):` / `chore(deps-dev):` (dependabot) | **none** | hidden |
+
+### Rules for agents preparing PRs
+
+1. **Always use conventional commits** (`feat:`, `fix:`, `chore:`...). Release Please reads commit prefixes to decide bumps.
+2. **Don't edit `package.json` version or `CHANGELOG.md`** in regular PRs — Release Please owns those.
+3. **Don't merge the release PR together with feature PRs** — it must be the last to merge in a release cycle.
+4. **PR title should keep the commit prefix** (squash merges — ensure the final merged commit stays conventional).
+5. **Never commit skill state** — `.superpowers/` and `.claude/` are local per-session tool state. Prefer `git add <file>` over `git add -A`.
+
+### Forcing a specific version
+
+To force a release to a specific version, add this footer to a commit in the next release cycle:
+
+```
+Release-As: 4.0.0
+```
