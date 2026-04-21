@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
 import { ScoreboardProvider, useScoreboard } from '../ScoreboardContext'
-import { DEPARTING_TIMEOUT } from '../constants'
+import { DEPARTING_TIMEOUT, STALE_COMPETITOR_TIMEOUT } from '../constants'
 import type { DataProvider, Unsubscribe, ResultsData, OnCourseData, EventInfoData } from '@/providers/types'
 import type { ConnectionStatus, VisibilityState, OnCourseCompetitor, Result } from '@/types'
 
@@ -1015,6 +1015,244 @@ describe('ScoreboardContext', () => {
       // R2 results should be filtered out
       expect(result.current.results).toHaveLength(1)
       expect(result.current.results[0].bib).toBe('42')
+    })
+
+    it('removes stale competitors not seen in OnCourse messages after timeout', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Add competitor bib=10 from R1 via partial
+      const comp10 = createOnCourseCompetitor({ bib: '10', raceId: 'R1', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10],
+          updateOnCourse: false, // Partial message
+        })
+      })
+
+      expect(result.current.onCourse).toHaveLength(1)
+      expect(result.current.activeRaceId).toBe('R1')
+
+      // Advance time past STALE_COMPETITOR_TIMEOUT
+      act(() => {
+        vi.advanceTimersByTime(STALE_COMPETITOR_TIMEOUT + 1000)
+      })
+
+      // Add competitor bib=20 from R2 via partial
+      const comp20 = createOnCourseCompetitor({ bib: '20', raceId: 'R2', dtStart: '2025-12-28T10:02:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp20,
+          onCourse: [comp20],
+          updateOnCourse: false, // Partial message
+        })
+      })
+
+      // Stale competitor should be removed, only bib 20 remains
+      expect(result.current.onCourse).toHaveLength(1)
+      expect(result.current.onCourse[0].bib).toBe('20')
+      expect(result.current.activeRaceId).toBe('R2')
+    })
+
+    it('switches displayed results when stale competitors from old race are removed', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Add competitor bib=10 from R1
+      const comp10 = createOnCourseCompetitor({ bib: '10', raceId: 'R1', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10],
+          updateOnCourse: false,
+        })
+      })
+
+      // Set results for R1
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '10' })],
+          raceName: 'K1M - Race 1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R1',
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.raceId).toBe('R1')
+
+      // Advance past stale timeout
+      act(() => {
+        vi.advanceTimersByTime(STALE_COMPETITOR_TIMEOUT + 1000)
+      })
+
+      // Add competitor bib=20 from R2 (triggers stale removal of bib=10)
+      const comp20 = createOnCourseCompetitor({ bib: '20', raceId: 'R2', dtStart: '2025-12-28T10:02:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp20,
+          onCourse: [comp20],
+          updateOnCourse: false,
+        })
+      })
+
+      // activeRaceId should switch to R2, results cleared
+      expect(result.current.activeRaceId).toBe('R2')
+      expect(result.current.results).toEqual([])
+
+      // New R2 results should now be accepted
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '20' })],
+          raceName: 'C1W - Race 2',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'R2',
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('20')
+    })
+
+    it('does not remove competitors that are still being reported', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Add competitor bib=10 from R1
+      const comp10 = createOnCourseCompetitor({ bib: '10', raceId: 'R1', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10],
+          updateOnCourse: false,
+        })
+      })
+
+      // Advance 10 seconds
+      act(() => {
+        vi.advanceTimersByTime(10000)
+      })
+
+      // Send update for same competitor (refreshes lastSeenAt)
+      const updated10 = { ...comp10, time: '45.00', total: '47.00' }
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: updated10,
+          onCourse: [updated10],
+          updateOnCourse: false,
+        })
+      })
+
+      // Advance another 10 seconds (20s total, but only 10s since last seen)
+      act(() => {
+        vi.advanceTimersByTime(10000)
+      })
+
+      // Add bib=20 from R1 — should not evict bib=10 (only 10s since last seen)
+      const comp20 = createOnCourseCompetitor({ bib: '20', raceId: 'R1', dtStart: '2025-12-28T10:01:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp20,
+          onCourse: [comp20],
+          updateOnCourse: false,
+        })
+      })
+
+      // Both competitors should be in the list
+      expect(result.current.onCourse).toHaveLength(2)
+      expect(result.current.onCourse.find(c => c.bib === '10')).toBeDefined()
+      expect(result.current.onCourse.find(c => c.bib === '20')).toBeDefined()
+    })
+
+    it('does not apply stale cleanup on full-replace messages', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Add competitor bib=10 from R1 via partial
+      const comp10 = createOnCourseCompetitor({ bib: '10', raceId: 'R1', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10],
+          updateOnCourse: false,
+        })
+      })
+
+      // Advance past stale timeout
+      act(() => {
+        vi.advanceTimersByTime(STALE_COMPETITOR_TIMEOUT + 1000)
+      })
+
+      // Send full-replace with both bib=10 and bib=20
+      const comp20 = createOnCourseCompetitor({ bib: '20', raceId: 'R1', dtStart: '2025-12-28T10:01:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10, comp20],
+          updateOnCourse: true, // Full replace — authoritative
+        })
+      })
+
+      // Both should remain — full-replace is authoritative
+      expect(result.current.onCourse).toHaveLength(2)
+      expect(result.current.onCourse.find(c => c.bib === '10')).toBeDefined()
+      expect(result.current.onCourse.find(c => c.bib === '20')).toBeDefined()
+    })
+
+    it('finished competitors are not affected by stale timeout', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider)
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const comp10 = createOnCourseCompetitor({ bib: '10', raceId: 'R1', dtStart: '2025-12-28T10:00:00', dtFinish: null })
+
+      // Competitor on course via partial
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: comp10,
+          onCourse: [comp10],
+          updateOnCourse: false,
+        })
+      })
+
+      // Advance past stale timeout — bib 10 would now be stale if it hadn't finished
+      act(() => {
+        vi.advanceTimersByTime(STALE_COMPETITOR_TIMEOUT + 1000)
+      })
+
+      // Competitor finishes (dtFinish recorded AFTER time advance, so grace period is fresh)
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: { ...comp10, dtFinish: '2025-12-28T10:01:30' },
+          onCourse: [{ ...comp10, dtFinish: '2025-12-28T10:01:30' }],
+          updateOnCourse: false,
+        })
+      })
+
+      // Another message triggers the stale cleanup pass
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: createOnCourseCompetitor({ bib: '20', raceId: 'R1', dtStart: '2025-12-28T10:02:00' }),
+          onCourse: [createOnCourseCompetitor({ bib: '20', raceId: 'R1', dtStart: '2025-12-28T10:02:00' })],
+          updateOnCourse: false,
+        })
+      })
+
+      // Finished competitor should still be in the list (dtFinish exempts from stale eviction)
+      // It will be removed by the grace period mechanism instead
+      expect(result.current.onCourse.find(c => c.bib === '10')).toBeDefined()
     })
   })
 
