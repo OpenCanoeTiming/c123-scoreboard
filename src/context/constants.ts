@@ -21,3 +21,14 @@ export const DEPARTING_TIMEOUT = 3000
  * before being removed from the on-course display
  */
 export const FINISHED_GRACE_PERIOD = 5000
+
+/**
+ * Timeout for removing stale competitors from onCourse list (15 seconds)
+ *
+ * C123 sends OnCourse updates ~1/second per competitor. If a competitor
+ * hasn't appeared in any message for this duration, they were removed
+ * from the course (DNS/skip) without an explicit dtFinish signal.
+ * Removing stale competitors allows activeRaceId to switch to the
+ * current race.
+ */
+export const STALE_COMPETITOR_TIMEOUT = 15000

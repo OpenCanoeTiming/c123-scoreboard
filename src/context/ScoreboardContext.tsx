@@ -20,7 +20,7 @@ import type {
   EventInfoData,
   ProviderError,
 } from '@/providers/types'
-import { DEPARTING_TIMEOUT, FINISHED_GRACE_PERIOD } from './constants'
+import { DEPARTING_TIMEOUT, FINISHED_GRACE_PERIOD, STALE_COMPETITOR_TIMEOUT } from './constants'
 
 /**
  * Scoreboard state interface
@@ -57,6 +57,11 @@ export interface ScoreboardState {
   // Maps bib -> timestamp when dtFinish was first detected
   // Competitors are removed from onCourse after FINISHED_GRACE_PERIOD
   onCourseFinishedAt: Record<string, number>
+
+  // Track when each competitor was last seen in an OnCourse message
+  // Maps bib -> timestamp of last message containing this competitor
+  // Competitors not seen for STALE_COMPETITOR_TIMEOUT are evicted
+  onCourseLastSeenAt: Record<string, number>
 
   // Departing competitor (competitor who just left the course but hasn't been highlighted yet)
   departingCompetitor: OnCourseCompetitor | null
@@ -133,6 +138,7 @@ const initialState: ScoreboardState = {
   currentCompetitor: null,
   onCourse: [],
   onCourseFinishedAt: {},
+  onCourseLastSeenAt: {},
   departingCompetitor: null,
   departedAt: null,
   pendingHighlightBib: null,
@@ -310,6 +316,56 @@ function scoreboardReducer(
         return false
       })
 
+      // Remove stale competitors that C123 stopped reporting
+      // This handles DNS/skip at end of category: C123 just stops sending
+      // OnCourse for removed competitors without an explicit dtFinish.
+      // Only applies to partial/merge messages — full-replace messages
+      // are authoritative and don't need stale cleanup.
+      const newLastSeenAt: Record<string, number> = shouldUpdateOnCourse
+        ? {} // Full replace — reset tracking, all competitors are fresh
+        : { ...state.onCourseLastSeenAt }
+
+      // Update lastSeenAt for bibs in the incoming message
+      if (action.current) {
+        newLastSeenAt[action.current.bib] = now
+      }
+      for (const comp of action.onCourse) {
+        // Only track competitors who have actually started — action.onCourse may
+        // include competitors in the start queue (no dtStart) who are filtered out
+        // by the mapper. action.current is always started, so no guard needed there.
+        if (comp.dtStart) {
+          newLastSeenAt[comp.bib] = now
+        }
+      }
+
+      // For full-replace, seed all competitors in the new list
+      if (shouldUpdateOnCourse) {
+        for (const comp of newOnCourse) {
+          newLastSeenAt[comp.bib] = now
+        }
+      }
+
+      // Evict stale competitors (only from partial messages — full-replace is authoritative)
+      if (!shouldUpdateOnCourse) {
+        newOnCourse = newOnCourse.filter(c => {
+          if (c.dtFinish) return true // Finished — managed by grace period, not stale timeout
+          const lastSeen = newLastSeenAt[c.bib]
+          if (!lastSeen) return true // No tracking — keep (newly added)
+          if (now - lastSeen <= STALE_COMPETITOR_TIMEOUT) return true // Fresh — keep
+          // Stale — remove
+          delete newLastSeenAt[c.bib]
+          return false
+        })
+      }
+
+      // Clean up tracking for bibs no longer in the list
+      const finalBibs = new Set(newOnCourse.map(c => c.bib))
+      for (const bib of Object.keys(newLastSeenAt)) {
+        if (!finalBibs.has(bib)) {
+          delete newLastSeenAt[bib]
+        }
+      }
+
       // currentCompetitor is always the oldest (lowest dtStart) from onCourse
       // This ensures stable selection when multiple competitors are on course
       // IMPORTANT: Filter out finished competitors (dtFinish) for current selection
@@ -347,6 +403,7 @@ function scoreboardReducer(
         currentCompetitor: newCurrent,
         onCourse: newOnCourse,
         onCourseFinishedAt: newFinishedAt,
+        onCourseLastSeenAt: newLastSeenAt,
         activeRaceId: newActiveRaceId,
         // Update lastActiveRaceId when we have a new active race
         // This preserves the last known race when no one is on course
