@@ -28,3 +28,6 @@ tests/e2e/*-screenshots/
 
 # Core dumps
 core
+
+# Superpowers skill artifacts
+docs/superpowers/

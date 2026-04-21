@@ -261,12 +261,13 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    */
   useEffect(() => {
     if (!isHighlightActive && phase === 'HIGHLIGHT_VIEW') {
-      const timeSinceTopShown = Date.now() - lastTopShownAtRef.current
-      const shouldBrowse = layoutMode === 'ledwall'
-        && browseAfterHighlight
-        && timeSinceTopShown <= BROWSE_TOP_THRESHOLD
-
       const timeoutId = setTimeout(() => {
+        const timeSinceTopShown = Date.now() - lastTopShownAtRef.current
+        const shouldBrowse = layoutMode === 'ledwall'
+          && browseAfterHighlight
+          && !prefersReducedMotion
+          && timeSinceTopShown <= BROWSE_TOP_THRESHOLD
+
         if (shouldBrowse) {
           setPhase('BROWSE_SCROLLING')
         } else {
@@ -278,7 +279,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       return () => clearTimeout(timeoutId)
     }
-  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight])
+  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion])
 
   /**
    * Main auto-scroll state machine
@@ -345,7 +346,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       let currentScroll = container.scrollTop
 
       const step = (now: number) => {
-        const dt = now - lastTime
+        const dt = Math.min(now - lastTime, 100) // Cap at 100ms to prevent jump after tab restore
         lastTime = now
         currentScroll += (BROWSE_SPEED_PX_PER_SEC * dt) / 1000
         container.scrollTop = currentScroll
