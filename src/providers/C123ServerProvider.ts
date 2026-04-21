@@ -655,6 +655,11 @@ export class C123ServerProvider implements DataProvider {
       url.searchParams.set('scrollToFinished', String(data.scrollToFinished))
     }
 
+    // Apply browseAfterHighlight
+    if (data.browseAfterHighlight !== undefined) {
+      url.searchParams.set('browseAfterHighlight', String(data.browseAfterHighlight))
+    }
+
     // Check if URL changed or assets actually changed (reload needed to apply)
     if (url.href !== window.location.href || hasAssetChanges) {
       console.log('C123Server: Applying config push - reloading with new config')
@@ -677,6 +682,7 @@ export class C123ServerProvider implements DataProvider {
 
     const params = new URLSearchParams(window.location.search)
     const scrollToFinishedParam = params.get('scrollToFinished')
+    const browseAfterHighlightParam = params.get('browseAfterHighlight')
     const message = {
       type: 'ClientState',
       timestamp: new Date().toISOString(),
@@ -687,6 +693,7 @@ export class C123ServerProvider implements DataProvider {
           displayRows: parseInt(params.get('displayRows') || '', 10) || appliedConfig.displayRows || 10,
           customTitle: params.get('customTitle') || appliedConfig.customTitle || undefined,
           scrollToFinished: scrollToFinishedParam !== null ? scrollToFinishedParam !== 'false' : appliedConfig.scrollToFinished ?? true,
+          browseAfterHighlight: browseAfterHighlightParam === 'true' || (appliedConfig.browseAfterHighlight ?? false),
           // Report current asset URLs (from ConfigPush - nested in assets object)
           assets: appliedConfig.assets ? {
             logoUrl: appliedConfig.assets.logoUrl || undefined,
@@ -695,7 +702,7 @@ export class C123ServerProvider implements DataProvider {
           } : undefined,
         },
         version: '3.0.0',
-        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'assetManagement'],
+        capabilities: ['configPush', 'forceRefresh', 'clientIdPush', 'scrollToFinished', 'browseAfterHighlight', 'assetManagement'],
       },
     }
 
