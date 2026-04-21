@@ -246,6 +246,8 @@ export interface C123ConfigPushData {
   showResults?: boolean
   /** Whether to scroll to finished competitor (default: true). When false, only highlights without scrolling. */
   scrollToFinished?: boolean
+  /** Whether to browse-scroll through results after highlight on ledwall (default: false). */
+  browseAfterHighlight?: boolean
   /** Asset URLs (logos, banners) - nested object from server */
   assets?: C123AssetUrls
   custom?: Record<string, string | number | boolean>

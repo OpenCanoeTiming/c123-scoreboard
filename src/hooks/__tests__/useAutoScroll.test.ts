@@ -24,6 +24,8 @@ vi.mock('../useLayout', () => ({
     footerHeight: 60,
     fontSizeCategory: 'medium',
     disableScroll: false,
+    browseAfterHighlight: false,
+    scrollToFinished: true,
   })),
 }))
 
@@ -47,11 +49,7 @@ describe('useAutoScroll', () => {
   beforeEach(() => {
     vi.useFakeTimers()
 
-    // Mock requestAnimationFrame and cancelAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', vi.fn((cb: FrameRequestCallback) => {
-      return setTimeout(() => cb(performance.now()), 16)
-    }))
-    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    // requestAnimationFrame and cancelAnimationFrame are handled by Vitest fake timers
 
     // Reset mocks to default values
     mockUseHighlight.mockReturnValue({
@@ -72,6 +70,8 @@ describe('useAutoScroll', () => {
       footerHeight: 60,
       fontSizeCategory: 'medium',
       disableScroll: false,
+      browseAfterHighlight: false,
+      scrollToFinished: true,
     })
 
     mockUseScoreboard.mockReturnValue({
@@ -424,6 +424,286 @@ describe('useAutoScroll', () => {
       })
 
       // Unmount should not throw
+      expect(() => unmount()).not.toThrow()
+    })
+  })
+
+  describe('browse scroll after highlight', () => {
+    it('does not activate browse on vertical layout even when enabled', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'vertical',
+        viewportWidth: 1080,
+        viewportHeight: 1920,
+        visibleRows: 10,
+        rowHeight: 48,
+        showFooter: true,
+        headerHeight: 100,
+        footerHeight: 60,
+        fontSizeCategory: 'medium',
+        disableScroll: false,
+        browseAfterHighlight: true,
+        scrollToFinished: true,
+      })
+
+      // Start with highlight active
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+
+      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      // End highlight
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+
+      rerender()
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000)
+      })
+
+      // Should NOT be in browse mode — vertical layout
+      expect(result.current.phase).not.toBe('BROWSE_SCROLLING')
+    })
+
+    it('does not activate browse when browseAfterHighlight is false', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+        browseAfterHighlight: false,
+        scrollToFinished: true,
+      })
+
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+
+      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      // End highlight
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+
+      rerender()
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000)
+      })
+
+      // Should NOT be in browse mode — feature disabled
+      expect(result.current.phase).not.toBe('BROWSE_SCROLLING')
+    })
+
+    it('transitions from HIGHLIGHT_VIEW to BROWSE_SCROLLING on ledwall when enabled', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+        browseAfterHighlight: true,
+        scrollToFinished: true,
+      })
+
+      // Start with highlight active
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+
+      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      // The hook needs a real container to enter HIGHLIGHT_VIEW (effect guards on containerRef.current).
+      // Directly assign to the ref's current property — this bypasses the null guard.
+      const mockContainer = document.createElement('div')
+      Object.defineProperty(mockContainer, 'scrollHeight', { value: 500, configurable: true })
+      Object.defineProperty(mockContainer, 'clientHeight', { value: 100, configurable: true })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(result.current.containerRef as any).current = mockContainer
+
+      // Force React to re-run the highlight effect by toggling highlightBib
+      // (deps change → effect re-runs with container now present)
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+      rerender()
+
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+      rerender()
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      // Verify we're in HIGHLIGHT_VIEW
+      expect(result.current.phase).toBe('HIGHLIGHT_VIEW')
+
+      // End highlight
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+
+      rerender()
+
+      // Wait for the 500ms delay after highlight fade
+      await act(async () => {
+        vi.advanceTimersByTime(600)
+      })
+
+      // Should transition to BROWSE_SCROLLING
+      expect(result.current.phase).toBe('BROWSE_SCROLLING')
+    })
+
+    it('skips browse when top was not shown for >3 minutes', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+        browseAfterHighlight: true,
+        scrollToFinished: true,
+      })
+
+      // Start with highlight active
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+
+      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      // Set up mock container with scrollTo
+      const mockContainer = document.createElement('div')
+      Object.defineProperty(mockContainer, 'scrollHeight', { value: 500, configurable: true })
+      Object.defineProperty(mockContainer, 'clientHeight', { value: 100, configurable: true })
+      mockContainer.scrollTo = vi.fn()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(result.current.containerRef as any).current = mockContainer
+
+      // Toggle highlight to trigger effect with container
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+      rerender()
+
+      mockUseHighlight.mockReturnValue({
+        highlightBib: '42',
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+      rerender()
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      expect(result.current.phase).toBe('HIGHLIGHT_VIEW')
+
+      // Advance time by >3 minutes to expire the top-shown threshold
+      vi.advanceTimersByTime(3 * 60 * 1000 + 1000)
+
+      // End highlight
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+
+      rerender()
+
+      // Wait for the 500ms delay after highlight fade
+      await act(async () => {
+        vi.advanceTimersByTime(600)
+      })
+
+      // Should NOT browse — top threshold exceeded, returns to normal scroll cycle
+      expect(result.current.phase).not.toBe('BROWSE_SCROLLING')
+      expect(result.current.phase).not.toBe('BROWSE_PAUSED_AT_BOTTOM')
+    })
+
+    it('handles unmount during BROWSE_SCROLLING without errors', async () => {
+      mockUseLayout.mockReturnValue({
+        layoutMode: 'ledwall',
+        viewportWidth: 768,
+        viewportHeight: 384,
+        visibleRows: 5,
+        rowHeight: 56,
+        showFooter: false,
+        headerHeight: 60,
+        footerHeight: 0,
+        fontSizeCategory: 'large',
+        disableScroll: false,
+        browseAfterHighlight: true,
+        scrollToFinished: true,
+      })
+
+      const { unmount } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000)
+      })
+
       expect(() => unmount()).not.toThrow()
     })
   })

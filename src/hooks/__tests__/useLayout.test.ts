@@ -652,6 +652,70 @@ describe('useLayout', () => {
     })
   })
 
+  describe('browseAfterHighlight parameter', () => {
+    it('defaults to false when not specified', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.browseAfterHighlight).toBe(false)
+    })
+
+    it('returns true when browseAfterHighlight=true', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?browseAfterHighlight=true' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.browseAfterHighlight).toBe(true)
+    })
+
+    it('returns false when browseAfterHighlight=false', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?browseAfterHighlight=false' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.browseAfterHighlight).toBe(false)
+    })
+
+    it('returns false for invalid values (defaults to false)', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?browseAfterHighlight=invalid' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.browseAfterHighlight).toBe(false)
+    })
+
+    it('works combined with other URL parameters', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, search: '?type=ledwall&browseAfterHighlight=true&scrollToFinished=true' },
+        writable: true,
+        configurable: true,
+      })
+
+      const { result } = renderHook(() => useLayout())
+
+      expect(result.current.layoutMode).toBe('ledwall')
+      expect(result.current.browseAfterHighlight).toBe(true)
+      expect(result.current.scrollToFinished).toBe(true)
+    })
+  })
+
   describe('edge cases', () => {
     it('handles zero dimensions gracefully', () => {
       Object.defineProperty(window, 'innerWidth', {

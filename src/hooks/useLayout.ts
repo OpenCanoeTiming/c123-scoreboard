@@ -35,6 +35,8 @@ export interface LayoutConfig {
   scaleFactor: number
   /** Whether to scroll to finished competitor position (default: true). When false, only highlights without scrolling. */
   scrollToFinished: boolean
+  /** Whether to browse-scroll through results after highlight on ledwall (default: false). */
+  browseAfterHighlight: boolean
 }
 
 /**
@@ -75,6 +77,8 @@ interface LayoutURLParams {
   displayRows: number | null
   /** Whether to scroll to finished competitor position (default: true) */
   scrollToFinished: boolean
+  /** Whether to browse-scroll after highlight (default: false) */
+  browseAfterHighlight: boolean
 }
 
 /** Minimum allowed value for displayRows */
@@ -87,7 +91,7 @@ const DISPLAY_ROWS_MAX = 20
  */
 function getLayoutParamsFromURL(): LayoutURLParams {
   if (typeof window === 'undefined') {
-    return { type: null, disableScroll: false, displayRows: null, scrollToFinished: true }
+    return { type: null, disableScroll: false, displayRows: null, scrollToFinished: true, browseAfterHighlight: false }
   }
 
   const params = new URLSearchParams(window.location.search)
@@ -107,11 +111,15 @@ function getLayoutParamsFromURL(): LayoutURLParams {
   // Parse scrollToFinished - default true, explicit 'false' disables
   const scrollToFinished = params.get('scrollToFinished') !== 'false'
 
+  // Parse browseAfterHighlight - default false, explicit 'true' enables
+  const browseAfterHighlight = params.get('browseAfterHighlight') === 'true'
+
   return {
     type: type === 'vertical' || type === 'ledwall' ? type : null,
     disableScroll,
     displayRows,
     scrollToFinished,
+    browseAfterHighlight,
   }
 }
 
@@ -339,8 +347,9 @@ export function useLayout(): LayoutConfig {
       displayRows: urlParams.displayRows,
       scaleFactor,
       scrollToFinished: urlParams.scrollToFinished,
+      browseAfterHighlight: urlParams.browseAfterHighlight,
     }
-  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows, urlParams.scrollToFinished])
+  }, [layoutMode, viewport.width, viewport.height, urlParams.disableScroll, urlParams.displayRows, urlParams.scrollToFinished, urlParams.browseAfterHighlight])
 
   // Update CSS variables when config changes
   useEffect(() => {

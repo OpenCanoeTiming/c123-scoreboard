@@ -14,6 +14,8 @@ type ScrollPhase =
   | 'RETURNING_TO_TOP'
   | 'HIGHLIGHT_VIEW'
   | 'SCROLLING_TO_TOP_FOR_COMPETITOR' // New: scroll to top before showing OnCourse
+  | 'BROWSE_SCROLLING'
+  | 'BROWSE_PAUSED_AT_BOTTOM'
 
 /**
  * Auto-scroll configuration per layout (matching original v1)
@@ -25,6 +27,11 @@ type ScrollPhase =
  */
 // Constants for scroll detection
 const BOTTOM_THRESHOLD_PX = 20
+
+// Browse scroll constants (ledwall only)
+const BROWSE_SPEED_PX_PER_SEC = 20
+const BROWSE_TOP_THRESHOLD = 3 * 60 * 1000 // 3 minutes
+const BROWSE_BOTTOM_PAUSE = 1500 // 1.5s pause at bottom, matches ledwall.bottomPauseTime
 
 const SCROLL_CONFIG = {
   vertical: {
@@ -107,6 +114,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Current row index for page-based scrolling
   const currentRowIndexRef = useRef(0)
 
+  // Browse scroll: track when top of results was last shown to spectators
+  // Initialized lazily in the first effect to satisfy react-hooks/purity (no Date.now in render)
+  const lastTopShownAtRef = useRef<number>(0)
+  // Browse scroll: rAF handle for continuous pixel scrolling
+  const browseRafRef = useRef<number | null>(null)
+
   // Track previous hasActivelyRunningCompetitor state for transition detection
   const prevHasActivelyRunningRef = useRef(false)
 
@@ -114,7 +127,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const { isActive: isHighlightActive, highlightBib } = useHighlight()
 
   // Get layout for config
-  const { layoutMode, rowHeight, scrollToFinished } = useLayout()
+  const { layoutMode, rowHeight, scrollToFinished, browseAfterHighlight } = useLayout()
 
   // Get OnCourse state - on ledwall, auto-scroll stops when competitor is actively running
   // A competitor is "actively running" if they have dtStart set (actually started)
@@ -138,6 +151,29 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     []
   )
 
+  const scrollToTop = useCallback(() => {
+    containerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }, [])
+
+  /** Stop the browse scroll rAF loop and remove data-browsing attribute */
+  const stopBrowseScroll = useCallback(() => {
+    if (browseRafRef.current !== null) {
+      cancelAnimationFrame(browseRafRef.current)
+      browseRafRef.current = null
+    }
+    if (containerRef.current) {
+      containerRef.current.removeAttribute('data-browsing')
+    }
+  }, [])
+
+  /** Mark that the top of results is currently visible */
+  const updateLastTopShown = useCallback(() => {
+    lastTopShownAtRef.current = Date.now()
+  }, [])
+
   // Control functions - memoized since they're returned to consumers
   const pause = useCallback(() => {
     setManuallyPaused(true)
@@ -153,17 +189,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     setPhase('IDLE')
     setScrollTick(0)
     currentRowIndexRef.current = 0
+    stopBrowseScroll()
+    updateLastTopShown()
     if (containerRef.current) {
       containerRef.current.scrollTop = 0
     }
-  }, [])
-
-  const scrollToTop = useCallback(() => {
-    containerRef.current?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  }, [])
+  }, [stopBrowseScroll, updateLastTopShown])
 
   /**
    * Determine if scrolling should be active
@@ -171,6 +202,13 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    * (not just waiting at start - must have dtStart set)
    */
   const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActivelyRunningCompetitor
+
+  // Initialize lastTopShownAt on mount (can't use Date.now() in ref initializer — react-hooks/purity)
+  useEffect(() => {
+    if (lastTopShownAtRef.current === 0) {
+      lastTopShownAtRef.current = Date.now()
+    }
+  }, [])
 
   // Reset scroll tracking when highlight bib changes
   useEffect(() => {
@@ -193,6 +231,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   useEffect(() => {
     if (!isHighlightActive || !highlightBib || !containerRef.current) return
     if (hasScrolledToHighlight.current) return
+
+    // Stop any active browse scroll
+    stopBrowseScroll()
 
     // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
     queueMicrotask(() => {
@@ -220,24 +261,33 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         block: 'center',
       })
     }
-  }, [isHighlightActive, highlightBib, scrollToFinished])
+  }, [isHighlightActive, highlightBib, scrollToFinished, stopBrowseScroll])
 
   /**
    * Return to normal after highlight ends
+   * On ledwall with browseAfterHighlight: start browse scroll if top was shown recently
    */
   useEffect(() => {
     if (!isHighlightActive && phase === 'HIGHLIGHT_VIEW') {
       const timeoutId = setTimeout(() => {
-        scrollToTop()
-        currentRowIndexRef.current = 0
-        // Set to IDLE, let main state machine restart scroll when shouldScroll becomes true
-        // (e.g., after competitor leaves onCourse on ledwall)
-        setPhase('IDLE')
+        const timeSinceTopShown = Date.now() - lastTopShownAtRef.current
+        const shouldBrowse = layoutMode === 'ledwall'
+          && browseAfterHighlight
+          && !prefersReducedMotion
+          && timeSinceTopShown <= BROWSE_TOP_THRESHOLD
+
+        if (shouldBrowse) {
+          setPhase('BROWSE_SCROLLING')
+        } else {
+          scrollToTop()
+          currentRowIndexRef.current = 0
+          setPhase('IDLE')
+        }
       }, 500) // Small delay for highlight to fade
 
       return () => clearTimeout(timeoutId)
     }
-  }, [isHighlightActive, phase, scrollToTop])
+  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion])
 
   /**
    * Main auto-scroll state machine
@@ -250,10 +300,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     // Handle SCROLLING_TO_TOP_FOR_COMPETITOR phase
     // This phase runs even when hasActiveCompetitor is true (shouldScroll is false)
     if (phase === 'SCROLLING_TO_TOP_FOR_COMPETITOR') {
+      stopBrowseScroll()
       scrollToTop()
       currentRowIndexRef.current = 0
       // After scrolling to top, transition to IDLE
       const timeoutId = setTimeout(() => {
+        updateLastTopShown()
         setPhase('IDLE')
       }, 500) // Wait for scroll animation
       return () => clearTimeout(timeoutId)
@@ -263,7 +315,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     // This must be checked BEFORE the shouldScroll check to trigger scroll-to-top
     if (hasActivelyRunningCompetitor && !wasActivelyRunning) {
       // Only scroll to top if we were in an active scrolling phase and not already at top
-      if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING') {
+      if (phase === 'SCROLLING' || phase === 'PAUSED_AT_BOTTOM' || phase === 'WAITING'
+          || phase === 'BROWSE_SCROLLING' || phase === 'BROWSE_PAUSED_AT_BOTTOM') {
         if (containerRef.current && containerRef.current.scrollTop > 0) {
           // Use queueMicrotask to avoid synchronous setState in effect (ESLint react-hooks/set-state-in-effect)
           queueMicrotask(() => {
@@ -277,6 +330,60 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         setPhase('IDLE')
       })
       return
+    }
+
+    // Handle BROWSE_SCROLLING phase
+    // Runs independently of shouldScroll — it has its own lifecycle
+    if (phase === 'BROWSE_SCROLLING') {
+      const container = containerRef.current
+      if (!container) {
+        queueMicrotask(() => setPhase('IDLE'))
+        return
+      }
+
+      // Set data-browsing attribute to disable CSS smooth scroll
+      container.setAttribute('data-browsing', 'true')
+
+      const isAtBottom = () => {
+        return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
+      }
+
+      let lastTime = performance.now()
+      // Track fractional scroll position to avoid rounding stutter
+      // (scrollTop rounds to integer; 20px/s at 60fps = ~0.33px/frame would stutter without accumulator)
+      let currentScroll = container.scrollTop
+
+      const step = (now: number) => {
+        const dt = Math.min(now - lastTime, 100) // Cap at 100ms to prevent jump after tab restore
+        lastTime = now
+        currentScroll += (BROWSE_SPEED_PX_PER_SEC * dt) / 1000
+        container.scrollTop = currentScroll
+
+        if (isAtBottom()) {
+          stopBrowseScroll()
+          setPhase('BROWSE_PAUSED_AT_BOTTOM')
+          return
+        }
+        browseRafRef.current = requestAnimationFrame(step)
+      }
+
+      browseRafRef.current = requestAnimationFrame(step)
+
+      return () => {
+        stopBrowseScroll()
+      }
+    }
+
+    // Handle BROWSE_PAUSED_AT_BOTTOM phase
+    if (phase === 'BROWSE_PAUSED_AT_BOTTOM') {
+      const timeoutId = setTimeout(() => {
+        scrollToTop()
+        updateLastTopShown()
+        currentRowIndexRef.current = 0
+        setPhase('IDLE')
+      }, BROWSE_BOTTOM_PAUSE)
+
+      return () => clearTimeout(timeoutId)
     }
 
     // Don't run if disabled or highlight active
@@ -405,6 +512,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         // Wait for scroll animation + delay, then restart cycle
         timeoutId = setTimeout(() => {
           currentRowIndexRef.current = 0
+          updateLastTopShown()
           setPhase('WAITING')
         }, scrollConfig.returnDelay)
         break
@@ -413,8 +521,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         // Handled separately
         break
 
-      // Note: SCROLLING_TO_TOP_FOR_COMPETITOR is handled above (before shouldScroll check)
-      // and TypeScript correctly narrows it out at this point
+      // Note: SCROLLING_TO_TOP_FOR_COMPETITOR, BROWSE_SCROLLING, and BROWSE_PAUSED_AT_BOTTOM
+      // are handled above (before shouldScroll check) and TypeScript correctly narrows them out
     }
 
     return () => {
@@ -422,7 +530,14 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor, layoutMode])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor, layoutMode, stopBrowseScroll, updateLastTopShown])
+
+  // Cleanup browse scroll on unmount
+  useEffect(() => {
+    return () => {
+      stopBrowseScroll()
+    }
+  }, [stopBrowseScroll])
 
   return {
     phase,
