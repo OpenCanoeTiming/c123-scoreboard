@@ -60,15 +60,22 @@ npm run build
 
 **Testing with recorded data:**
 ```bash
-# Start replay server (in c123-protocol-docs)
-cd ../c123-protocol-docs/tools
-node player.js ../recordings/rec-2025-12-28T09-34-10.jsonl --autoplay
+# Fetch a recording and start the player (in c123-protocol-docs)
+cd ../c123-protocol-docs
+node tools/recordings-cli.js fetch 2026-04-19-jarni-ne-odp
+node tools/player.js \
+  "$(node tools/recordings-cli.js path 2026-04-19-jarni-ne-odp)" \
+  --autoplay --xml-out /tmp/c123-replay.xml
 
-# In another terminal — start c123-server
-cd ../c123-server && npm start -- --host localhost
+# In another terminal — start c123-server pointing at the player
+cd ../c123-server && npm start -- --host 127.0.0.1 --xml /tmp/c123-replay.xml --no-discovery
 
 # Scoreboard connects to ws://localhost:27123/ws
 ```
+
+Available recordings: `node tools/recordings-cli.js list`. Full player
+documentation, Control API for scripted seek/speed, and additional recipes:
+[`../c123-protocol-docs/recordings/README.md`](../c123-protocol-docs/recordings/README.md#quick-start).
 
 ---
 
