@@ -355,6 +355,7 @@ In the `SET_ON_COURSE` case, **after** the existing grace period removal block (
       // Evict stale competitors (only from partial messages — full-replace is authoritative)
       if (!shouldUpdateOnCourse) {
         newOnCourse = newOnCourse.filter(c => {
+          if (c.dtFinish) return true // Finished — managed by grace period, not stale timeout
           const lastSeen = newLastSeenAt[c.bib]
           if (!lastSeen) return true // No tracking — keep (newly added)
           if (now - lastSeen <= STALE_COMPETITOR_TIMEOUT) return true // Fresh — keep
