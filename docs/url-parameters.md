@@ -18,6 +18,7 @@ http://192.168.1.100:5173/?server=192.168.1.50:27123&type=ledwall&displayRows=5
 | `type` | string | auto-detect | Layout mód (`vertical`, `ledwall`) |
 | `displayRows` | number | auto | Fixní počet řádků (3-20) |
 | `scrollToFinished` | boolean | `true` | Scroll na dojetého závodníka |
+| `browseAfterHighlight` | boolean | `false` | Procházení výsledků po highlightu (ledwall) |
 | `disableScroll` | boolean | `false` | Vypne auto-scroll (pro screenshoty) |
 | `clientId` | string | - | Identifikátor klienta pro server |
 | `speed` | number | `10` | Rychlost přehrávání (pouze replay) |
@@ -101,6 +102,25 @@ Zda scrollovat na pozici dojetého závodníka ve výsledkové listině.
 **Default:** `true` (scrolluje na dojetého)
 
 **Použití:** Při `false` se závodník pouze zvýrazní, ale zobrazení zůstane na aktuální pozici.
+
+---
+
+### browseAfterHighlight
+
+Po zobrazení dojetého závodníka (highlight) na ledwallu pomalu scrolluje dolů výsledky, aby diváci viděli kontext kolem závodníkovy pozice.
+
+```
+?browseAfterHighlight=true    # Zapne browse scroll po highlightu
+```
+
+**Default:** `false` (po highlightu se vrací na začátek výsledků)
+
+**Chování:**
+- Funguje pouze na `ledwall` layoutu — na vertikálním se ignoruje
+- Po skončení highlightu (5s) začne pomalý plynulý scroll dolů (20px/s)
+- Po dojetí na konec výsledků se vrátí na začátek
+- Pokud se horní část výsledků nezobrazila déle než 3 minuty, browse se přeskočí a zobrazí se top výsledků (aby diváci viděli čelo závodu)
+- Nový finish okamžitě přeruší browse a zobrazí nového závodníka
 
 ---
 
@@ -218,6 +238,7 @@ C123 Server může přes WebSocket poslat ConfigPush zprávu, která přepíše 
 | `type` | `type` |
 | `displayRows` | `displayRows` |
 | `scrollToFinished` | `scrollToFinished` |
+| `browseAfterHighlight` | `browseAfterHighlight` |
 | `clientId` | `clientId` (ukládá do localStorage) |
 | `logoUrl` | `logoUrl` (ukládá do localStorage) |
 | `partnerLogoUrl` | `partnerLogoUrl` (ukládá do localStorage) |

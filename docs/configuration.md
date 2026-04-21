@@ -20,6 +20,7 @@ interface ConfigPushData {
   displayRows?: number
   customTitle?: string
   scrollToFinished?: boolean  // default: true
+  browseAfterHighlight?: boolean  // default: false
 
   // Assets (vnořený objekt)
   assets?: {
@@ -46,6 +47,7 @@ interface ConfigPushData {
 | `displayRows` | number | Počet zobrazených řádků (výchozí: 10) |
 | `customTitle` | string | Vlastní název závodu (přepisuje eventName) |
 | `scrollToFinished` | boolean | Scroll k závodníkovi po dojetí (výchozí: true) |
+| `browseAfterHighlight` | boolean | Browse scroll po highlightu na ledwallu (výchozí: false) |
 | `assets.logoUrl` | string | URL hlavního loga |
 | `assets.partnerLogoUrl` | string | URL partnerského loga |
 | `assets.footerImageUrl` | string | URL footer banneru |
@@ -68,6 +70,7 @@ interface ConfigPushData {
     "displayRows": 15,
     "customTitle": "MČR ve slalomu 2024",
     "scrollToFinished": true,
+    "browseAfterHighlight": true,
     "assets": {
       "logoUrl": "https://example.com/logo.png",
       "footerImageUrl": "/sponsors/banner.png"
@@ -117,6 +120,7 @@ Scoreboard V3 hlásí tyto schopnosti:
 | `forceRefresh` | Přijímá ForceRefresh zprávy |
 | `clientIdPush` | Server může přiřadit clientId |
 | `scrollToFinished` | Podporuje scrollToFinished parametr |
+| `browseAfterHighlight` | Podporuje browse scroll po highlightu |
 | `assetManagement` | Podporuje vzdálené nastavení assetů |
 
 ---
