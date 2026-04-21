@@ -115,7 +115,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const currentRowIndexRef = useRef(0)
 
   // Browse scroll: track when top of results was last shown to spectators
-  const lastTopShownAtRef = useRef<number>(Date.now())
+  // Initialized lazily in the first effect to satisfy react-hooks/purity (no Date.now in render)
+  const lastTopShownAtRef = useRef<number>(0)
   // Browse scroll: rAF handle for continuous pixel scrolling
   const browseRafRef = useRef<number | null>(null)
 
@@ -201,6 +202,13 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    * (not just waiting at start - must have dtStart set)
    */
   const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActivelyRunningCompetitor
+
+  // Initialize lastTopShownAt on mount (can't use Date.now() in ref initializer — react-hooks/purity)
+  useEffect(() => {
+    if (lastTopShownAtRef.current === 0) {
+      lastTopShownAtRef.current = Date.now()
+    }
+  }, [])
 
   // Reset scroll tracking when highlight bib changes
   useEffect(() => {
