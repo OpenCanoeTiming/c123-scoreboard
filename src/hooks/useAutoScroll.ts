@@ -340,11 +340,15 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       }
 
       let lastTime = performance.now()
+      // Track fractional scroll position to avoid rounding stutter
+      // (scrollTop rounds to integer; 20px/s at 60fps = ~0.33px/frame would stutter without accumulator)
+      let currentScroll = container.scrollTop
 
       const step = (now: number) => {
         const dt = now - lastTime
         lastTime = now
-        container.scrollTop += (BROWSE_SPEED_PX_PER_SEC * dt) / 1000
+        currentScroll += (BROWSE_SPEED_PX_PER_SEC * dt) / 1000
+        container.scrollTop = currentScroll
 
         if (isAtBottom()) {
           stopBrowseScroll()
