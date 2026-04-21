@@ -26,6 +26,11 @@
   pointer-events: none;
 }
 
+/* Override smooth scroll during browse mode (rAF pixel scrolling) */
+.container[data-browsing="true"] {
+  scroll-behavior: auto;
+}
+
 /* Result row - grid layout for consistent columns */
 /* Vertical grid: 70px 50px 1fr 70px 140px 100px (6 columns) per analysis/06-styly.md */
 .row {
