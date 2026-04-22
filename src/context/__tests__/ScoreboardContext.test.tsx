@@ -437,7 +437,7 @@ describe('ScoreboardContext', () => {
       expect(result.current.departedAt).toBeNull()
     })
 
-    it('clears departing competitor when dtFinish highlight arrives for them', () => {
+    it('keeps finisher (dtFinish) as departing even when highlight arrives — cleared only by FINISH_DISPLAY_DURATION timeout so CurrentCompetitor stays pinned', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider)
 
@@ -467,7 +467,10 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      // Results arrive - triggers actual highlight and clears departing
+      // Results arrive - triggers highlight, but departing must NOT be cleared
+      // for finishers (issue #57). The finisher stays pinned until the
+      // FINISH_DISPLAY_DURATION timeout fires so the final time gets a
+      // visible pause in CurrentCompetitor during interval racing.
       act(() => {
         mockProvider.triggerResults({
           results: [createResult({ bib: '42', total: '92.50' })],
@@ -479,9 +482,10 @@ describe('ScoreboardContext', () => {
 
       // Highlight should be active for 42
       expect(result.current.highlightBib).toBe('42')
-      // Departing should be cleared (42 was the one that triggered highlight)
-      expect(result.current.departingCompetitor).toBeNull()
-      expect(result.current.departedAt).toBeNull()
+      // Departing should still hold the finisher (with dtFinish)
+      expect(result.current.departingCompetitor?.bib).toBe('42')
+      expect(result.current.departingCompetitor?.dtFinish).toBe('2025-12-28T10:01:30')
+      expect(result.current.departedAt).not.toBeNull()
     })
   })
 

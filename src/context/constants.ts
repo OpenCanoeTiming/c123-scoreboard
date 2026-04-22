@@ -16,6 +16,16 @@ export const HIGHLIGHT_DURATION = 5000
 export const DEPARTING_TIMEOUT = 3000
 
 /**
+ * Finish display duration in milliseconds (8 seconds)
+ *
+ * When a competitor finishes (dtFinish), they remain pinned to the
+ * CurrentCompetitor slot for this duration — even if another competitor
+ * is on course (interval racing). Ensures the finish moment has a
+ * visible pause with the final time, instead of being replaced instantly.
+ */
+export const FINISH_DISPLAY_DURATION = 8000
+
+/**
  * Grace period for finished competitors in onCourse list (5 seconds)
  * After dtFinish is detected, competitor stays visible for this duration
  * before being removed from the on-course display

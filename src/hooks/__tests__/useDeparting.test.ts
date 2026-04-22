@@ -146,7 +146,7 @@ describe('useDeparting', () => {
     expect(result.current.timeRemaining).toBe(0)
   })
 
-  it('clears departing when dtFinish highlight arrives for that competitor', () => {
+  it('keeps finisher as departing when highlight arrives — cleared only by FINISH_DISPLAY_DURATION timeout (issue #57)', () => {
     let onCourseCallback: ((data: unknown) => void) | null = null
     let resultsCallback: ((data: unknown) => void) | null = null
 
@@ -198,11 +198,13 @@ describe('useDeparting', () => {
       }
     })
 
-    // comp42 is now departing (switched from current to finished)
-    // Departing is cleared when Results arrive and highlight triggers
+    // comp42 is now departing (switched from current to finished, has dtFinish)
     expect(result.current.departingCompetitor?.bib).toBe('42')
+    expect(result.current.departingCompetitor?.dtFinish).toBe('2025-01-01T10:01:30Z')
 
-    // Simulate Results arriving - this triggers highlight and clears departing
+    // Simulate Results arriving - triggers highlight, but departing must NOT
+    // be cleared for finishers (issue #57). Finisher stays pinned until
+    // FINISH_DISPLAY_DURATION elapses so the final time gets a visible pause.
     act(() => {
       if (resultsCallback) {
         resultsCallback({
@@ -215,8 +217,9 @@ describe('useDeparting', () => {
       }
     })
 
-    // Now departing should be cleared (highlight triggered via results)
-    expect(result.current.departingCompetitor).toBeNull()
+    // Departing still holds the finisher
+    expect(result.current.departingCompetitor?.bib).toBe('42')
+    expect(result.current.departingCompetitor?.dtFinish).toBe('2025-01-01T10:01:30Z')
   })
 
   it('calculates progress correctly over time', () => {
