@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.0...v3.4.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* pin finisher to CurrentCompetitor for 8s (interval racing) ([#58](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/58)) ([423147c](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/423147ce986857b7c6f5319955c38a2b6721ceaa)), closes [#57](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/57)
+
 ## [3.4.0](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.3.1...v3.4.0) (2026-04-21)
 
 
