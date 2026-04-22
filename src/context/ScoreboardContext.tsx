@@ -20,7 +20,12 @@ import type {
   EventInfoData,
   ProviderError,
 } from '@/providers/types'
-import { DEPARTING_TIMEOUT, FINISHED_GRACE_PERIOD, STALE_COMPETITOR_TIMEOUT } from './constants'
+import {
+  DEPARTING_TIMEOUT,
+  FINISH_DISPLAY_DURATION,
+  FINISHED_GRACE_PERIOD,
+  STALE_COMPETITOR_TIMEOUT,
+} from './constants'
 
 /**
  * Scoreboard state interface
@@ -223,8 +228,15 @@ function scoreboardReducer(
           newState.highlightTimestamp = Date.now()
           newState.pendingHighlightBib = null
           newState.pendingHighlightTimestamp = null
-          // Clear departing if this was the departing competitor
-          if (state.departingCompetitor?.bib === state.pendingHighlightBib) {
+          // Clear departing if this was the departing competitor.
+          // Exception: if the departing competitor has dtFinish, let the
+          // timeout path clear it so the finisher stays pinned in the
+          // CurrentCompetitor slot for the full FINISH_DISPLAY_DURATION
+          // instead of being cut short by the results update.
+          if (
+            state.departingCompetitor?.bib === state.pendingHighlightBib &&
+            !state.departingCompetitor?.dtFinish
+          ) {
             newState.departingCompetitor = null
             newState.departedAt = null
           }
@@ -424,10 +436,16 @@ function scoreboardReducer(
         newState.raceStatus = ''
       }
 
-      // Atomic departing update - if previous competitor exists and bib differs
+      // Atomic departing update - if previous competitor exists and bib differs.
+      // If the departing competitor just finished, prefer the version from
+      // newOnCourse (which has dtFinish + final time) over the stale prev copy.
+      // This allows App.tsx to pin finishers for FINISH_DISPLAY_DURATION.
       const prev = state.currentCompetitor
       if (prev && prev.bib !== newCurrent?.bib) {
-        newState.departingCompetitor = prev
+        const finishedVersion = newOnCourse.find(
+          c => c.bib === prev.bib && c.dtFinish
+        )
+        newState.departingCompetitor = finishedVersion ?? prev
         newState.departedAt = Date.now()
       }
 
@@ -653,15 +671,20 @@ export function ScoreboardProvider({
 
   /**
    * Departing competitor timeout effect
-   * Clears departing competitor after DEPARTING_TIMEOUT if no highlight arrives
+   * Finishers (dtFinish) stay for FINISH_DISPLAY_DURATION so the final time
+   * gets a visible pause in the CurrentCompetitor slot. Non-finishers clear
+   * after the shorter DEPARTING_TIMEOUT.
    */
   useEffect(() => {
     if (!state.departingCompetitor || !state.departedAt) {
       return
     }
 
+    const timeout = state.departingCompetitor.dtFinish
+      ? FINISH_DISPLAY_DURATION
+      : DEPARTING_TIMEOUT
     const elapsed = Date.now() - state.departedAt
-    const remaining = DEPARTING_TIMEOUT - elapsed
+    const remaining = timeout - elapsed
 
     const timeoutId = setTimeout(() => {
       dispatch({ type: 'CLEAR_DEPARTING' })

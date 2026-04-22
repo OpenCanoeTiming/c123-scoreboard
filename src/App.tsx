@@ -111,13 +111,29 @@ function ScoreboardContent() {
         }
         footer={<Footer visible={visibility.displayFooter} imageUrl={assets.footerImageUrl} />}
       >
-        {/* Current competitor - shows departing if no current */}
+        {/* Current competitor.
+            Finishers (departing with dtFinish) take precedence over the next
+            on-course competitor for FINISH_DISPLAY_DURATION — ensures the
+            final time gets a visible pause during interval racing.
+            Non-finishers only fill in when currentCompetitor is null. */}
         <ErrorBoundary componentName="CurrentCompetitor">
-          <CurrentCompetitor
-            competitor={currentCompetitor ?? departingCompetitor}
-            visible={visibility.displayCurrent}
-            isDeparting={!currentCompetitor && !!departingCompetitor}
-          />
+          {(() => {
+            const finishingDeparture = departingCompetitor?.dtFinish
+              ? departingCompetitor
+              : null
+            const displayCompetitor =
+              finishingDeparture ?? currentCompetitor ?? departingCompetitor
+            const isDeparting =
+              !!finishingDeparture ||
+              (!currentCompetitor && !!departingCompetitor)
+            return (
+              <CurrentCompetitor
+                competitor={displayCompetitor}
+                visible={visibility.displayCurrent}
+                isDeparting={isDeparting}
+              />
+            )
+          })()}
         </ErrorBoundary>
 
 
