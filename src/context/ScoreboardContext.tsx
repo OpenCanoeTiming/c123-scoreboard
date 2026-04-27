@@ -85,6 +85,10 @@ export interface ScoreboardState {
   title: string
   infoText: string
   dayTime: string
+
+  // Fixed category filter from URL parameter (?category=K1M)
+  // When set, only data matching this category prefix is accepted
+  fixedCategory: string | null
 }
 
 /**
@@ -152,6 +156,7 @@ const initialState: ScoreboardState = {
   title: '',
   infoText: '',
   dayTime: '',
+  fixedCategory: null,
 }
 
 /**
@@ -520,6 +525,7 @@ function scoreboardReducer(
         title: state.title,
         infoText: state.infoText,
         dayTime: state.dayTime,
+        fixedCategory: state.fixedCategory,
       }
 
     default:
@@ -540,6 +546,7 @@ export const ScoreboardContext = createContext<ScoreboardContextValue | null>(
  */
 interface ScoreboardProviderProps {
   provider: DataProvider
+  fixedCategory?: string
   children: ReactNode
 }
 
@@ -552,11 +559,13 @@ interface ScoreboardProviderProps {
  */
 export function ScoreboardProvider({
   provider,
+  fixedCategory,
   children,
 }: ScoreboardProviderProps) {
   const [state, dispatch] = useReducer(scoreboardReducer, {
     ...initialState,
     status: provider.status,
+    fixedCategory: fixedCategory?.toUpperCase() || null,
   })
 
   /**
