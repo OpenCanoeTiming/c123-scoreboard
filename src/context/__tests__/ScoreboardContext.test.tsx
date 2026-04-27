@@ -1534,5 +1534,123 @@ describe('ScoreboardContext', () => {
 
       expect(result.current.results).toHaveLength(1)
     })
+
+    it('full scenario: K1M fixed, race transitions K1M → C1W → K1M', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // === Phase 1: K1M is racing ===
+      const k1mComp = createOnCourseCompetitor({
+        bib: '10',
+        raceId: 'K1M_ST_BR1_6',
+        dtStart: '2025-12-28T10:00:00',
+      })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: k1mComp,
+          onCourse: [k1mComp],
+          updateOnCourse: true,
+        })
+      })
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '10' })],
+          raceName: 'K1M BR1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'K1M_ST_BR1_6',
+        })
+      })
+
+      expect(result.current.currentCompetitor?.bib).toBe('10')
+      expect(result.current.results).toHaveLength(1)
+
+      // === Phase 2: Race switches to C1W ===
+      const c1wComp = createOnCourseCompetitor({
+        bib: '20',
+        raceId: 'C1W_ST_BR1_6',
+        dtStart: '2025-12-28T10:30:00',
+      })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: c1wComp,
+          onCourse: [c1wComp],
+          updateOnCourse: true,
+        })
+      })
+
+      // Scoreboard should show empty/waiting state
+      expect(result.current.currentCompetitor).toBeNull()
+      expect(result.current.onCourse).toEqual([])
+
+      // C1W results should clear any stale K1M results
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '20' })],
+          raceName: 'C1W BR1',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'C1W_ST_BR1_6',
+        })
+      })
+      expect(result.current.results).toEqual([])
+
+      // === Phase 3: Race switches back to K1M ===
+      const k1mComp2 = createOnCourseCompetitor({
+        bib: '11',
+        raceId: 'K1M_ST_BR2_6',
+        dtStart: '2025-12-28T11:00:00',
+      })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: k1mComp2,
+          onCourse: [k1mComp2],
+          updateOnCourse: true,
+        })
+      })
+
+      // K1M is back — should show competitor
+      expect(result.current.currentCompetitor?.bib).toBe('11')
+      expect(result.current.activeRaceId).toBe('K1M_ST_BR2_6')
+
+      // K1M results accepted again
+      act(() => {
+        mockProvider.triggerResults({
+          results: [createResult({ bib: '11' })],
+          raceName: 'K1M BR2',
+          raceStatus: 'In Progress',
+          highlightBib: null,
+          raceId: 'K1M_ST_BR2_6',
+        })
+      })
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('11')
+    })
+
+    it('without fixedCategory, scoreboard behaves as before', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider) // No fixedCategory
+
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // Standard behavior — accepts any category
+      const competitor = createOnCourseCompetitor({
+        bib: '10',
+        raceId: 'C1W_ST_BR1_6',
+        dtStart: '2025-12-28T10:00:00',
+      })
+      act(() => {
+        mockProvider.triggerOnCourse({
+          current: competitor,
+          onCourse: [competitor],
+          updateOnCourse: true,
+        })
+      })
+
+      expect(result.current.currentCompetitor?.bib).toBe('10')
+      expect(result.current.activeRaceId).toBe('C1W_ST_BR1_6')
+    })
   })
 })
