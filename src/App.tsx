@@ -38,6 +38,7 @@ import styles from './App.module.css'
  * - logoUrl: string (main logo URL, relative or absolute - no data URIs via URL)
  * - partnerLogoUrl: string (partner logo URL, relative or absolute)
  * - footerImageUrl: string (footer banner URL, relative or absolute)
+ * - category: string (fix scoreboard to specific class, e.g., "K1M")
  */
 function getUrlParams(): {
   server: string | null
@@ -46,6 +47,7 @@ function getUrlParams(): {
   loop: boolean
   pauseAfter: number | null
   disableScroll: boolean
+  category: string | null
 } {
   const params = new URLSearchParams(window.location.search)
 
@@ -58,8 +60,9 @@ function getUrlParams(): {
   const pauseAfterParam = params.get('pauseAfter')
   const pauseAfter = pauseAfterParam ? parseInt(pauseAfterParam, 10) : null
   const disableScroll = params.get('disableScroll') === 'true'
+  const category = params.get('category')
 
-  return { server, source, speed, loop, pauseAfter, disableScroll }
+  return { server, source, speed, loop, pauseAfter, disableScroll, category }
 }
 
 /**
@@ -352,7 +355,7 @@ function App() {
   }
 
   return (
-    <ScoreboardProvider provider={discoveryState.provider}>
+    <ScoreboardProvider provider={discoveryState.provider} fixedCategory={urlParams.category ?? undefined}>
       <ScoreboardContent />
     </ScoreboardProvider>
   )
