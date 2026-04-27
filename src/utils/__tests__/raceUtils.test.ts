@@ -6,6 +6,7 @@ import {
   getClassId,
   getRunNumber,
   getOtherRunRaceId,
+  getCategoryFromRaceId,
 } from '../raceUtils'
 
 describe('raceUtils', () => {
@@ -133,6 +134,24 @@ describe('raceUtils', () => {
       ['InvalidId', null],
     ])('returns null for non-BR race "%s"', (raceId, expected) => {
       expect(getOtherRunRaceId(raceId)).toBe(expected)
+    })
+  })
+
+  describe('getCategoryFromRaceId', () => {
+    it('extracts category from standard race ID', () => {
+      expect(getCategoryFromRaceId('K1M_ST_BR1_6')).toBe('K1M')
+    })
+
+    it('extracts category from non-BR race ID', () => {
+      expect(getCategoryFromRaceId('C2M_LT_XF_3')).toBe('C2M')
+    })
+
+    it('returns empty string for empty input', () => {
+      expect(getCategoryFromRaceId('')).toBe('')
+    })
+
+    it('returns the whole string if no underscore', () => {
+      expect(getCategoryFromRaceId('K1M')).toBe('K1M')
     })
   })
 })
