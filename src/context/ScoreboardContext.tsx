@@ -189,19 +189,36 @@ function scoreboardReducer(
       return { ...state, providerErrors: [] }
 
     case 'SET_RESULTS': {
-      // Determine which race we should display results for:
-      // 1. If someone is on course → their race (activeRaceId)
-      // 2. If no one is on course → last active race (lastActiveRaceId)
-      // 3. If no history → accept any results
-      const targetRaceId = state.activeRaceId || state.lastActiveRaceId
+      // Fixed category filter: takes precedence over targetRaceId logic
+      if (state.fixedCategory && action.raceId) {
+        const incomingCategory = getCategoryFromRaceId(action.raceId)
+        if (incomingCategory !== state.fixedCategory) {
+          // Results for a different category — clear stale results
+          return {
+            ...state,
+            results: [],
+            raceName: '',
+            raceStatus: '',
+            raceId: '',
+          }
+        }
+        // Category matches — proceed to update results below
+      } else {
+        // Original targetRaceId filtering (no fixedCategory set)
+        // Determine which race we should display results for:
+        // 1. If someone is on course → their race (activeRaceId)
+        // 2. If no one is on course → last active race (lastActiveRaceId)
+        // 3. If no history → accept any results
+        const targetRaceId = state.activeRaceId || state.lastActiveRaceId
 
-      // Filter results: only update if they match the target race
-      // This prevents random category results from appearing when they shouldn't
-      // But if we have no target race yet, accept any results (initial state)
-      if (targetRaceId && action.raceId && action.raceId !== targetRaceId) {
-        // Results are for a different race than what's currently active - ignore
-        // This fixes the issue where C123 sends rotated results for all categories
-        return state
+        // Filter results: only update if they match the target race
+        // This prevents random category results from appearing when they shouldn't
+        // But if we have no target race yet, accept any results (initial state)
+        if (targetRaceId && action.raceId && action.raceId !== targetRaceId) {
+          // Results are for a different race than what's currently active - ignore
+          // This fixes the issue where C123 sends rotated results for all categories
+          return state
+        }
       }
 
       // Check if we have a pending highlight that matches a result in the new results
