@@ -112,9 +112,9 @@ function createMockProvider(overrides: Partial<DataProvider> = {}): DataProvider
 }
 
 // Wrapper factory
-function createWrapper(provider: DataProvider) {
+function createWrapper(provider: DataProvider, fixedCategory?: string) {
   return function Wrapper({ children }: { children: ReactNode }) {
-    return createElement(ScoreboardProvider, { provider, children })
+    return createElement(ScoreboardProvider, { provider, fixedCategory, children })
   }
 }
 
@@ -1397,6 +1397,142 @@ describe('ScoreboardContext', () => {
       unmount()
 
       expect(mockProvider.disconnect).toHaveBeenCalled()
+    })
+  })
+
+  // =========================================================================
+  // Fixed Category Filtering
+  // =========================================================================
+  describe('fixed category filtering', () => {
+    it('accepts on-course data when raceId matches fixedCategory', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor = createOnCourseCompetitor({
+        bib: '10', raceId: 'K1M_ST_BR1_6', dtStart: '2025-12-28T10:00:00',
+      })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: competitor, onCourse: [competitor], updateOnCourse: true })
+      })
+
+      expect(result.current.currentCompetitor?.bib).toBe('10')
+      expect(result.current.activeRaceId).toBe('K1M_ST_BR1_6')
+    })
+
+    it('clears on-course state when raceId does not match fixedCategory', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      // First, set a matching competitor
+      const k1mComp = createOnCourseCompetitor({ bib: '10', raceId: 'K1M_ST_BR1_6', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: k1mComp, onCourse: [k1mComp], updateOnCourse: true })
+      })
+      expect(result.current.currentCompetitor?.bib).toBe('10')
+
+      // Now send a non-matching competitor (C1W)
+      const c1wComp = createOnCourseCompetitor({ bib: '20', raceId: 'C1W_ST_BR1_6', dtStart: '2025-12-28T10:02:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: c1wComp, onCourse: [c1wComp], updateOnCourse: true })
+      })
+
+      expect(result.current.currentCompetitor).toBeNull()
+      expect(result.current.onCourse).toEqual([])
+      expect(result.current.activeRaceId).toBeNull()
+    })
+
+    it('is case-insensitive — lowercase URL param matches uppercase raceId', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'k1m')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const competitor = createOnCourseCompetitor({ bib: '10', raceId: 'K1M_ST_BR1_6', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: competitor, onCourse: [competitor], updateOnCourse: true })
+      })
+
+      expect(result.current.currentCompetitor?.bib).toBe('10')
+    })
+
+    it('allows run changes within the same category', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      const br1Comp = createOnCourseCompetitor({ bib: '10', raceId: 'K1M_ST_BR1_6', dtStart: '2025-12-28T10:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: br1Comp, onCourse: [br1Comp], updateOnCourse: true })
+      })
+      expect(result.current.activeRaceId).toBe('K1M_ST_BR1_6')
+
+      act(() => {
+        mockProvider.triggerResults({ results: [{ rank: 1, bib: '10', name: 'Test', familyName: 'T', givenName: 'T', club: '', nat: '', total: '90', pen: 0, behind: '' }], raceName: 'K1M BR1', raceStatus: 'In Progress', highlightBib: null, raceId: 'K1M_ST_BR1_6' })
+      })
+
+      const br2Comp = createOnCourseCompetitor({ bib: '11', raceId: 'K1M_ST_BR2_6', dtStart: '2025-12-28T11:00:00' })
+      act(() => {
+        mockProvider.triggerOnCourse({ current: br2Comp, onCourse: [br2Comp], updateOnCourse: true })
+      })
+
+      expect(result.current.currentCompetitor?.bib).toBe('11')
+      expect(result.current.activeRaceId).toBe('K1M_ST_BR2_6')
+    })
+
+    it('accepts results when raceId matches fixedCategory', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [{ rank: 1, bib: '42', name: 'Test', familyName: 'T', givenName: 'T', club: '', nat: '', total: '90', pen: 0, behind: '' }],
+          raceName: 'K1M Semifinal', raceStatus: 'In Progress', highlightBib: null, raceId: 'K1M_ST_BR1_6',
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.raceName).toBe('K1M Semifinal')
+    })
+
+    it('clears results when incoming raceId does not match fixedCategory', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [{ rank: 1, bib: '42', name: 'Test', familyName: 'T', givenName: 'T', club: '', nat: '', total: '90', pen: 0, behind: '' }],
+          raceName: 'K1M Semifinal', raceStatus: 'In Progress', highlightBib: null, raceId: 'K1M_ST_BR1_6',
+        })
+      })
+      expect(result.current.results).toHaveLength(1)
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [{ rank: 1, bib: '99', name: 'Other', familyName: 'O', givenName: 'O', club: '', nat: '', total: '91', pen: 0, behind: '' }],
+          raceName: 'C1W Final', raceStatus: 'In Progress', highlightBib: null, raceId: 'C1W_ST_BR1_6',
+        })
+      })
+
+      expect(result.current.results).toEqual([])
+      expect(result.current.raceName).toBe('')
+    })
+
+    it('accepts results for fixedCategory even before activeRaceId is set', () => {
+      const mockProvider = createMockProvider()
+      const wrapper = createWrapper(mockProvider, 'K1M')
+      const { result } = renderHook(() => useScoreboard(), { wrapper })
+
+      act(() => {
+        mockProvider.triggerResults({
+          results: [{ rank: 1, bib: '42', name: 'Test', familyName: 'T', givenName: 'T', club: '', nat: '', total: '90', pen: 0, behind: '' }],
+          raceName: 'K1M Semifinal', raceStatus: 'In Progress', highlightBib: null, raceId: 'K1M_ST_BR1_6',
+        })
+      })
+
+      expect(result.current.results).toHaveLength(1)
     })
   })
 })

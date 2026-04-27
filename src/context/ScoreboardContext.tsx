@@ -26,6 +26,7 @@ import {
   FINISHED_GRACE_PERIOD,
   STALE_COMPETITOR_TIMEOUT,
 } from './constants'
+import { getCategoryFromRaceId } from '@/utils/raceUtils'
 
 /**
  * Scoreboard state interface
@@ -256,6 +257,33 @@ function scoreboardReducer(
     }
 
     case 'SET_ON_COURSE': {
+      // Fixed category filter: reject data from non-matching categories
+      if (state.fixedCategory) {
+        const incomingRaceId = action.current?.raceId
+          || action.onCourse.find(c => c.raceId)?.raceId
+          || ''
+        const incomingCategory = getCategoryFromRaceId(incomingRaceId)
+
+        if (incomingCategory && incomingCategory !== state.fixedCategory) {
+          return {
+            ...state,
+            currentCompetitor: null,
+            onCourse: [],
+            onCourseFinishedAt: {},
+            onCourseLastSeenAt: {},
+            activeRaceId: null,
+            lastActiveRaceId: state.lastActiveRaceId &&
+              getCategoryFromRaceId(state.lastActiveRaceId) === state.fixedCategory
+              ? state.lastActiveRaceId
+              : null,
+            departingCompetitor: null,
+            departedAt: null,
+            pendingHighlightBib: null,
+            pendingHighlightTimestamp: null,
+          }
+        }
+      }
+
       // Only update onCourse if updateOnCourse flag is true (from oncourse message)
       // comp messages set updateOnCourse=false to preserve existing onCourse list
       const shouldUpdateOnCourse = action.updateOnCourse !== false
