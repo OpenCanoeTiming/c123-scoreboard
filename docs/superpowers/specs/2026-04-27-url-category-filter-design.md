@@ -16,7 +16,7 @@ A new URL parameter `?category=K1M` that fixes the scoreboard to a specific clas
 - **Name:** `category`
 - **Value:** Class prefix (e.g., `K1M`, `C1W`, `C2M`)
 - **Example:** `http://localhost:5173/?category=K1M&type=ledwall`
-- **Parsed in:** `getUrlParams()` in `App.tsx`, passed to `ScoreboardProvider`
+- **Parsed in:** `getUrlParams()` in `App.tsx`, normalized to uppercase, passed to `ScoreboardProvider`
 
 ## Matching Logic
 
@@ -33,10 +33,11 @@ This means:
 
 When `fixedCategory` is set:
 
-1. **SET_ON_COURSE** — Updates on-course data only if the competitor's `raceId` matches the fixed category. If it doesn't match → sets `current: null`, `onCourse: []` (empty state).
-2. **SET_RESULTS** — Accepts results only if `raceId` matches the fixed category. Otherwise ignores the action entirely.
-3. **activeRaceId** — Changes only within the fixed category (e.g., from `K1M_ST_BR1_6` to `K1M_ST_BR2_6` when switching runs). Never switches to a different class.
-4. **Category not active** — The scoreboard shows an empty state: no competitor on course, no results. Standard "waiting" appearance.
+1. **SET_ON_COURSE** — Updates on-course data only if the competitor's `raceId` matches the fixed category. If it doesn't match → **actively clears** on-course state (`current: null`, `onCourse: []`) and sets `activeRaceId: null`. This ensures transition to the empty/waiting state rather than leaving stale data.
+2. **SET_RESULTS** — Accepts results only if `raceId` matches the fixed category. If the results are for a different category → **clears results** (empty array) rather than just ignoring. This prevents stale results from the fixed category lingering after the race moves on.
+3. **activeRaceId** — Changes only within the fixed category (e.g., from `K1M_ST_BR1_6` to `K1M_ST_BR2_6` when switching runs). When incoming data is for a different class, `activeRaceId` is set to `null` (not kept as the old value).
+4. **Filter precedence** — The `fixedCategory` check runs **before** the existing `activeRaceId`/`targetRaceId` logic. This ensures results for the fixed category are accepted even on initial load before `activeRaceId` is established.
+5. **Category not active** — The scoreboard shows an empty state: no competitor on course, no results. Standard "waiting" appearance.
 
 ## What Does NOT Change
 
