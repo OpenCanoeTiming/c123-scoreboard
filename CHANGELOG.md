@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.2](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.1...v3.4.2) (2026-04-29)
+
+
+### Bug Fixes
+
+* reset lastTopShownAt after scrollToTop in highlight-end ([#56](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/56)) ([ddd67fe](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/ddd67fe46d29fdb10fa33a50eed468c732b92a6c)), closes [#55](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/55)
+
 ## [3.4.1](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.0...v3.4.1) (2026-04-22)
 
 
