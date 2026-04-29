@@ -266,11 +266,16 @@ export class C123ServerApi {
 // =============================================================================
 
 /**
- * Format centiseconds as seconds string (e.g., 75320 → "75.32")
+ * Format time value from REST API as seconds string.
+ *
+ * REST API returns times as integers where value/1000 = seconds.
+ * E.g., 75320 → "75.32", 68100 → "68.10"
+ *
+ * Note: The API types say "centiseconds" but actual values need /1000.
  */
-function formatCentiseconds(cs: number | undefined): string {
-  if (cs === undefined || cs === 0) return ''
-  return (cs / 100).toFixed(2)
+function formatRestTime(value: number | undefined): string {
+  if (value === undefined || value === 0) return ''
+  return (value / 1000).toFixed(2)
 }
 
 /**
@@ -279,7 +284,7 @@ function formatCentiseconds(cs: number | undefined): string {
  */
 function calculateBehind(total: number | undefined, leaderTotal: number | undefined): string {
   if (!total || !leaderTotal || total === leaderTotal) return ''
-  const diff = (total - leaderTotal) / 100
+  const diff = (total - leaderTotal) / 1000
   return `+${diff.toFixed(2)}`
 }
 
@@ -313,8 +318,8 @@ export function mapRestResultsToC123Format(
       startTime: r.startTime ?? '',
       gates: r.gates?.trim() ?? '',
       pen: r.pen ?? 0,
-      time: formatCentiseconds(r.time),
-      total: formatCentiseconds(r.total),
+      time: formatRestTime(r.time),
+      total: formatRestTime(r.total),
       behind: calculateBehind(r.total, leaderTotal),
       status: r.status,
       prevTime: r.prevTime,
