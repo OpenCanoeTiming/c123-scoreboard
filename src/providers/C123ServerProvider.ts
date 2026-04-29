@@ -24,6 +24,7 @@ import type {
   C123XmlChangeData,
   C123ForceRefreshData,
   C123ConfigPushData,
+  C123ScheduleData,
 } from '@/types/c123server'
 import type {
   DataProvider,
@@ -36,7 +37,7 @@ import type {
 import { CallbackManager } from './utils/CallbackManager'
 import { getWebSocketUrl, getServerInfo, getClientIdFromUrl, saveClientId, getStoredClientId } from './utils/discovery-client'
 import { mapOnCourse, mapResults, mapTimeOfDay, mapRaceConfig } from './utils/c123ServerMapper'
-import { C123ServerApi } from './utils/c123ServerApi'
+import { C123ServerApi, mapRestResultsToC123Format } from './utils/c123ServerApi'
 import { BR2Manager } from './utils/br1br2Merger'
 import { saveAssets, loadAssets, clearAsset, isValidAssetUrl, type AssetConfig } from '@/utils/assetStorage'
 
@@ -60,6 +61,8 @@ export interface C123ServerProviderOptions {
   syncOnReconnect?: boolean
   /** Client ID for server identification (default: from URL ?clientId param) */
   clientId?: string
+  /** Fixed category for initial results fetch (e.g., "K1M") */
+  fixedCategory?: string
 }
 
 // =============================================================================
@@ -93,6 +96,9 @@ export class C123ServerProvider implements DataProvider {
 
   // BR2 Manager for merging BR1/BR2 results
   private br2Manager: BR2Manager
+
+  // Fixed category for initial results loading
+  private fixedCategory: string | null
 
   // Track current race for config mapping
   private currentRaceName: string = ''
@@ -128,6 +134,7 @@ export class C123ServerProvider implements DataProvider {
     this.initialReconnectDelay = options.initialReconnectDelay ?? 1000
     this.currentReconnectDelay = this.initialReconnectDelay
     this.syncOnReconnect = options.syncOnReconnect ?? true
+    this.fixedCategory = options.fixedCategory?.toUpperCase() || null
     this.api = new C123ServerApi(this.httpUrl, options.apiTimeout ?? 5000)
 
     // Initialize BR2 Manager for merging BR1/BR2 results
@@ -381,8 +388,7 @@ export class C123ServerProvider implements DataProvider {
           this.handleRaceConfig(message.data as C123RaceConfigData)
           break
         case 'Schedule':
-          // Schedule is informational - could be used for race list
-          // Not needed for basic scoreboard functionality
+          this.handleSchedule(message.data as C123ScheduleData)
           break
         case 'XmlChange':
           this.handleXmlChange(message.data as C123XmlChangeData)
@@ -444,6 +450,64 @@ export class C123ServerProvider implements DataProvider {
       console.log(`C123Server: Event name: ${serverInfo.eventName}`)
       this.callbacks.emitEventInfo({ title: serverInfo.eventName })
     }
+  }
+
+  /**
+   * Handle Schedule message — fetch initial results for current race.
+   *
+   * Schedule arrives on connection with all races and their statuses.
+   * We use it to immediately fetch results via REST API so the scoreboard
+   * doesn't start empty while waiting for the first WS Results message.
+   */
+  private handleSchedule(data: C123ScheduleData): void {
+    let target: { raceId: string } | undefined
+
+    if (this.fixedCategory) {
+      // Fixed category: find the most recent race for this category
+      // Prefer running (status=3), then most recent finished (status=5)
+      const categoryRaces = data.races.filter(r =>
+        r.raceId.split('_')[0] === this.fixedCategory
+      )
+      target = categoryRaces.find(r => r.raceStatus === 3)
+        || categoryRaces.filter(r => r.raceStatus === 5).pop()
+    } else {
+      // Auto mode: find the currently running race, or most recent finished
+      const running = data.races.filter(r => r.raceStatus === 3)
+      target = running.length > 0
+        ? running[running.length - 1]
+        : data.races.filter(r => r.raceStatus === 5).pop()
+    }
+
+    if (target) {
+      this.fetchInitialResults(target.raceId).catch(err => {
+        console.warn('C123Server: Failed to fetch initial results:', err)
+      })
+    }
+  }
+
+  /**
+   * Fetch results for a race via REST API and emit as Results.
+   * Used on initial connection to show results immediately.
+   */
+  private async fetchInitialResults(raceId: string): Promise<void> {
+    // Skip if we already have results from WS (race is actively sending)
+    if (this.currentRaceId) return
+
+    const [raceInfo, results] = await Promise.all([
+      this.api.getRaceInfo(raceId),
+      this.api.getResultsForRace(raceId),
+    ])
+
+    if (!raceInfo || !results || results.results.length === 0) return
+
+    // Skip if WS results arrived while we were fetching
+    if (this.currentRaceId) return
+
+    console.log(`C123Server: Loaded initial results for ${raceId} (${results.results.length} results)`)
+
+    // Convert REST format to WS-compatible format and process through normal pipeline
+    const c123Data = mapRestResultsToC123Format(results, raceId, raceInfo)
+    this.handleResults(c123Data)
   }
 
   private handleTimeOfDay(data: C123TimeOfDayData): void {

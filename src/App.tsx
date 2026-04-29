@@ -189,6 +189,7 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
         autoReconnect: true,
         initialReconnectDelay: 1000,
         maxReconnectDelay: 30000,
+        fixedCategory: urlParams.category ?? undefined,
       })
     }
 
@@ -234,6 +235,7 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
       autoReconnect: true,
       initialReconnectDelay: 1000,
       maxReconnectDelay: 30000,
+      fixedCategory: urlParams.category ?? undefined,
     })
   }
 
