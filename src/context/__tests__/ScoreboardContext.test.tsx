@@ -1496,7 +1496,7 @@ describe('ScoreboardContext', () => {
       expect(result.current.raceName).toBe('K1M Semifinal')
     })
 
-    it('clears results when incoming raceId does not match fixedCategory', () => {
+    it('keeps results when incoming raceId does not match fixedCategory', () => {
       const mockProvider = createMockProvider()
       const wrapper = createWrapper(mockProvider, 'K1M')
       const { result } = renderHook(() => useScoreboard(), { wrapper })
@@ -1509,6 +1509,7 @@ describe('ScoreboardContext', () => {
       })
       expect(result.current.results).toHaveLength(1)
 
+      // C1W results arrive — K1M results must stay (C123 rotates all categories)
       act(() => {
         mockProvider.triggerResults({
           results: [{ rank: 1, bib: '99', name: 'Other', familyName: 'O', givenName: 'O', club: '', nat: '', total: '91', pen: 0, behind: '' }],
@@ -1516,8 +1517,10 @@ describe('ScoreboardContext', () => {
         })
       })
 
-      expect(result.current.results).toEqual([])
-      expect(result.current.raceName).toBe('')
+      // Results should be preserved — silently ignored, not cleared
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('42')
+      expect(result.current.raceName).toBe('K1M Semifinal')
     })
 
     it('accepts results for fixedCategory even before activeRaceId is set', () => {
@@ -1585,7 +1588,7 @@ describe('ScoreboardContext', () => {
       expect(result.current.currentCompetitor).toBeNull()
       expect(result.current.onCourse).toEqual([])
 
-      // C1W results should clear any stale K1M results
+      // C1W results arrive — K1M results must be preserved (C123 rotates all categories)
       act(() => {
         mockProvider.triggerResults({
           results: [createResult({ bib: '20' })],
@@ -1595,7 +1598,8 @@ describe('ScoreboardContext', () => {
           raceId: 'C1W_ST_BR1_6',
         })
       })
-      expect(result.current.results).toEqual([])
+      expect(result.current.results).toHaveLength(1)
+      expect(result.current.results[0].bib).toBe('10')
 
       // === Phase 3: Race switches back to K1M ===
       const k1mComp2 = createOnCourseCompetitor({

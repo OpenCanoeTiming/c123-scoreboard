@@ -193,14 +193,9 @@ function scoreboardReducer(
       if (state.fixedCategory && action.raceId) {
         const incomingCategory = getCategoryFromRaceId(action.raceId)
         if (incomingCategory !== state.fixedCategory) {
-          // Results for a different category — clear stale results
-          return {
-            ...state,
-            results: [],
-            raceName: '',
-            raceStatus: '',
-            raceId: '',
-          }
+          // Results for a different category — silently ignore
+          // Keep showing our category's last known results
+          return state
         }
         // Category matches — proceed to update results below
       } else {

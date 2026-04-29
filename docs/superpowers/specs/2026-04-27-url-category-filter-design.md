@@ -33,11 +33,11 @@ This means:
 
 When `fixedCategory` is set:
 
-1. **SET_ON_COURSE** — Updates on-course data only if the competitor's `raceId` matches the fixed category. If it doesn't match → **actively clears** on-course state (`current: null`, `onCourse: []`) and sets `activeRaceId: null`. This ensures transition to the empty/waiting state rather than leaving stale data.
-2. **SET_RESULTS** — Accepts results only if `raceId` matches the fixed category. If the results are for a different category → **clears results** (empty array) rather than just ignoring. This prevents stale results from the fixed category lingering after the race moves on.
+1. **SET_ON_COURSE** — Updates on-course data only if the competitor's `raceId` matches the fixed category. If it doesn't match → **actively clears** on-course state (`current: null`, `onCourse: []`) and sets `activeRaceId: null`. This ensures the "no one on course" appearance when the fixed category is not racing.
+2. **SET_RESULTS** — Accepts results only if `raceId` matches the fixed category. If the results are for a different category → **silently ignored** (`return state`). C123 rotates results for ALL categories periodically, so the fixed category's last known results must be preserved (e.g., K1M morning results stay visible while K1W races in the afternoon).
 3. **activeRaceId** — Changes only within the fixed category (e.g., from `K1M_ST_BR1_6` to `K1M_ST_BR2_6` when switching runs). When incoming data is for a different class, `activeRaceId` is set to `null` (not kept as the old value).
 4. **Filter precedence** — The `fixedCategory` check runs **before** the existing `activeRaceId`/`targetRaceId` logic. This ensures results for the fixed category are accepted even on initial load before `activeRaceId` is established.
-5. **Category not active** — The scoreboard shows an empty state: no competitor on course, no results. Standard "waiting" appearance.
+5. **Category not active** — The scoreboard shows last known results with no competitor on course. Results persist until updated by the next run of the same category.
 
 ## What Does NOT Change
 
