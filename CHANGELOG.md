@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.2...v3.5.0) (2026-04-29)
+
+
+### Features
+
+* allow to pre-select and fix category by URL parameter ([#49](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/49)) ([94a3578](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/94a357874a74057488afc6c8c859402d8d2ed236))
+
 ## [3.4.2](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.1...v3.4.2) (2026-04-29)
 
 
