@@ -281,13 +281,16 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         } else {
           scrollToTop()
           currentRowIndexRef.current = 0
+          // Top is now visible again — reset the "last top shown" marker so
+          // the next finish within BROWSE_TOP_THRESHOLD can trigger browse scroll.
+          updateLastTopShown()
           setPhase('IDLE')
         }
       }, 500) // Small delay for highlight to fade
 
       return () => clearTimeout(timeoutId)
     }
-  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion])
+  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion, updateLastTopShown])
 
   /**
    * Main auto-scroll state machine
