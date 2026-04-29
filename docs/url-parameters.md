@@ -15,6 +15,7 @@ http://192.168.1.100:5173/?server=192.168.1.50:27123&type=ledwall&displayRows=5
 |----------|-----|---------|-------|
 | `server` | string | auto-discovery | Adresa serveru (host:port) |
 | `source` | string | - | Zdroj dat (`replay` pro testování) |
+| `category` | string | - | Fixace na kategorii (`K1M`, `C1W`, ...) |
 | `type` | string | auto-detect | Layout mód (`vertical`, `ledwall`) |
 | `displayRows` | number | auto | Fixní počet řádků (3-20) |
 | `scrollToFinished` | boolean | `true` | Scroll na dojetého závodníka |
@@ -58,6 +59,33 @@ Zdroj dat. Jediná podporovaná hodnota je `replay` pro vývojové/testovací ú
 ```
 
 **Poznámka:** Replay má přednost před `server` parametrem.
+
+---
+
+### category
+
+Fixace scoreboardu na konkrétní kategorii (třídu). Scoreboard zobrazuje pouze data pro zadanou kategorii a ignoruje ostatní.
+
+```
+?category=K1M     # Pouze K1 muži
+?category=C1W     # Pouze C1 ženy
+?category=C2M     # Pouze C2 muži
+```
+
+**Chování:**
+- Scoreboard přijímá pouze výsledky a on-course data pro zadanou kategorii
+- Výsledky jiných kategorií jsou tiše ignorovány (žádné mazání)
+- Den a jízda (BR1/BR2) se řídí automaticky z dat
+- Bez parametru se scoreboard chová standardně (sleduje aktuální kategorii)
+- Hodnota je case-insensitive (`k1m` = `K1M`)
+
+**Použití:** Více displejů vedle sebe, každý na jinou kategorii:
+```
+http://display1:5173/?category=K1M&type=ledwall
+http://display2:5173/?category=C1W&type=ledwall
+http://display3:5173/?category=C1M&type=ledwall
+http://display4:5173/?category=K1W&type=ledwall
+```
 
 ---
 
@@ -220,6 +248,13 @@ http://scoreboard.local:5173/?type=vertical&scrollToFinished=false
 ### Testování s replay daty
 ```
 http://localhost:5173/?source=replay&speed=10&loop=true
+```
+
+### Více displejů — každý na jinou kategorii
+```
+http://scoreboard.local:5173/?category=K1M&type=ledwall&displayRows=5
+http://scoreboard.local:5173/?category=C1W&type=ledwall&displayRows=5
+http://scoreboard.local:5173/?category=C1M&type=ledwall&displayRows=5
 ```
 
 ### Custom assety

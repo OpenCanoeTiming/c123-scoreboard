@@ -26,6 +26,7 @@ import {
   FINISHED_GRACE_PERIOD,
   STALE_COMPETITOR_TIMEOUT,
 } from './constants'
+import { getCategoryFromRaceId } from '@/utils/raceUtils'
 
 /**
  * Scoreboard state interface
@@ -85,6 +86,10 @@ export interface ScoreboardState {
   title: string
   infoText: string
   dayTime: string
+
+  // Fixed category filter from URL parameter (?category=K1M)
+  // When set, only data matching this category prefix is accepted
+  fixedCategory: string | null
 }
 
 /**
@@ -152,6 +157,7 @@ const initialState: ScoreboardState = {
   title: '',
   infoText: '',
   dayTime: '',
+  fixedCategory: null,
 }
 
 /**
@@ -183,19 +189,31 @@ function scoreboardReducer(
       return { ...state, providerErrors: [] }
 
     case 'SET_RESULTS': {
-      // Determine which race we should display results for:
-      // 1. If someone is on course → their race (activeRaceId)
-      // 2. If no one is on course → last active race (lastActiveRaceId)
-      // 3. If no history → accept any results
-      const targetRaceId = state.activeRaceId || state.lastActiveRaceId
+      // Fixed category filter: takes precedence over targetRaceId logic
+      if (state.fixedCategory && action.raceId) {
+        const incomingCategory = getCategoryFromRaceId(action.raceId)
+        if (incomingCategory !== state.fixedCategory) {
+          // Results for a different category — silently ignore
+          // Keep showing our category's last known results
+          return state
+        }
+        // Category matches — proceed to update results below
+      } else {
+        // Original targetRaceId filtering (no fixedCategory set)
+        // Determine which race we should display results for:
+        // 1. If someone is on course → their race (activeRaceId)
+        // 2. If no one is on course → last active race (lastActiveRaceId)
+        // 3. If no history → accept any results
+        const targetRaceId = state.activeRaceId || state.lastActiveRaceId
 
-      // Filter results: only update if they match the target race
-      // This prevents random category results from appearing when they shouldn't
-      // But if we have no target race yet, accept any results (initial state)
-      if (targetRaceId && action.raceId && action.raceId !== targetRaceId) {
-        // Results are for a different race than what's currently active - ignore
-        // This fixes the issue where C123 sends rotated results for all categories
-        return state
+        // Filter results: only update if they match the target race
+        // This prevents random category results from appearing when they shouldn't
+        // But if we have no target race yet, accept any results (initial state)
+        if (targetRaceId && action.raceId && action.raceId !== targetRaceId) {
+          // Results are for a different race than what's currently active - ignore
+          // This fixes the issue where C123 sends rotated results for all categories
+          return state
+        }
       }
 
       // Check if we have a pending highlight that matches a result in the new results
@@ -251,6 +269,33 @@ function scoreboardReducer(
     }
 
     case 'SET_ON_COURSE': {
+      // Fixed category filter: reject data from non-matching categories
+      if (state.fixedCategory) {
+        const incomingRaceId = action.current?.raceId
+          || action.onCourse.find(c => c.raceId)?.raceId
+          || ''
+        const incomingCategory = getCategoryFromRaceId(incomingRaceId)
+
+        if (incomingCategory && incomingCategory !== state.fixedCategory) {
+          return {
+            ...state,
+            currentCompetitor: null,
+            onCourse: [],
+            onCourseFinishedAt: {},
+            onCourseLastSeenAt: {},
+            activeRaceId: null,
+            lastActiveRaceId: state.lastActiveRaceId &&
+              getCategoryFromRaceId(state.lastActiveRaceId) === state.fixedCategory
+              ? state.lastActiveRaceId
+              : null,
+            departingCompetitor: null,
+            departedAt: null,
+            pendingHighlightBib: null,
+            pendingHighlightTimestamp: null,
+          }
+        }
+      }
+
       // Only update onCourse if updateOnCourse flag is true (from oncourse message)
       // comp messages set updateOnCourse=false to preserve existing onCourse list
       const shouldUpdateOnCourse = action.updateOnCourse !== false
@@ -520,6 +565,7 @@ function scoreboardReducer(
         title: state.title,
         infoText: state.infoText,
         dayTime: state.dayTime,
+        fixedCategory: state.fixedCategory,
       }
 
     default:
@@ -540,6 +586,7 @@ export const ScoreboardContext = createContext<ScoreboardContextValue | null>(
  */
 interface ScoreboardProviderProps {
   provider: DataProvider
+  fixedCategory?: string
   children: ReactNode
 }
 
@@ -552,11 +599,13 @@ interface ScoreboardProviderProps {
  */
 export function ScoreboardProvider({
   provider,
+  fixedCategory,
   children,
 }: ScoreboardProviderProps) {
   const [state, dispatch] = useReducer(scoreboardReducer, {
     ...initialState,
     status: provider.status,
+    fixedCategory: fixedCategory?.toUpperCase() || null,
   })
 
   /**

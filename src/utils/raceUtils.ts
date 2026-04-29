@@ -88,3 +88,18 @@ export function getOtherRunRaceId(raceId: string): string | null {
   }
   return null
 }
+
+/**
+ * Extract the category (class) from a race ID.
+ *
+ * The category is the first segment before the first underscore.
+ * Used for URL-based category filtering (?category=K1M).
+ *
+ * @param raceId - Race identifier (e.g., "K1M_ST_BR2_6")
+ * @returns Category string (e.g., "K1M"), or empty string if input is empty
+ */
+export function getCategoryFromRaceId(raceId: string): string {
+  if (!raceId) return ''
+  const idx = raceId.indexOf('_')
+  return idx === -1 ? raceId : raceId.substring(0, idx)
+}

@@ -5,7 +5,7 @@
  * Used for syncing data after reconnect and fetching merged BR1/BR2 results.
  */
 
-import type { C123ScheduleData, C123RaceConfigData } from '@/types/c123server'
+import type { C123ScheduleData, C123RaceConfigData, C123ResultsData } from '@/types/c123server'
 
 // =============================================================================
 // Types
@@ -92,6 +92,38 @@ export interface MergedResults {
   results: MergedResultRow[]
   merged: true
   classId: string
+}
+
+/** REST API result row (from /api/xml/races/:id/results) */
+export interface RestResultRow {
+  raceId: string
+  id: string
+  startOrder: number
+  bib: string
+  startTime?: string
+  time?: number        // centiseconds
+  pen?: number
+  total?: number       // centiseconds
+  rank?: number
+  catRank?: number
+  prevTime?: number    // BR1 time in centiseconds
+  prevPen?: number
+  prevTotal?: number   // BR1 total in centiseconds
+  prevRank?: number
+  gates?: string
+  status?: string      // DNS, DNF, DSQ
+  participant?: {
+    familyName: string
+    givenName: string
+    club: string
+    classId: string
+    [key: string]: unknown
+  }
+}
+
+/** REST results response */
+export interface RestRaceResults {
+  results: RestResultRow[]
 }
 
 // =============================================================================
@@ -207,6 +239,16 @@ export class C123ServerApi {
   }
 
   /**
+   * Get results for a race via REST API.
+   *
+   * Returns raw REST format (times in centiseconds, nested participant).
+   * Use mapRestResultsToWsFormat() to convert for scoreboard consumption.
+   */
+  async getResultsForRace(raceId: string): Promise<RestRaceResults | null> {
+    return this.fetch<RestRaceResults>(`/api/xml/races/${encodeURIComponent(raceId)}/results`)
+  }
+
+  /**
    * Get race config (number of gates, etc.)
    *
    * Note: This comes from WebSocket messages, not REST API.
@@ -216,6 +258,75 @@ export class C123ServerApi {
     // RaceConfig is not exposed via REST API in current C123 Server version
     // It comes through WebSocket. Return null for now.
     return null
+  }
+}
+
+// =============================================================================
+// REST → WS Format Mapper
+// =============================================================================
+
+/**
+ * Format time value from REST API as seconds string.
+ *
+ * REST API returns times as integers where value/1000 = seconds.
+ * E.g., 75320 → "75.32", 68100 → "68.10"
+ *
+ * Note: The API types say "centiseconds" but actual values need /1000.
+ */
+function formatRestTime(value: number | undefined): string {
+  if (value === undefined || value === 0) return ''
+  return (value / 1000).toFixed(2)
+}
+
+/**
+ * Calculate behind string from leader's total.
+ * Returns "" for the leader, "+X.XX" for others.
+ */
+function calculateBehind(total: number | undefined, leaderTotal: number | undefined): string {
+  if (!total || !leaderTotal || total === leaderTotal) return ''
+  const diff = (total - leaderTotal) / 1000
+  return `+${diff.toFixed(2)}`
+}
+
+/**
+ * Map REST API results to C123ResultsData format (WS-compatible).
+ *
+ * REST returns times in centiseconds and nested participant data.
+ * WS format uses formatted strings and flat row structure.
+ */
+export function mapRestResultsToC123Format(
+  results: RestRaceResults,
+  raceId: string,
+  raceInfo: RaceInfo,
+): C123ResultsData {
+  const leaderTotal = results.results[0]?.total
+  return {
+    raceId,
+    classId: raceInfo.classId,
+    isCurrent: raceInfo.raceStatus === 3,
+    mainTitle: raceInfo.classId,
+    subTitle: '',
+    rows: results.results.map(r => ({
+      rank: r.rank ?? 0,
+      bib: r.bib,
+      name: `${r.participant?.familyName ?? ''} ${r.participant?.givenName ?? ''}`.trim(),
+      familyName: r.participant?.familyName ?? '',
+      givenName: r.participant?.givenName ?? '',
+      club: r.participant?.club ?? '',
+      nat: '',
+      startOrder: r.startOrder,
+      startTime: r.startTime ?? '',
+      gates: r.gates?.trim() ?? '',
+      pen: r.pen ?? 0,
+      time: formatRestTime(r.time),
+      total: formatRestTime(r.total),
+      behind: calculateBehind(r.total, leaderTotal),
+      status: r.status,
+      prevTime: r.prevTime,
+      prevPen: r.prevPen,
+      prevTotal: r.prevTotal,
+      prevRank: r.prevRank,
+    })),
   }
 }
 
