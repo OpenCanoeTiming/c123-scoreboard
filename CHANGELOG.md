@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.1](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.0...v3.5.1) (2026-06-07)
+
+
+### Continuous Integration
+
+* attach built dist bundle as asset to GitHub releases ([#88](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/88)) ([ada76d4](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/ada76d49b43cd0903a1cf567583b2e28232c155e)), closes [#87](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/87)
+
 ## [3.5.0](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.4.2...v3.5.0) (2026-04-29)
 
 
