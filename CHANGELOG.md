@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.2](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.1...v3.5.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* align react and react-dom to 19.2.7 (error [#527](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/527)) ([#91](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/91)) ([eca99ef](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/eca99efe5e93c1b4380a27fb4b62bce84a8af47f))
+
 ## [3.5.1](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.0...v3.5.1) (2026-06-07)
 
 
