@@ -373,3 +373,15 @@ Font files added to `public/fonts/`, @font-face declarations in `fonts.css`.
 - Snapshots updated for new styles
 
 **Tag:** `v3.2.0`
+
+---
+
+## 2026-06-07 — react/react-dom version drift caused React error #527
+
+**Problem:** The dist bundle attached to release 3.5.1 crashed at runtime with [React error #527](https://react.dev/errors/527?args[]=19.2.7&args[]=19.2.6) — `react` resolved to 19.2.7 while `react-dom` stayed at 19.2.6. React requires both packages to be byte-identical at runtime.
+
+**Attempted:** Traced the mismatch in `package-lock.json`. Both 19.2.x patches were published on npm, so it wasn't a missing version — the lockfile simply held two different patches of the pair.
+
+**Solution:** Root cause was floating caret ranges (`^19.2.4` / `^19.2.6`) combined with dependabot historically bumping only `react-dom` (PRs #21/#73/#79). On lockfile regeneration `react` floated to the newest matching 19.2.7 while `react-dom` stayed pinned at 19.2.6. The `react-dom` peerDependency `^19.2.6` tolerates 19.2.7, so npm never complained — but React's runtime check demands an exact match. Fixed by pinning both to exact `19.2.7` (no caret) and adding a dependabot `groups` entry so the two always bump together in one PR (#90 / #91).
+
+**Lesson:** `react` and `react-dom` must be exact-pinned and version-locked together. A satisfied peerDependency range is *not* enough — React enforces byte-identical versions at runtime. Any package pair with a hard same-version coupling should be grouped in dependabot, never left on independent caret ranges.
