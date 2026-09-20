@@ -255,10 +255,18 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
     if (highlightedRow) {
       hasScrolledToHighlight.current = true
-      // Use scrollIntoView with 'center' block to position the row in the middle
-      highlightedRow.scrollIntoView({
+      // Scroll the container itself rather than using scrollIntoView.
+      // scrollIntoView walks up and scrolls EVERY scrollable ancestor — and
+      // `overflow: hidden` ancestors (#root, .layout) are still scrollable
+      // programmatically, so it drags the whole scoreboard out of the viewport
+      // with no way back. See issue #128.
+      const maxScroll = container.scrollHeight - container.clientHeight
+      const centered =
+        highlightedRow.offsetTop - (container.clientHeight - highlightedRow.offsetHeight) / 2
+
+      container.scrollTo({
+        top: Math.max(0, Math.min(centered, maxScroll)),
         behavior: 'smooth',
-        block: 'center',
       })
     }
   }, [isHighlightActive, highlightBib, scrollToFinished, stopBrowseScroll])

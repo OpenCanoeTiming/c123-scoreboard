@@ -707,4 +707,109 @@ describe('useAutoScroll', () => {
       expect(() => unmount()).not.toThrow()
     })
   })
+
+  describe('highlight scroll stays inside the results container (issue #128)', () => {
+    const CLIENT_HEIGHT = 200
+    const SCROLL_HEIGHT = 1000
+    const ROW_HEIGHT = 50
+
+    /**
+     * Build a container whose geometry mimics a real results list:
+     * 20 rows of ROW_HEIGHT inside a CLIENT_HEIGHT viewport.
+     */
+    function buildContainer() {
+      const container = document.createElement('div')
+      Object.defineProperty(container, 'scrollHeight', { value: SCROLL_HEIGHT, configurable: true })
+      Object.defineProperty(container, 'clientHeight', { value: CLIENT_HEIGHT, configurable: true })
+      container.scrollTo = vi.fn()
+
+      for (let i = 0; i < SCROLL_HEIGHT / ROW_HEIGHT; i++) {
+        const row = document.createElement('div')
+        row.dataset.bib = String(i)
+        Object.defineProperty(row, 'offsetTop', { value: i * ROW_HEIGHT, configurable: true })
+        Object.defineProperty(row, 'offsetHeight', { value: ROW_HEIGHT, configurable: true })
+        container.appendChild(row)
+      }
+
+      return container
+    }
+
+    /** Mount the hook, attach the container, then raise a highlight for `bib`. */
+    async function highlight(bib: string) {
+      mockUseHighlight.mockReturnValue({
+        highlightBib: null,
+        isActive: false,
+        timeRemaining: 0,
+        progress: 0,
+      })
+
+      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+
+      const container = buildContainer()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(result.current.containerRef as any).current = container
+
+      mockUseHighlight.mockReturnValue({
+        highlightBib: bib,
+        isActive: true,
+        timeRemaining: 5000,
+        progress: 0,
+      })
+      rerender()
+
+      await act(async () => {
+        vi.runAllTimers()
+      })
+
+      return container
+    }
+
+    let scrollIntoViewSpy: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      // jsdom has no layout engine, so scrollIntoView is missing entirely.
+      // Install a spy so we can assert the hook never reaches for it.
+      scrollIntoViewSpy = vi.fn()
+      Element.prototype.scrollIntoView = scrollIntoViewSpy
+    })
+
+    it('never calls scrollIntoView, which would scroll every ancestor too', async () => {
+      await highlight('5')
+
+      expect(scrollIntoViewSpy).not.toHaveBeenCalled()
+    })
+
+    it('centers the highlighted row by scrolling the container itself', async () => {
+      const container = await highlight('5')
+
+      // offsetTop 250, centered in a 200px viewport: 250 - (200 - 50) / 2 = 175
+      expect(container.scrollTo).toHaveBeenCalledWith({ top: 175, behavior: 'smooth' })
+    })
+
+    it('clamps to the top of the list for rows near the start', async () => {
+      const container = await highlight('0')
+
+      // Centering row 0 would need a negative scrollTop
+      expect(container.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+    })
+
+    it('clamps to the bottom of the list for rows near the end', async () => {
+      const container = await highlight('19')
+
+      // offsetTop 950 would center at 875, past the 800px maximum scroll
+      expect(container.scrollTo).toHaveBeenCalledWith({ top: 800, behavior: 'smooth' })
+    })
+
+    it('does not scroll at all when scrollToFinished is disabled', async () => {
+      mockUseLayout.mockReturnValue({
+        ...mockUseLayout(),
+        scrollToFinished: false,
+      })
+
+      const container = await highlight('5')
+
+      expect(container.scrollTo).not.toHaveBeenCalled()
+      expect(scrollIntoViewSpy).not.toHaveBeenCalled()
+    })
+  })
 })
