@@ -385,3 +385,44 @@ Font files added to `public/fonts/`, @font-face declarations in `fonts.css`.
 **Solution:** Root cause was floating caret ranges (`^19.2.4` / `^19.2.6`) combined with dependabot historically bumping only `react-dom` (PRs #21/#73/#79). On lockfile regeneration `react` floated to the newest matching 19.2.7 while `react-dom` stayed pinned at 19.2.6. The `react-dom` peerDependency `^19.2.6` tolerates 19.2.7, so npm never complained — but React's runtime check demands an exact match. Fixed by pinning both to exact `19.2.7` (no caret) and adding a dependabot `groups` entry so the two always bump together in one PR (#90 / #91).
 
 **Lesson:** `react` and `react-dom` must be exact-pinned and version-locked together. A satisfied peerDependency range is *not* enough — React enforces byte-identical versions at runtime. Any package pair with a hard same-version coupling should be grouped in dependabot, never left on independent caret ranges.
+
+---
+
+## 2026-09-20 — scrollIntoView dragged the whole scoreboard out of the viewport
+
+**Problem:** During a race the entire board occasionally slid up — header clipped
+off the top, dead black band at the bottom — and never recovered until reload
+(issue #128).
+
+**Attempted:** First suspicion was scroll chaining from the results list. Wrong
+track: the scoreboard never receives wheel or touch input. Measuring the DOM in a
+real browser found the actual path — `useAutoScroll` scrolled to the finished
+competitor with `highlightedRow.scrollIntoView({ block: 'center' })`, and
+`scrollIntoView` scrolls *every* scrollable ancestor, not just the nearest one.
+
+**Solution:** Compute the centered offset and call `container.scrollTo({ top })`
+on the results list only, the way the rest of the hook already scrolls. The
+`scroll-margin-top/bottom` on `.row.highlighted` existed purely for
+`scrollIntoView` and went with it.
+
+`#root` was scrollable in the first place because scaled ledwall mode
+(`displayRows`) derives its scale factor from hardcoded constants that
+underestimate the real DOM height — the real height grows with the number of
+on-course competitors. That is a separate bug, filed on its own.
+
+**Lesson:** Two traps, both worth remembering.
+
+1. `overflow: hidden` does **not** make an element unscrollable. It only removes
+   the scrollbar; the element stays a scroll container and `scrollIntoView`,
+   `scrollTo` and focus handling can all still move it. For something that must
+   never scroll, `overflow: clip` is the honest declaration — it is not a scroll
+   container at all.
+2. But `clip` is not a drop-in replacement for `hidden`. The automatic
+   `min-height: 0` that keeps a flex/grid item from growing to min-content is
+   granted only to **scroll containers**. Switching `.main` (a grid item in a
+   `1fr` track) from `hidden` to `clip` blew the track up to min-content: the
+   results list inherited the full 5200px content height and stopped scrolling
+   entirely. Caught only because the change was verified by measuring element
+   geometry before and after, not by eyeballing screenshots — the screenshots
+   looked plausible. `clip` is safe on `html`/`body`/`#root`, which carry an
+   explicit `height: 100%`.

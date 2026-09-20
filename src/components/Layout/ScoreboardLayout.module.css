@@ -40,6 +40,13 @@
 .main {
   display: flex;
   flex-direction: column;
+
+  /*
+   * Keep `hidden` here, never `clip`. .main is a grid item in a 1fr track and
+   * depends on the automatic `min-height: 0` that only scroll containers get.
+   * With `clip` the track grows to min-content, the results list inherits the
+   * full content height and stops scrolling altogether. Same for .layout above.
+   */
   overflow: hidden;
   padding: 0;  /* Match original v1 - no padding on main content area */
   gap: 0;  /* Match original v1 - no gap between components */

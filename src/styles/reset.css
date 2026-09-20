@@ -13,7 +13,18 @@ body,
 #root {
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Prevent scrollbars - scoreboard is fixed viewport display */
+
+  /*
+   * `clip` rather than `hidden`: the scoreboard is a fixed viewport display
+   * that must never scroll. `hidden` only removes the scrollbar — the element
+   * stays a scroll container and can still be scrolled programmatically, which
+   * is how scrollIntoView used to drag the whole board off screen (issue #128).
+   * `clip` is not a scroll container at all, so nothing can move it.
+   *
+   * Safe here because all three have an explicit `height: 100%`. Do NOT copy
+   * this to .layout / .main — see the note in ScoreboardLayout.module.css.
+   */
+  overflow: clip;
 }
 
 body {
