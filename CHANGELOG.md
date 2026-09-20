@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.3](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.2...v3.5.3) (2026-09-20)
+
+
+### Bug Fixes
+
+* scroll only the results list when highlighting a finished competitor ([#129](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/129)) ([808aa44](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/808aa4405192d0d4b105d71bb1c17089092301ff)), closes [#128](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/128)
+
 ## [3.5.2](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.1...v3.5.2) (2026-06-07)
 
 
