@@ -152,12 +152,6 @@
   color: var(--color-text-muted);
 }
 
-/* Scroll margin for smooth scroll to highlighted row */
-.row.highlighted {
-  scroll-margin-top: calc(var(--row-height) * 2);
-  scroll-margin-bottom: calc(var(--row-height) * 2);
-}
-
 /* Ledwall layout - adjust grid for hidden behind column */
 /* Ledwall grid: 80px 40px 1fr 40px 150px (5 columns - behind hidden) */
 /* Time column 150px to fit 3-digit seconds like 353.91 at 36px font with padding */
