@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test'
+import { openSettledReplay } from './helpers/replay'
 
 /**
  * Automated layout tests for different viewport sizes.
@@ -50,7 +51,7 @@ const layoutConfigs: LayoutConfig[] = [
     width: 768,
     height: 384,
     type: 'ledwall',
-    expectedColumns: 5, // rank, bib, name, penalty, time
+    expectedColumns: 4, // rank, bib, name, time (penalty hidden on ledwall)
     showFooter: false,
     screenshotName: 'layout-ledwall-768x384.png',
   },
@@ -59,7 +60,7 @@ const layoutConfigs: LayoutConfig[] = [
     width: 1920,
     height: 480,
     type: 'ledwall',
-    expectedColumns: 5, // rank, bib, name, penalty, time
+    expectedColumns: 4, // rank, bib, name, time (penalty hidden on ledwall)
     showFooter: false,
     screenshotName: 'layout-ledwall-1920x480.png',
   },
@@ -110,9 +111,7 @@ for (const config of layoutConfigs) {
     test('screenshot for reference', async ({ page }) => {
       await page.setViewportSize({ width: config.width, height: config.height })
       // Need more messages for competitor to have dtStart (starts around message 190)
-      await page.goto(`/?source=replay&type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
-      await waitForDataLoad(page)
-      await page.waitForTimeout(1000)
+      await openSettledReplay(page, `type=${config.type}&speed=100&pauseAfter=250&disableScroll=true`)
 
       await expect(page).toHaveScreenshot(config.screenshotName, {
         fullPage: true,
@@ -260,8 +259,8 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
     const viewportHeight = 1080
     await page.setViewportSize({ width: viewportWidth, height: viewportHeight })
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
-    await waitForDataLoad(page)
+    // Settled state: layout height includes the on-course row, which appears asynchronously
+    await openSettledReplay(page, 'type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
 
     // Check that layout fills viewport height
     const layoutRect = await page.evaluate(() => {
@@ -319,9 +318,7 @@ test.describe('Layout: displayRows scaling (Phase 11)', () => {
   test('screenshot with displayRows=5 on 1920x1080', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
     // Need more messages for competitor to have dtStart (starts around message 190)
-    await page.goto('/?source=replay&type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
-    await waitForDataLoad(page)
-    await page.waitForTimeout(1000)
+    await openSettledReplay(page, 'type=ledwall&displayRows=5&speed=100&pauseAfter=250&disableScroll=true')
 
     await expect(page).toHaveScreenshot('layout-ledwall-displayRows5-1920x1080.png', {
       fullPage: true,

@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { openSettledReplay } from './helpers/replay'
 
 /**
  * Visual regression tests for scoreboard layouts.
  *
  * Uses ReplayProvider with high speed to quickly load data.
- * The pauseAfter=500 parameter pauses playback after 500 messages,
- * ensuring stable screenshots without ongoing data changes.
+ * The pauseAfter=500 parameter pauses playback after 500 messages, and
+ * openSettledReplay() drives a frozen page clock so transient UI states
+ * (highlight, departing) have expired before the screenshot.
  *
  * Compares screenshots against baseline images.
  */
@@ -17,20 +19,7 @@ test.describe('Vertical Layout', () => {
     // type=vertical forces vertical layout
     // pauseAfter=500 stops playback after 500 messages (enough for results)
     // disableScroll=true prevents auto-scroll for stable screenshots
-    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=500&disableScroll=true')
-    // Wait for DOM to be ready
-    await page.waitForLoadState('domcontentloaded')
-    // Wait for all fonts to be loaded (critical for visual regression)
-    await page.evaluate(() => document.fonts.ready)
-    // Wait for results-list container to appear (always rendered)
-    await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
-    // Wait for actual result rows to appear (data loaded) - using data-bib attribute
-    await page.waitForFunction(() => {
-      const list = document.querySelector('[data-testid="results-list"]')
-      return list && list.querySelectorAll('[data-bib]').length > 1
-    }, { timeout: 30000 })
-    // Wait for animations to settle after data load
-    await page.waitForTimeout(2000)
+    await openSettledReplay(page, 'type=vertical&speed=100&pauseAfter=500&disableScroll=true')
   })
 
   test('full page screenshot matches reference', async ({ page }) => {
@@ -53,10 +42,7 @@ test.describe('Vertical Layout', () => {
 
   test('oncourse renders correctly', async ({ page }) => {
     // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
-    await page.goto('/?source=replay&type=vertical&speed=100&pauseAfter=250&disableScroll=true')
-    await page.evaluate(() => document.fonts.ready)
-    await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
-    await page.waitForTimeout(1000)
+    await openSettledReplay(page, 'type=vertical&speed=100&pauseAfter=250&disableScroll=true')
 
     const oncourse = page.getByTestId('oncourse')
     await expect(oncourse).toBeVisible()
@@ -82,20 +68,7 @@ test.describe('Ledwall Layout', () => {
     // source=replay uses ReplayProvider with recorded data
     // pauseAfter=500 stops playback after 500 messages for stable screenshots
     // disableScroll=true prevents auto-scroll for stable screenshots
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
-    // Wait for DOM to be ready
-    await page.waitForLoadState('domcontentloaded')
-    // Wait for all fonts to be loaded (critical for visual regression)
-    await page.evaluate(() => document.fonts.ready)
-    // Wait for results-list container to appear (always rendered)
-    await page.waitForSelector('[data-testid="results-list"]', { timeout: 30000 })
-    // Wait for actual result rows to appear (data loaded)
-    await page.waitForFunction(() => {
-      const list = document.querySelector('[data-testid="results-list"]')
-      return list && list.querySelectorAll('[data-bib]').length > 1
-    }, { timeout: 30000 })
-    // Wait for animations to settle after data load
-    await page.waitForTimeout(2000)
+    await openSettledReplay(page, 'type=ledwall&speed=100&pauseAfter=500&disableScroll=true')
   })
 
   test('full page screenshot matches reference', async ({ page }) => {
@@ -118,10 +91,7 @@ test.describe('Ledwall Layout', () => {
 
   test('oncourse renders correctly', async ({ page }) => {
     // Need to reload with more messages for oncourse - first dtStart comes after ~190 messages
-    await page.goto('/?source=replay&type=ledwall&speed=100&pauseAfter=250&disableScroll=true')
-    await page.evaluate(() => document.fonts.ready)
-    await page.waitForSelector('[data-testid="oncourse"]', { timeout: 30000 })
-    await page.waitForTimeout(1000)
+    await openSettledReplay(page, 'type=ledwall&speed=100&pauseAfter=250&disableScroll=true')
 
     const oncourse = page.getByTestId('oncourse')
     await expect(oncourse).toBeVisible()

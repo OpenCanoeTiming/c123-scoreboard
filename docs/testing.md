@@ -143,6 +143,10 @@ Formát JSONL obsahuje timestampy a data z obou protokolů pro synchronní repla
 - **Layout módy** - vertical, ledwall
 - **Scrolling behavior** - auto-scroll, highlight
 
+**CI:** `npm run test:e2e:ci` spouští `layout`, `dynamic`, `scroll` a `visual` s `--ignore-snapshots` — screenshot baseliny jsou renderované lokálně a na CI runneru se liší font rendering. Screenshoty se ověřují lokálně (`npx playwright test tests/e2e/visual.spec.ts tests/e2e/layout.spec.ts`).
+
+**Deterministické screenshoty:** replay i přechodné stavy UI (highlight, departing) běží na reálném čase. Screenshot testy proto používají `openSettledReplay()` z `tests/e2e/helpers/replay.ts`, který zmrazí hodiny stránky (`page.clock`) a posune je explicitně až za `pauseAfter` a vypršení všech přechodných stavů.
+
 ---
 
 ## Jak psát testy

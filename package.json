@@ -11,6 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test tests/e2e/layout.spec.ts tests/e2e/dynamic.spec.ts tests/e2e/scroll.spec.ts tests/e2e/visual.spec.ts --ignore-snapshots",
     "c123-proxy": "node scripts/c123-proxy.js",
     "mock:tcp": "npx tsx scripts/mock-c123-tcp.ts",
     "mock:ws": "npx tsx scripts/mock-cli-ws.ts",
