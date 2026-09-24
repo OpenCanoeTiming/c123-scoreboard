@@ -426,3 +426,21 @@ on-course competitors. That is a separate bug, filed on its own.
    geometry before and after, not by eyeballing screenshots — the screenshots
    looked plausible. `clip` is safe on `html`/`body`/`#root`, which carry an
    explicit `height: 100%`.
+
+## 2026-09-24 — `?source=replay` silently loaded nothing for five months
+
+**Problem:** `ReplayProvider` treated a source as a URL only if it started with
+`http://`, `https://` or `/`. Commit `4b2508f` (2026-04-10) dropped the leading
+slash from the recording path in `App.tsx` for correct asset resolution, and the
+path string was from then on parsed as a single invalid JSONL line — zero
+messages, just a console warning.
+**Attempted:** —
+**Solution:** Invert the heuristic (`isRecordingUrl`): inline JSONL starts with
+`{` or spans multiple lines; any other single non-empty line is fetched as a URL,
+relative paths included. Unit tests now cover the fetch path with a mocked
+`fetch`.
+**Lesson:** A string-sniffing fallback that fails into "parse as data" hides
+bugs — every unit test passed inline content, so the URL branch had no coverage.
+The replay-based Playwright suite would have caught it, but it is not run in CI
+and has its own stale failures (ledwall column count, reference screenshots)
+that predate this regression.

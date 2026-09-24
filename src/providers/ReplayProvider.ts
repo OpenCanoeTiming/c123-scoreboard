@@ -50,11 +50,25 @@ export interface ReplayProviderOptions {
 }
 
 /**
+ * Decide whether a replay source is a URL to fetch or inline JSONL content.
+ *
+ * JSONL content always starts with a JSON object and may span multiple lines;
+ * a URL is a single non-empty line. Any URL form is accepted: absolute,
+ * root-relative ('/recordings/x.jsonl') or relative ('recordings/x.jsonl').
+ */
+export function isRecordingUrl(source: string): boolean {
+  const trimmed = source.trim()
+  return trimmed !== '' && !trimmed.startsWith('{') && !trimmed.includes('\n')
+}
+
+/**
  * ReplayProvider - Replays recorded WebSocket sessions for development
  *
  * This provider reads JSONL recordings and replays messages with their
  * original timing (adjusted by speed multiplier). It's the primary
  * data source during development, allowing testing without a live server.
+ *
+ * `source` is either a recording URL or inline JSONL content (see isRecordingUrl).
  */
 export class ReplayProvider implements DataProvider {
   private messages: RecordedMessage[] = []
@@ -299,12 +313,7 @@ export class ReplayProvider implements DataProvider {
   private async loadMessages(): Promise<void> {
     let content: string
 
-    // Check if source is a URL (absolute or relative path)
-    const isUrl = this.source.startsWith('http://') ||
-                  this.source.startsWith('https://') ||
-                  this.source.startsWith('/')
-
-    if (isUrl) {
+    if (isRecordingUrl(this.source)) {
       // Fetch from URL
       const response = await fetch(this.source)
       if (!response.ok) {
