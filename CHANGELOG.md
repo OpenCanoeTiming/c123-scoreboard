@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.4](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.3...v3.5.4) (2026-09-24)
+
+
+### Bug Fixes
+
+* fetch relative recording paths in ReplayProvider ([#133](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/133)) ([e211616](https://github.com/OpenCanoeTiming/c123-scoreboard/commit/e211616671028477cbc0162cb5cf4f0eacd7fb57)), closes [#132](https://github.com/OpenCanoeTiming/c123-scoreboard/issues/132)
+
 ## [3.5.3](https://github.com/OpenCanoeTiming/c123-scoreboard/compare/v3.5.2...v3.5.3) (2026-09-20)
 
 
