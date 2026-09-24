@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ReplayProvider } from '../ReplayProvider'
+import { ReplayProvider, isRecordingUrl } from '../ReplayProvider'
 import type { OnCourseData } from '../types'
 import type { VisibilityState } from '@/types'
 
@@ -433,6 +433,67 @@ not valid json
       await provider.connect()
 
       expect(errorCallback).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('source loading', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('should fetch a relative path instead of parsing it as content', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(new Response(sampleJSONL))
+      vi.stubGlobal('fetch', fetchMock)
+      const errorCallback = vi.fn()
+
+      const provider = new ReplayProvider('recordings/rec.jsonl', { autoPlay: false })
+      provider.onError(errorCallback)
+      await provider.connect()
+
+      expect(fetchMock).toHaveBeenCalledWith('recordings/rec.jsonl')
+      expect(provider.messageCount).toBe(6)
+      expect(errorCallback).not.toHaveBeenCalled()
+    })
+
+    it('should reject when the recording fetch fails', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 404 })))
+
+      const provider = new ReplayProvider('recordings/missing.jsonl', { autoPlay: false })
+
+      await expect(provider.connect()).rejects.toThrow('Failed to fetch recording: 404')
+      expect(provider.status).toBe('disconnected')
+    })
+
+    it('should not fetch inline JSONL content', async () => {
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+
+      const provider = new ReplayProvider(sampleJSONL, { autoPlay: false })
+      await provider.connect()
+
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(provider.messageCount).toBe(6)
+    })
+  })
+
+  describe('isRecordingUrl', () => {
+    it.each([
+      'recordings/rec.jsonl',
+      './recordings/rec.jsonl',
+      '/recordings/rec.jsonl',
+      'http://localhost:5173/rec.jsonl',
+      'https://example.com/rec.jsonl',
+    ])('treats %s as URL', (source) => {
+      expect(isRecordingUrl(source)).toBe(true)
+    })
+
+    it.each([
+      ['single JSON line', '{"_meta":{"version":2}}'],
+      ['JSON with leading whitespace', '\n  {"ts":0}'],
+      ['multi-line content starting with garbage', 'not json\n{"ts":0}'],
+      ['empty string', ''],
+    ])('treats %s as content', (_label, source) => {
+      expect(isRecordingUrl(source)).toBe(false)
     })
   })
 })
