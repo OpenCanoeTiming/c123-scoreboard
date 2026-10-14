@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.spike-s3.tsbuildinfo",
+    "types": ["vite/client", "vitest/globals", "node"],
+    "resolveJsonModule": true
+  },
+  "include": ["."]
+}
