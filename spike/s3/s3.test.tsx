@@ -94,11 +94,13 @@ describe('Behaviour B: a competitor no longer reported leaves after STALE_COMPET
     expect(sb.resultBibs()).toEqual([])
   })
 
-  it('a TimeOfDay dispatch after the deadline does not evict; bib 8 still holds activeRaceId', async () => {
+  it('a TimeOfDay dispatch after the deadline does not evict; bib 8 is still shown as running', async () => {
     await sb.replayThrough(mark.timeOfDayAfterStaleDeadline)
     expect(sb.onCourseBibs()).toContain('8')
     expect(sb.view().activeRaceId).toBe('K1M_ST_BR1_6')
-    // The other race's rotation (step 17) was filtered out while bib 8 held activeRaceId
+    // Rendered consequence: the removed competitor stays in the current-competitor slot
+    expect(sb.container.querySelector('[data-testid="oncourse"]')?.textContent).toContain('MAREK')
+    // The other race's rotation (step 17) was filtered: the target race is K1M_ST_BR1_6
     expect(sb.resultBibs()).toEqual(['3', '7', '1', '5', '2', '6', '4'])
   })
 })
