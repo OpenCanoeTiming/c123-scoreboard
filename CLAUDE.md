@@ -4,17 +4,27 @@
 
 Real-time scoreboard for canoe slalom races. On-site display for race officials and spectators. Works with data from c123-server via WebSocket.
 
-**GitHub:** OpenCanoeTiming/c123-scoreboard | **License:** MIT | **Status:** Stable
+**GitHub:** OpenCanoeTiming/c123-scoreboard | **License:** MIT | **Status:** Migration to the on-site contract in M3 (Rebuild 2026/27); venues run `legacy-2026` (v3.5.4)
+
+---
+
+## Rebuild 2026/27 — read first
+
+- **Design (normative):** c123-server `main`, `docs/arch/` — start at `README.md` (reading order, implementation sequence); then `CONTRACTS.md`, `DECISIONS/ADR-*`, `TEST-ARCHITECTURE.md`. Point to it, never restate it. Defaults taken without the maintainer go to `DECISIONS/LOG.md`.
+- **Legacy line:** venues run tag `legacy-2026`; branch `legacy/2026` takes `fix:` commits only. `main` is the rebuild, in place: replaced code is deleted, never kept beside the new.
+- **Releases:** rebuild code reaches no venue. Release Please PRs on `main` stay unmerged during the rebuild (no 3.x release from rebuild code); the rebuild ships as `Release-As: 4.0.0` when M6 Release 1.0 closes (see "Rebuild versioning" below).
+- **Order:** server → scoreboard → penalty-check → live-mini is the implementation order only. Everything, the new live included, is ready for the Jarní slalom (M6), its first real use: no shadow run, the legacy line is the fallback.
+- **Work items:** one issue each in project "Rebuild 2026/27" (https://github.com/orgs/OpenCanoeTiming/projects/3), milestones M0 Spike, freeze, merge · M1 Server core · M2 Tooling · M3 Scoreboard · M4 Penalty-check · M5 Live · M6 Release 1.0 (Jarní slalom). Implementation is on hold until the maintainer releases M1.
+- **Test-first:** failing tests from the vectors or obligations land before the code that passes them. Tiers and the `Clock` rule: `TEST-ARCHITECTURE.md` §3, §5.
+- **Client repos:** definition of done = `CLIENT-OBLIGATIONS.md` Common + "c123-scoreboard". A wrong obligation is fixed in c123-server `docs/arch` (same PR as the cited section, or label `obligations-unchanged`), never by deviating here.
+- **Upstream provenance** stays in the private c123-protocol-docs repo; public repos state behaviour only, never how it was established.
+- **Git:** conventional commits; Release Please owns versions and CHANGELOG; squash merges; `git add <file>`, never commit `.claude/` or `.superpowers/`. Czech with the maintainer, English in code, commits and docs.
 
 ---
 
 ## Architecture
 
-Scoreboard uses abstract `DataProvider` interface:
-- **C123ServerProvider** — primary (WebSocket to c123-server)
-- **CLIProvider** — fallback (legacy CLI protocol)
-
-Details in [docs/architecture.md](docs/architecture.md).
+Scoreboard uses an abstract `DataProvider` interface (`C123ServerProvider`, `CLIProvider`, `ReplayProvider`). Target (M3): it consumes the on-site contract (CONTRACTS §7) and nothing else; `providers/utils/` loses finish detection, gate parsing, merge and the run-2 merger (CLIENT-OBLIGATIONS "c123-scoreboard"). Legacy details: [docs/architecture.md](docs/architecture.md).
 
 ---
 
@@ -22,23 +32,24 @@ Details in [docs/architecture.md](docs/architecture.md).
 
 | Purpose | Path |
 |---------|------|
+| **Definition of done (M3)** | `../c123-server/docs/arch/CLIENT-OBLIGATIONS.md` → Common + "c123-scoreboard" |
+| **Test tiers, Clock rule** | `../c123-server/docs/arch/TEST-ARCHITECTURE.md` §3.3, §5 |
 | **Architecture** | `./docs/architecture.md` |
-| **Timing constants** | `./docs/timing.md` |
-| **Testing** | `./docs/testing.md` |
+| **Timing constants (legacy; route through the Clock in M3)** | `./docs/timing.md` |
+| **Testing (legacy suite)** | `./docs/testing.md` |
 | **Troubleshooting** | `./docs/troubleshooting.md` |
-| **Server WebSocket API** | `../c123-server/docs/C123-PROTOCOL.md` |
+| **Server WebSocket API** | legacy: `../c123-server/docs/C123-PROTOCOL.md`; target: `../c123-server/docs/arch/CONTRACTS.md` §7 |
 | **Protocol docs** | `../c123-protocol-docs/` |
 | **Recordings for testing** | `../c123-protocol-docs/recordings/` |
-| **Design system** | `../timing-design-system/` |
 
 ---
 
 ## Important Rules
 
-1. **Race flow tracking** — display results for the currently running category
-2. **Architecture preservation** — the scoreboard is polished and stable, changes are rare
-3. **XML as live database** — content changes continuously, react via WebSocket
-4. **Keep CLI** — as secondary interface for backward compatibility
+1. **Phase choice is the board's** — no "current race" comes from the server; choose from `Phase.status`, `stage`, `programmeOrder`, the on-course set and `Standing.asOf`, and cycle or split when several Phases run (CLIENT-OBLIGATIONS, rendering clients).
+2. **Rebuild in place** — the migration replaces code on `main`; replaced code is deleted, not kept beside the new. The legacy board is `legacy/2026` (fix-only).
+3. **Render, never interpret** — show what the contract delivers (`status`, `placement`, `Standing`, the on-course set); detect no finish, parse no gate string, merge nothing (ADR-002).
+4. **No CLI provider** — `CLIProvider` exists only on the legacy line and is removed in M3 (maintainer decision 2026-10-18; ADR-002). Do not extend it.
 
 ---
 
@@ -59,6 +70,9 @@ npm run build
 ```
 
 **Testing with recorded data:**
+
+Behaviour tests (M3) are tier 3: domain-state fixtures fed through the DataProvider with a fake `Clock` — the prototype is on branch `spike/s3` (TEST-ARCHITECTURE §3.3, §9). The recipe below is the whole-line check (tier 4) and demo:
+
 ```bash
 # Fetch a recording and start the player (in c123-protocol-docs)
 cd ../c123-protocol-docs
@@ -81,7 +95,7 @@ documentation, Control API for scripted seek/speed, and additional recipes:
 
 ## Workflow
 
-Issue-driven development. Every change starts with a GitHub issue.
+Rebuild rules: see "Rebuild 2026/27 — read first" above. Every change starts with a GitHub issue.
 
 ### 1. Rozbor (Analysis)
 - Comment on issue: restate problem, challenge the idea, define scope, identify risks
@@ -99,7 +113,7 @@ Issue-driven development. Every change starts with a GitHub issue.
 
 ### 4. PR & Review
 - Every issue → PR with `Closes #N`
-- Include test plan in PR description
+- Include the verification: commands run, exit codes, CI run link; for a migration item, the CLIENT-OBLIGATIONS lines it closes
 - Summarize what changed and why
 
 ---
@@ -155,7 +169,8 @@ This project uses **Release Please** (commit-based) for automatic versioning. **
 | `feat:` | **minor** | ✓ Features |
 | `fix:` / `perf:` | **patch** | ✓ Bug Fixes / Performance |
 | `feat!:` or `BREAKING CHANGE:` | **major** | ✓ Features |
-| `revert:` / `docs:` | none | ✓ Reverts / Documentation |
+| `revert:` | none | ✓ Reverts |
+| `docs:` | none | hidden |
 | `chore:` / `ci:` / `test:` / `style:` / `refactor:` / `build:` | **none** | hidden |
 | `chore(deps):` / `chore(deps-dev):` (dependabot) | **none** | hidden |
 
@@ -167,10 +182,12 @@ This project uses **Release Please** (commit-based) for automatic versioning. **
 4. **PR title should keep the commit prefix** (squash merges — ensure the final merged commit stays conventional).
 5. **Never commit skill state** — `.superpowers/` and `.claude/` are local per-session tool state. Prefer `git add <file>` over `git add -A`.
 
-### Forcing a specific version
+### Rebuild versioning (maintainer decision 2026-10-18)
 
-To force a release to a specific version, add this footer to a commit in the next release cycle:
+During the rebuild, the Release Please PR on `main` is left **unmerged**: no 3.x release is cut from rebuild code (any `feat:` on `main` would otherwise propose 3.6.0). When milestone M6 Release 1.0 closes, the rebuild ships as 4.0.0, with this footer on the closing commit:
 
 ```
 Release-As: 4.0.0
 ```
+
+Venue fixes in the meantime go to `legacy/2026`.

@@ -31,3 +31,7 @@ core
 
 # Superpowers skill artifacts
 docs/superpowers/
+
+# Local per-session tool state (skills, agents) — never commit
+.superpowers/
+.claude/
