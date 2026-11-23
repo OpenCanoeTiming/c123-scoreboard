@@ -56,8 +56,8 @@ Scoreboard uses an abstract `DataProvider` interface (`C123ServerProvider`, `CLI
 ## Development
 
 ```bash
-# Install
-npm install
+# Install (needs NODE_AUTH_TOKEN: a classic PAT with read:packages, for @opencanoetiming/c123-contract on GitHub Packages)
+NODE_AUTH_TOKEN=<token> npm install
 
 # Dev server
 npm run dev
