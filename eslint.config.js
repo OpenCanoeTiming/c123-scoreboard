@@ -28,4 +28,29 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // TEST-ARCHITECTURE §5: time is read only through the injected Clock; only src/clock calls the real timers.
+    files: ['src/{store,view,transport,fixture}/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        ...['setTimeout', 'setInterval', 'requestAnimationFrame'].map((name) => ({
+          name,
+          message: 'Use the injected Clock (src/clock), not the real timer.',
+        })),
+      ],
+      'no-restricted-properties': [
+        'error',
+        { object: 'Date', property: 'now', message: 'Use Clock.now() (src/clock).' },
+        { object: 'performance', property: 'now', message: 'Use Clock.now() (src/clock).' },
+        ...['window', 'globalThis', 'self'].flatMap((object) =>
+          ['setTimeout', 'setInterval', 'requestAnimationFrame'].map((property) => ({
+            object,
+            property,
+            message: 'Use the injected Clock (src/clock), not the real timer.',
+          })),
+        ),
+      ],
+    },
+  },
 ])
