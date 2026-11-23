@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
+import { ClockProvider } from '@/clock/clockContext'
+import { createFakeClock, type FakeClock } from '@/clock/fakeClock'
 import { ScoreboardProvider } from '@/context/ScoreboardContext'
 import { HIGHLIGHT_DURATION } from '@/context/constants'
 import { useHighlight } from '../useHighlight'
@@ -99,19 +101,22 @@ function createMockProvider(overrides: Partial<DataProvider> = {}): DataProvider
 }
 
 describe('useHighlight', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
+  // The legacy context stamps with the real Date.now(); the fake Clock starts there.
+  let clock: FakeClock
+  const advance = (ms: number) => {
+    clock.advance(ms)
+    clock.frame()
+  }
 
-  afterEach(() => {
-    vi.useRealTimers()
+  beforeEach(() => {
+    clock = createFakeClock(Date.now())
   })
 
   it('returns inactive state when no highlight is set', () => {
     const mockProvider = createMockProvider()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -125,7 +130,7 @@ describe('useHighlight', () => {
     const mockProvider = createMockProviderWithCallbacks()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -174,14 +179,15 @@ describe('useHighlight', () => {
     expect(result.current.highlightBib).toBe('42')
     expect(result.current.isActive).toBe(true)
     expect(result.current.timeRemaining).toBeGreaterThan(0)
-    expect(result.current.timeRemaining).toBeLessThanOrEqual(HIGHLIGHT_DURATION)
+    // the legacy context stamps with the real clock, a few ms after the fake Clock was created
+    expect(result.current.timeRemaining).toBeLessThanOrEqual(HIGHLIGHT_DURATION + 100)
   })
 
   it('expires highlight after HIGHLIGHT_DURATION', async () => {
     const mockProvider = createMockProviderWithCallbacks()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -224,7 +230,7 @@ describe('useHighlight', () => {
 
     // Advance time past the highlight duration
     act(() => {
-      vi.advanceTimersByTime(HIGHLIGHT_DURATION + 100)
+      advance(HIGHLIGHT_DURATION + 100)
     })
 
     expect(result.current.isActive).toBe(false)
@@ -236,7 +242,7 @@ describe('useHighlight', () => {
     const mockProvider = createMockProviderWithCallbacks()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -280,14 +286,14 @@ describe('useHighlight', () => {
 
     // Advance to 50% of duration
     act(() => {
-      vi.advanceTimersByTime(HIGHLIGHT_DURATION / 2)
+      advance(HIGHLIGHT_DURATION / 2)
     })
 
     expect(result.current.progress).toBeCloseTo(0.5, 1)
 
     // Advance to 100%
     act(() => {
-      vi.advanceTimersByTime(HIGHLIGHT_DURATION / 2 + 100)
+      advance(HIGHLIGHT_DURATION / 2 + 100)
     })
 
     expect(result.current.progress).toBeGreaterThanOrEqual(1)
@@ -304,7 +310,7 @@ describe('useHighlight', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -334,7 +340,7 @@ describe('useHighlight', () => {
     const mockProvider = createMockProviderWithCallbacks()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 
@@ -392,7 +398,7 @@ describe('useHighlight', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useHighlight(), { wrapper })
 

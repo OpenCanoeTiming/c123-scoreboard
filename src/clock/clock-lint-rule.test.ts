@@ -17,17 +17,23 @@ const DIRECT_CALLS = [
   'globalThis.requestAnimationFrame(() => {})',
 ]
 
-async function timingErrors(folder: string, call: string): Promise<number> {
-  const [result] = await eslint.lintText(`export const probe = () => ${call}\n`, { filePath: `src/${folder}/probe.ts` })
+async function timingErrorsIn(filePath: string, call: string): Promise<number> {
+  const [result] = await eslint.lintText(`export const probe = () => ${call}\n`, { filePath })
   return result.messages.filter((m) => m.severity === 2 && m.ruleId !== null && TIMING_RULES.has(m.ruleId)).length
 }
 
+const timingErrors = (folder: string, call: string) => timingErrorsIn(`src/${folder}/probe.ts`, call)
+
 describe('lint rule: no direct timer calls outside src/clock', () => {
-  for (const folder of ['store', 'view', 'transport', 'fixture']) {
+  for (const folder of ['store', 'view', 'transport', 'fixture', 'hooks', 'components']) {
     it(`fails on every direct timer call in src/${folder}`, { timeout: 60_000 }, async () => {
       for (const call of DIRECT_CALLS) expect(await timingErrors(folder, call), call).toBeGreaterThan(0)
     })
   }
+
+  it('fails on every direct timer call in src/App.tsx', { timeout: 60_000 }, async () => {
+    for (const call of DIRECT_CALLS) expect(await timingErrorsIn('src/App.tsx', call), call).toBeGreaterThan(0)
+  })
 
   it('allows them in src/clock', { timeout: 60_000 }, async () => {
     for (const call of DIRECT_CALLS) expect(await timingErrors('clock', call), call).toBe(0)

@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook as renderHookBare, act } from '@testing-library/react'
+import { createElement, type ReactNode } from 'react'
+import { ClockProvider } from '@/clock/clockContext'
+import { createFakeClock, type FakeClock } from '@/clock/fakeClock'
 import { useLayout } from '../useLayout'
+
+
+// Time comes from the injected fake Clock (no global fake timers).
+let clock: FakeClock
+function renderHook<T, P = undefined>(cb: (props: P) => T, options?: { initialProps?: P }) {
+  const wrapper = ({ children }: { children: ReactNode }) => createElement(ClockProvider, { clock, children })
+  return renderHookBare(cb, { ...options, wrapper })
+}
 
 describe('useLayout', () => {
   const originalInnerWidth = window.innerWidth
@@ -8,7 +19,7 @@ describe('useLayout', () => {
   const originalLocation = window.location
 
   beforeEach(() => {
-    vi.useFakeTimers()
+    clock = createFakeClock(1_700_000_000_000)
 
     // Reset window dimensions to default vertical layout
     Object.defineProperty(window, 'innerWidth', {
@@ -34,7 +45,6 @@ describe('useLayout', () => {
   })
 
   afterEach(() => {
-    vi.useRealTimers()
     vi.clearAllMocks()
 
     // Restore original values
@@ -464,7 +474,7 @@ describe('useLayout', () => {
       // Trigger resize
       await act(async () => {
         window.dispatchEvent(new Event('resize'))
-        vi.advanceTimersByTime(100) // debounce time
+        clock.advance(100) // debounce time
       })
 
       expect(result.current.viewportWidth).toBe(1200)
@@ -489,7 +499,7 @@ describe('useLayout', () => {
       // Trigger resize but don't wait full debounce time
       await act(async () => {
         window.dispatchEvent(new Event('resize'))
-        vi.advanceTimersByTime(50) // Only 50ms
+        clock.advance(50) // Only 50ms
       })
 
       // Should still have old dimensions
@@ -498,7 +508,7 @@ describe('useLayout', () => {
 
       // Wait remaining debounce time
       await act(async () => {
-        vi.advanceTimersByTime(50)
+        clock.advance(50)
       })
 
       // Now should have new dimensions
@@ -770,13 +780,13 @@ describe('useLayout', () => {
 
         await act(async () => {
           window.dispatchEvent(new Event('resize'))
-          vi.advanceTimersByTime(10) // Less than debounce
+          clock.advance(10) // Less than debounce
         })
       }
 
       // Wait for debounce to complete
       await act(async () => {
-        vi.advanceTimersByTime(100)
+        clock.advance(100)
       })
 
       // Should have last set dimensions
