@@ -3,7 +3,6 @@ import type { WsMessage } from '@opencanoetiming/c123-contract'
 import { createFakeClock } from '../clock/fakeClock'
 import type { StoreState } from '../store/store'
 import {
-  LIVENESS_TIMEOUT_MS,
   RECONNECT_DELAY_MS,
   startTransport,
   type FetchLike,
@@ -92,6 +91,9 @@ async function settle() {
   for (let i = 0; i < 50; i++) await Promise.resolve()
 }
 
+/** The deadline is checked at most one tick late; the transport's timer fires exactly at it. */
+const TICK_MS = 1_000
+
 const className = (seq: number, name: string, classId = 'K1M') =>
   ({ seq, type: 'class.updated', classId, fields: { name } }) as unknown as WsMessage
 
@@ -154,6 +156,18 @@ describe('transport: the §1.6 handshake', () => {
     await settle()
 
     expect(t.last().classes.K1M.name).toBe('fourteen')
+    expect(t.last().appliedSeq).toBe(14)
+  })
+
+  it('applies a lower seq that arrived later when it touches another entity', async () => {
+    const t = setup()
+    t.socket().on.open()
+    t.send(className(14, 'fourteen'))
+    t.send(className(13, 'K2 women', 'K2W'))
+    await settle()
+
+    expect(t.last().classes.K1M.name).toBe('fourteen')
+    expect(t.last().classes.K2W.name).toBe('K2 women')
     expect(t.last().appliedSeq).toBe(14)
   })
 
@@ -255,9 +269,9 @@ describe('transport: liveness (§7.2, two missed 10 s heartbeats)', () => {
     const held = t.last()
     const statesBefore = t.states.length
 
-    t.clock.advance(LIVENESS_TIMEOUT_MS - 1)
+    t.clock.advance(20_000 - 1)
     expect(t.statuses[t.statuses.length - 1]).toBe('live')
-    t.clock.advance(1)
+    t.clock.advance(1 + TICK_MS)
     expect(t.statuses[t.statuses.length - 1]).toBe('stale')
     expect(t.states).toHaveLength(statesBefore) // nothing cleared, nothing replaced
     expect(t.last()).toBe(held)
@@ -277,9 +291,9 @@ describe('transport: liveness (§7.2, two missed 10 s heartbeats)', () => {
 
     t.clock.advance(10_000)
     t.send({ seq: 15, type: 'sources.updated', sources: {} })
-    t.clock.advance(LIVENESS_TIMEOUT_MS - 1)
+    t.clock.advance(20_000 - 1)
     expect(t.statuses[t.statuses.length - 1]).toBe('live')
-    t.clock.advance(1)
+    t.clock.advance(1 + TICK_MS)
     expect(t.statuses[t.statuses.length - 1]).toBe('stale')
   })
 
@@ -290,8 +304,85 @@ describe('transport: liveness (§7.2, two missed 10 s heartbeats)', () => {
     t.stop()
     expect(t.sockets[0].closed).toBe(true)
     const count = t.statuses.length
-    t.clock.advance(LIVENESS_TIMEOUT_MS * 2)
+    t.clock.advance(40_000)
     expect(t.statuses).toHaveLength(count)
     expect(t.sockets).toHaveLength(1)
+  })
+})
+
+describe('transport: event.changed naming another eventId (§7.2)', () => {
+  const autumn = (seq: number) =>
+    ({ seq, type: 'event.changed', event: { eventId: 'E2', name: 'Autumn slalom' } }) as unknown as WsMessage
+
+  function autumnRoutes(): Record<string, Route> {
+    return {
+      '/api/events/current': {
+        status: 200,
+        body: {
+          asOfSeq: 50,
+          event: { eventId: 'E2', name: 'Autumn slalom' },
+          classes: [{ classId: 'C1W', name: 'C1 women' }],
+          courses: [],
+          pendingPhaseIds: [],
+        },
+      },
+      '/api/classes/C1W/phases': { status: 200, body: { asOfSeq: 50, phases: [{ phaseId: 'C1W_BR1_5', classId: 'C1W' }] } },
+      '/api/classes/C1W/entries': { status: 200, body: { asOfSeq: 50, entries: [] } },
+      '/api/classes/C1W/standings': { status: 200, body: { asOfSeq: 50, standings: [] } },
+      '/api/phases/C1W_BR1_5/attempts': {
+        status: 200,
+        body: { asOfSeq: 50, attempts: [{ attemptId: 'C1W_BR1_5:3', phaseId: 'C1W_BR1_5', bib: '3' }] },
+      },
+      '/api/oncourse': { status: 200, body: { asOfSeq: 50, attempts: [], featuredByUpstream: null, asOf: null } },
+    }
+  }
+
+  /** Lets the transport act on the message; a new stream, if it opens one, opens (§1.6 step 1). */
+  async function rehydrated(t: ReturnType<typeof setup>) {
+    const opened = t.sockets.length
+    await settle()
+    if (t.sockets.length > opened) t.socket().on.open()
+    await settle()
+  }
+
+  it('runs the whole hydration handshake again on an open, hydrated connection', async () => {
+    const routes = eventRoutes()
+    const t = setup(routes)
+    t.socket().on.open()
+    await settle()
+    expect(t.last().event?.eventId).toBe('E1')
+    const reads = t.log.filter((l) => l === 'GET /api/events/current').length
+
+    for (const key of Object.keys(routes)) delete routes[key]
+    Object.assign(routes, autumnRoutes())
+    t.send(autumn(60))
+    await rehydrated(t)
+
+    expect(t.log.filter((l) => l === 'GET /api/events/current')).toHaveLength(reads + 1)
+    expect(t.log).toContain('GET /api/phases/C1W_BR1_5/attempts')
+    expect(t.last().event?.eventId).toBe('E2')
+    expect(t.last().rehydrationNeeded).toBe(false)
+    expect(Object.keys(t.last().attempts)).toEqual(['C1W_BR1_5:3'])
+    expect(t.statuses[t.statuses.length - 1]).toBe('live')
+  })
+
+  it('hydrates the configured event when it arrives after the "no event yet" start', async () => {
+    const routes: Record<string, Route> = {
+      '/api/events/current': { status: 404, body: { error: { code: 'event-not-found', message: 'none yet' } } },
+      '/api/oncourse': { status: 200, body: { asOfSeq: 5, attempts: [], featuredByUpstream: null, asOf: null } },
+    }
+    const t = setup(routes)
+    t.socket().on.open()
+    await settle()
+    expect(t.last().event).toBeNull()
+
+    Object.assign(routes, autumnRoutes())
+    t.send(autumn(60))
+    await rehydrated(t)
+
+    expect(t.log).toContain('GET /api/classes/C1W/phases')
+    expect(t.last().event?.eventId).toBe('E2')
+    expect(Object.keys(t.last().attempts)).toEqual(['C1W_BR1_5:3'])
+    expect(t.statuses[t.statuses.length - 1]).toBe('live')
   })
 })
