@@ -13,14 +13,23 @@ interface BoardProviderProps {
   /** The transport's connection state */
   connection: ConnectionView
   policy?: DisplayPolicy
+  /** `?category=`: the class the board is pinned to */
+  category?: string | null
   children: ReactNode
 }
 
 /** Store + view-model + Clock -> the BoardView the components render. */
-export function BoardProvider({ store, clock, connection, policy = defaultPolicy, children }: BoardProviderProps) {
+export function BoardProvider({
+  store,
+  clock,
+  connection,
+  policy = defaultPolicy,
+  category = null,
+  children,
+}: BoardProviderProps) {
   const view = useMemo(
-    () => ({ ...selectBoardView(store, policy, clock), connection }),
-    [store, policy, clock, connection]
+    () => ({ ...selectBoardView(store, policy, clock, { category }), connection }),
+    [store, policy, clock, category, connection]
   )
   return <BoardViewContext.Provider value={view}>{children}</BoardViewContext.Provider>
 }
