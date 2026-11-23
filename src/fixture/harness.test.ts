@@ -151,3 +151,34 @@ describe('tier-3 harness (TEST-ARCHITECTURE §3.3)', () => {
     expect(h.state).toBe(before)
   })
 })
+
+describe('tier-3 harness: removals (CONTRACTS §7.2; CLIENT-OBLIGATIONS L110, L111)', () => {
+  it('slalom-k1m-removed-bib: the Attempt and its standing entry go, the Entry stays', () => {
+    const h = startHarness(loadFixture(read('slalom-k1m-removed-bib.json')), { offsetMs: OFFSET })
+    const removed = `${P}:2`
+    h.next() // attempt.deleted
+    expect(h.state.attempts[removed]).toBeUndefined()
+    expect(h.state.standings[`phase:${P}/all`].entries.map((e) => e.entryId)).toEqual(['E1', 'E3'])
+    expect(h.state.entries.E2).toBeDefined()
+    h.runToEnd() // the Standing that held it, as standing.updated
+    expect(Object.keys(h.state.attempts).sort()).toEqual([`${P}:1`, `${P}:3`])
+    expect(h.state.standings[`phase:${P}/all`].entries.map((e) => e.entryId)).toEqual(['E1', 'E3'])
+    expect(Object.keys(h.state.entries).sort()).toEqual(['E1', 'E2', 'E3'])
+  })
+
+  it('slalom-k1m-removed-phase: the Phase, its Attempts and every Standing naming it go; Class, Entries, Courses stay', () => {
+    const h = startHarness(loadFixture(read('slalom-k1m-removed-phase.json')), { offsetMs: OFFSET })
+    const [first, second] = ['K1M_BR1_6', 'K1M_BR2_6']
+    expect(Object.keys(h.state.standings).sort()).toEqual([`pair:${second}/all`, `phase:${first}/all`, `phase:${second}/all`])
+    h.next() // phase.deleted
+    expect(Object.keys(h.state.phases)).toEqual([first])
+    expect(Object.values(h.state.attempts).map((a) => a.phaseId)).toEqual([first, first])
+    expect(Object.keys(h.state.standings)).toEqual([`phase:${first}/all`])
+    expect(Object.keys(h.state.classes)).toEqual(['K1M'])
+    expect(Object.keys(h.state.entries).sort()).toEqual(['E1', 'E2'])
+    expect(Object.keys(h.state.courses)).toEqual(['1'])
+    h.runToEnd() // the first run's pair, derived again
+    expect(h.state.phases[first].pair).toEqual({ role: 'first', siblingPhaseId: null, combination: 'best' })
+    expect(h.state.phases[second]).toBeUndefined()
+  })
+})

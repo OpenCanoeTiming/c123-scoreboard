@@ -35,6 +35,7 @@ export type StoreState = {
   pendingPhaseIds: string[]
   onCourse: OnCourseSet
   appliedSeq: number // highest seq incorporated; only to skip what is already applied (§1.6)
+  rehydrationNeeded: boolean // set by `event.changed` naming another eventId: everything was dropped (§7.2)
 }
 
 export function emptyStore(): StoreState {
@@ -49,6 +50,7 @@ export function emptyStore(): StoreState {
     pendingPhaseIds: [],
     onCourse: { attemptIds: [], featuredByUpstream: null, asOf: null },
     appliedSeq: 0,
+    rehydrationNeeded: false,
   }
 }
 
@@ -112,6 +114,22 @@ function merge<T>(held: T | undefined, identity: Partial<T>, fields: Partial<T>)
   return { ...(held ?? identity), ...fields, ...identity } as T
 }
 
+type StandingScope = Standing['scope']
+
+// Every Phase a Standing's scope names: a `pair` names both runs (§7.2).
+function scopeNames(scope: StandingScope, phaseId: string): boolean {
+  return scope.kind === 'pair' ? scope.firstPhaseId === phaseId || scope.secondPhaseId === phaseId : scope.phaseId === phaseId
+}
+
+// The Phase whose Attempts are a Standing's own rows: a `pair`'s are the second run's (§5, §7.2).
+function ownPhase(scope: StandingScope): string {
+  return scope.kind === 'pair' ? scope.secondPhaseId : scope.phaseId
+}
+
+function without<T>(held: Readonly<Record<string, T>>, drop: (item: T) => boolean): Record<string, T> {
+  return Object.fromEntries(Object.entries(held).filter(([, item]) => !drop(item)))
+}
+
 /** Applies one `/ws` message (§7.2). A message with `seq` at or below `appliedSeq` is already incorporated. */
 export function applyMessage(state: StoreState, msg: WsMessage): StoreState {
   if (msg.seq <= state.appliedSeq) return state
@@ -142,11 +160,44 @@ export function applyMessage(state: StoreState, msg: WsMessage): StoreState {
         ...next,
         onCourse: { attemptIds: msg.attemptIds, featuredByUpstream: msg.featuredByUpstream, asOf: msg.asOf },
       }
-    case 'scope.replaced':
-    case 'attempt.deleted':
-    case 'phase.deleted':
+    case 'scope.replaced': {
+      // A replace, never a merge: what of the scope the message does not carry is removed.
+      const scope = msg.scope
+      const inScope = scope.kind === 'event' ? () => true : (id: string) => id === scope.phaseId
+      const attempts = without(state.attempts, (a) => inScope(a.phaseId))
+      const standings = without(state.standings, (s) =>
+        scope.kind === 'event' ? true : scopeNames(s.scope, scope.phaseId),
+      )
+      return {
+        ...next,
+        attempts: byKey(attempts, msg.attempts, (a) => a.attemptId),
+        standings: byKey(standings, msg.standings, (s) => s.standingKey),
+      }
+    }
+    case 'attempt.deleted': {
+      const removed = state.attempts[msg.attemptId]
+      if (!removed) return next
+      const attempts = without(state.attempts, (a) => a.attemptId === msg.attemptId)
+      const entryId = removed.entry.state === 'known' ? removed.entry.value.entryId : null
+      const standings: Record<string, Standing> = {}
+      for (const [key, s] of Object.entries(state.standings)) {
+        const holds = ownPhase(s.scope) === removed.phaseId && s.entries.some((e) => e.entryId === entryId)
+        standings[key] = holds ? { ...s, entries: s.entries.filter((e) => e.entryId !== entryId) } : s
+      }
+      return { ...next, attempts, standings }
+    }
+    case 'phase.deleted': {
+      const id = msg.phaseId
+      return {
+        ...next,
+        phases: without(state.phases, (p) => p.phaseId === id),
+        attempts: without(state.attempts, (a) => a.phaseId === id),
+        standings: without(state.standings, (s) => scopeNames(s.scope, id)),
+      }
+    }
     case 'event.changed':
-      return state // not yet applied: #159
+      if (state.event?.eventId === msg.event.eventId) return { ...next, event: msg.event }
+      return { ...emptyStore(), appliedSeq: msg.seq, rehydrationNeeded: true }
     default:
       // write, sources, check, flag and diagnostics carry no board domain state.
       return next

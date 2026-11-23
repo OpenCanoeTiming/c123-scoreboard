@@ -408,3 +408,178 @@ describe('purity', () => {
     expect(before).toEqual(snapshot)
   })
 })
+
+describe('removals and replacement (CONTRACTS §1.6, §7.2; CLIENT-OBLIGATIONS L109, L110, L111, L115)', () => {
+  const id9 = `${PHASE_1}:9`
+  const id12 = `${PHASE_1}:12`
+  const pairKey = 'pair:K1M_BR2_6/all'
+  const pairStanding: Standing = {
+    ...standing(pairKey, [row('E9', '9', 1), row('E12', '12', 2)]),
+    scope: { kind: 'pair', firstPhaseId: PHASE_1, secondPhaseId: PHASE_2 },
+  }
+  const phase2Standing: Standing = {
+    ...standing('phase:K1M_BR2_6/all', [row('E9', '9', 1)]),
+    scope: { kind: 'phase', phaseId: PHASE_2 },
+  }
+  const heatStanding: Standing = {
+    ...standing('heat:K1M_BR1_5:1/all', [row('E9', '9', 1)]),
+    scope: { kind: 'heat', phaseId: PHASE_1, heat: 1 },
+  }
+  const classificationStanding: Standing = {
+    ...standing('classification:K1M_BR1_5/all', [row('E9', '9', 1)]),
+    scope: { kind: 'classification', phaseId: PHASE_1 },
+  }
+  const withAll = () =>
+    applyHydrationResponse(hydrated(), '/api/classes/K1M/standings', {
+      asOfSeq: 1040,
+      standings: [pairStanding, phase2Standing, heatStanding, classificationStanding],
+    } satisfies ClassStandingsResponse)
+
+  describe('scope.replaced', () => {
+    it('replaces, never merges: Attempts and Standings of the Phase absent from the message are removed', () => {
+      const carried = attempt(PHASE_1, '9', { status: known('finished') })
+      const s = applyMessage(withAll(), {
+        seq: 1041,
+        type: 'scope.replaced',
+        scope: { kind: 'phase', phaseId: PHASE_1 },
+        attempts: [carried],
+        standings: [],
+      })
+      expect(s.attempts[id9]).toEqual(carried)
+      expect(s.attempts[id12]).toBeUndefined()
+      expect(s.attempts[`${PHASE_2}:9`]).toBeDefined()
+      // the Phase's own, its heat's, its classification's and the pair it is the first run of
+      expect(Object.keys(s.standings)).toEqual(['phase:K1M_BR2_6/all'])
+      expect(s.appliedSeq).toBe(1041)
+    })
+
+    it('holds the Attempts and Standings it carries, whole', () => {
+      const carried = standing('phase:K1M_BR1_5/all', [row('E12', '12', 1)])
+      const s = applyMessage(withAll(), {
+        seq: 1041,
+        type: 'scope.replaced',
+        scope: { kind: 'phase', phaseId: PHASE_1 },
+        attempts: [attempt(PHASE_1, '12')],
+        standings: [carried, pairStanding],
+      })
+      expect(Object.keys(s.attempts).sort()).toEqual([id12, `${PHASE_2}:9`])
+      expect(s.standings['phase:K1M_BR1_5/all']).toEqual(carried)
+      expect(s.standings[pairKey]).toEqual(pairStanding)
+      expect(Object.keys(s.standings).sort()).toEqual(['pair:K1M_BR2_6/all', 'phase:K1M_BR1_5/all', 'phase:K1M_BR2_6/all'])
+    })
+
+    it('leaves Phases, Entries, Classes and Courses untouched', () => {
+      const before = withAll()
+      const s = applyMessage(before, {
+        seq: 1041,
+        type: 'scope.replaced',
+        scope: { kind: 'phase', phaseId: PHASE_1 },
+        attempts: [],
+        standings: [],
+      })
+      expect(s.phases).toBe(before.phases)
+      expect(s.entries).toBe(before.entries)
+      expect(s.classes).toBe(before.classes)
+      expect(s.courses).toBe(before.courses)
+    })
+
+    it('for the event scope, replaces every Attempt and every Standing', () => {
+      const s = applyMessage(withAll(), {
+        seq: 1041,
+        type: 'scope.replaced',
+        scope: { kind: 'event' },
+        attempts: [attempt(PHASE_2, '12')],
+        standings: [phase2Standing],
+      })
+      expect(Object.keys(s.attempts)).toEqual([`${PHASE_2}:12`])
+      expect(Object.keys(s.standings)).toEqual(['phase:K1M_BR2_6/all'])
+      expect(Object.keys(s.phases).sort()).toEqual([PHASE_1, PHASE_2])
+    })
+  })
+
+  describe('attempt.deleted', () => {
+    it('removes the Attempt and its standing entries; keeps its Entry and other Phases', () => {
+      const s = applyMessage(withAll(), { seq: 1041, type: 'attempt.deleted', attemptId: id9 })
+      expect(s.attempts[id9]).toBeUndefined()
+      expect(s.attempts[id12]).toBeDefined()
+      expect(s.attempts[`${PHASE_2}:9`]).toBeDefined()
+      expect(s.entries.E9).toEqual(entry('E9'))
+      for (const key of ['phase:K1M_BR1_5/all', 'heat:K1M_BR1_5:1/all', 'classification:K1M_BR1_5/all']) {
+        expect(s.standings[key].entries.map((e) => e.entryId)).not.toContain('E9')
+      }
+      expect(s.standings['phase:K1M_BR2_6/all'].entries.map((e) => e.entryId)).toEqual(['E9'])
+    })
+
+    it('removes a second run from the pair Standing it feeds', () => {
+      const s = applyMessage(withAll(), { seq: 1041, type: 'attempt.deleted', attemptId: `${PHASE_2}:9` })
+      expect(s.standings[pairKey].entries.map((e) => e.entryId)).toEqual(['E12'])
+      expect(s.standings['phase:K1M_BR2_6/all'].entries).toEqual([])
+    })
+
+    it('a later attempt.updated for the same attemptId creates a new Attempt, whole, which may carry another entry', () => {
+      let s = applyMessage(withAll(), { seq: 1041, type: 'attempt.deleted', attemptId: id9 })
+      const { attemptId, ...fields } = attempt(PHASE_1, '9', { entry: known({ entryId: 'E12' }) })
+      s = applyMessage(s, { seq: 1042, type: 'attempt.updated', attemptId, fields })
+      expect(s.attempts[id9]).toEqual({ attemptId, ...fields })
+    })
+  })
+
+  describe('phase.deleted', () => {
+    it('removes the Phase, its Attempts and every Standing naming it; keeps Class, Entries and Courses', () => {
+      const before = withAll()
+      const s = applyMessage(before, { seq: 1041, type: 'phase.deleted', phaseId: PHASE_2 })
+      expect(Object.keys(s.phases)).toEqual([PHASE_1])
+      expect(Object.keys(s.attempts).sort()).toEqual([id12, id9])
+      expect(Object.keys(s.standings).sort()).toEqual([
+        'classification:K1M_BR1_5/all',
+        'heat:K1M_BR1_5:1/all',
+        'phase:K1M_BR1_5/all',
+      ])
+      expect(s.classes).toBe(before.classes)
+      expect(s.entries).toBe(before.entries)
+      expect(s.courses).toBe(before.courses)
+    })
+
+    it('removes a pair Standing on the first run side and the heat and classification Standings of the Phase', () => {
+      const s = applyMessage(withAll(), { seq: 1041, type: 'phase.deleted', phaseId: PHASE_1 })
+      expect(Object.keys(s.phases)).toEqual([PHASE_2])
+      expect(Object.keys(s.attempts)).toEqual([`${PHASE_2}:9`])
+      expect(Object.keys(s.standings)).toEqual(['phase:K1M_BR2_6/all'])
+    })
+
+    it('a later phase.updated for the same phaseId creates a new Phase, whole', () => {
+      let s = applyMessage(withAll(), { seq: 1041, type: 'phase.deleted', phaseId: PHASE_2 })
+      const { phaseId, ...fields } = phase(PHASE_2, { format: 'BR2', programmeOrder: known(9) })
+      s = applyMessage(s, { seq: 1042, type: 'phase.updated', phaseId, fields })
+      expect(s.phases[PHASE_2]).toEqual({ phaseId, ...fields })
+    })
+  })
+
+  describe('event.changed (CONTRACTS §7.2; RULINGS R-25; CLIENT-OBLIGATIONS L141, L53)', () => {
+    it('a hydrated store asks for no re-hydration', () => {
+      expect(hydrated().rehydrationNeeded).toBe(false)
+      expect(emptyStore().rehydrationNeeded).toBe(false)
+    })
+
+    it('on the held eventId, replaces the Event whole and keeps everything else, with no re-hydration', () => {
+      const before = withAll()
+      const event = { eventId: 'ev1', name: 'Spring Slalom 2026', details: NA }
+      const s = applyMessage(before, { seq: 1041, type: 'event.changed', event })
+      expect(s.event).toEqual(event)
+      expect(s.rehydrationNeeded).toBe(false)
+      expect(s.attempts).toBe(before.attempts)
+      expect(s.standings).toBe(before.standings)
+      expect(s.phases).toBe(before.phases)
+      expect(s.appliedSeq).toBe(1041)
+    })
+
+    it('on another eventId, drops everything and asks for re-hydration', () => {
+      const s = applyMessage(withAll(), {
+        seq: 1041,
+        type: 'event.changed',
+        event: { eventId: 'ev2', name: 'Autumn Slalom', details: NOT_YET },
+      })
+      expect(s).toEqual({ ...emptyStore(), appliedSeq: 1041, rehydrationNeeded: true })
+    })
+  })
+})
