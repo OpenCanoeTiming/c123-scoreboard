@@ -1,8 +1,9 @@
-import { useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Clock } from '../clock/clock'
 import type { StoreState } from '../store/store'
 import type { ConnectionView } from './boardView'
 import { displayPolicy as defaultPolicy, type DisplayPolicy } from './displayPolicy'
+import { anyOpen, emptyLifetimes, observeLifetimes, type Lifetimes } from './lifetimes'
 import { selectBoardView } from './selectBoardView'
 import { BoardViewContext } from './useBoardView'
 
@@ -18,7 +19,13 @@ interface BoardProviderProps {
   children: ReactNode
 }
 
-/** Store + view-model + Clock -> the BoardView the components render. */
+/**
+ * Store + view-model + Clock -> the BoardView the components render.
+ *
+ * Every new store is observed for the receipt stamps of the display lifetimes, on the Clock. While a
+ * lifetime is open, the view is re-evaluated on a Clock tick of `policy.lifetimes.tickPeriodMs`, so a
+ * lapsed lifetime ends without new data (CLIENT-OBLIGATIONS L121).
+ */
 export function BoardProvider({
   store,
   clock,
@@ -27,9 +34,27 @@ export function BoardProvider({
   category = null,
   children,
 }: BoardProviderProps) {
+  const [seen, setSeen] = useState<{ store: StoreState; lifetimes: Lifetimes }>({ store, lifetimes: emptyLifetimes })
+  let lifetimes = seen.lifetimes
+  if (seen.store !== store) {
+    lifetimes = observeLifetimes(seen.lifetimes, seen.store, store, clock.now())
+    setSeen({ store, lifetimes })
+  }
+
+  const [tick, setTick] = useState(0)
+  const { finishDisplayMs, finishedGraceMs, highlightMs, departingMs, tickPeriodMs } = policy.lifetimes
+  const open = anyOpen(lifetimes, Math.max(finishDisplayMs, finishedGraceMs, highlightMs, departingMs), clock.now())
+  useEffect(() => {
+    if (!open) return
+    const handle = clock.setTimeout(() => setTick((t) => t + 1), tickPeriodMs)
+    return () => clock.clearTimeout(handle)
+  }, [open, tick, clock, tickPeriodMs])
+
   const view = useMemo(
-    () => ({ ...selectBoardView(store, policy, clock, { category }), connection }),
-    [store, policy, clock, category, connection]
+    () => ({ ...selectBoardView(store, policy, clock, { category, lifetimes }), connection }),
+    // `tick` re-evaluates the lifetimes against the Clock
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, policy, clock, category, connection, lifetimes, tick]
   )
   return <BoardViewContext.Provider value={view}>{children}</BoardViewContext.Provider>
 }

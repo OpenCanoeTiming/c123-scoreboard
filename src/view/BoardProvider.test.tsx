@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadFixture, startHarness, type Harness } from '@/fixture/harness'
 import { ScoreboardContent } from '@/App'
 import { BoardProvider } from './BoardProvider'
+import { FINISH_DISPLAY_DURATION, FINISHED_GRACE_PERIOD, TICK_PERIOD_MS } from './displayPolicy'
+import { useBoardView } from './useBoardView'
 
 // Tier 3 on the DOM (TEST-ARCHITECTURE §3.3): the harness feeds the first synthetic fixture through the
 // store, BoardProvider turns it into a BoardView, and the same components the legacy path uses render it.
@@ -83,5 +85,44 @@ describe('walking skeleton: fixture -> store -> BoardView -> components (tier 3)
     expect(shown[1].text).toContain('97.42')
     expect(shown[2].text).toContain('100.10')
     expect(screen.queryByTestId('oncourse')).toBeNull()
+  })
+})
+
+// The display lifetimes end on a Clock tick, with no new data (CLIENT-OBLIGATIONS L121; c123-scoreboard#162).
+describe('BoardProvider re-evaluates the lifetimes on a Clock tick (tier 3)', () => {
+  const FINISH = resolve(process.cwd(), 'tests/fixtures/synthetic/slalom-finish.json')
+
+  function Probe() {
+    const v = useBoardView()
+    return (
+      <output data-testid="probe">
+        {JSON.stringify({ category: v.title.category, featured: v.featured?.bib ?? null, highlight: v.resultsScroll.highlightBib })}
+      </output>
+    )
+  }
+
+  it('after the finish, grace and highlight end at 5 s and the top at 8 s, on elapsed time alone', () => {
+    const h = startHarness(loadFixture(JSON.parse(readFileSync(FINISH, 'utf8'))), { offsetMs: OFFSET })
+    const tree = () => (
+      <BoardProvider store={h.state} clock={h.clock} connection="live">
+        <Probe />
+      </BoardProvider>
+    )
+    const probe = () => JSON.parse(screen.getByTestId('probe').textContent ?? 'null')
+    const { rerender } = render(tree())
+    const step = () => {
+      act(() => h.next())
+      rerender(tree())
+    }
+    for (let i = 0; i < 4; i++) step() // on course, then status becoming finished
+    const finish = h.clock.now()
+    while (!h.done) step() // the closure after 1 s, then a newer C1W Standing
+    expect(probe()).toEqual({ category: 'K1M', featured: '2', highlight: '2' })
+
+    act(() => h.clock.advance(finish + FINISHED_GRACE_PERIOD + TICK_PERIOD_MS - h.clock.now()))
+    expect(probe()).toEqual({ category: 'C1W', featured: '2', highlight: null })
+
+    act(() => h.clock.advance(finish + FINISH_DISPLAY_DURATION + TICK_PERIOD_MS - h.clock.now()))
+    expect(probe()).toEqual({ category: 'C1W', featured: null, highlight: null })
   })
 })

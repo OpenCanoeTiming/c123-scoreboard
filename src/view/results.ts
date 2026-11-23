@@ -75,7 +75,7 @@ function baseRow(state: StoreState, e: StandingEntry, result: TimeCellView): Res
     result,
     behind: e.behindSeconds ? `+${seconds(e.behindSeconds)}` : '',
     runs: null,
-    highlighted: false, // highlight lifetime: #162
+    highlighted: false, // set by the highlight lifetime (onCourse.ts)
     provisional: e.provisional, // carried, not rendered (#170, choice 1)
   }
 }
