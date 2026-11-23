@@ -1,14 +1,13 @@
 import { forwardRef } from 'react'
 import styles from './ResultsList.module.css'
-import type { Result, ResultStatus, RunResult } from '@/types'
-import { formatName } from '@/utils/formatName'
+import type { ResultRowView, TimeCellView } from '@/view/boardView'
 
 /**
  * Props for ResultRow component
  */
 interface ResultRowProps {
-  /** Result data for this row */
-  result: Result
+  /** Row to display */
+  row: ResultRowView
   /** Whether this row is highlighted (recently finished competitor) */
   isHighlighted?: boolean
   /** Whether to show the penalty column */
@@ -17,59 +16,15 @@ interface ResultRowProps {
   showBehind?: boolean
   /** Layout mode for CSS grid adjustment */
   layoutMode?: 'vertical' | 'ledwall'
-  /** Whether this is a BR2 race (merged BR1/BR2 display) */
-  isBR2?: boolean
 }
 
 /**
  * Get CSS class for penalty value
  */
-function getPenaltyClass(penalty: number): string {
-  if (penalty === 0) return styles.penaltyClear
-  if (penalty <= 4) return styles.penaltyTouch // 2s or 4s (double touch)
+function getPenaltyClass(cell: TimeCellView): string {
+  if (cell.penaltyKind === 'clear') return styles.penaltyClear
+  if (cell.penaltyKind === 'touch') return styles.penaltyTouch // 2s or 4s (double touch)
   return styles.penaltyMiss // 50s+
-}
-
-/**
- * Format behind time with + prefix
- */
-function formatBehind(behind: string): string {
-  if (!behind || behind === '0' || behind === '0.00') return ''
-  if (behind.startsWith('+')) return behind
-  return `+${behind}`
-}
-
-/**
- * Check if result has explicit invalid status (DNS, DNF, DSQ)
- */
-function hasExplicitStatus(status?: ResultStatus): status is 'DNS' | 'DNF' | 'DSQ' {
-  return status === 'DNS' || status === 'DNF' || status === 'DSQ'
-}
-
-/**
- * Check if result has missing/empty time (no explicit status but no valid time)
- */
-function hasMissingTime(result: Result): boolean {
-  if (hasExplicitStatus(result.status)) return false
-  const total = result.total
-  return !total || total === '' || total === '0' || total === '0.00'
-}
-
-/**
- * Check if run has invalid status
- */
-function hasRunStatus(run?: RunResult): boolean {
-  return run?.status === 'DNS' || run?.status === 'DNF' || run?.status === 'DSQ'
-}
-
-/**
- * Check if run has missing/empty time
- */
-function hasRunMissingTime(run?: RunResult): boolean {
-  if (!run) return true
-  if (hasRunStatus(run)) return false
-  const total = run.total
-  return !total || total === '' || total === '0' || total === '0.00'
 }
 
 /**
@@ -78,16 +33,16 @@ function hasRunMissingTime(run?: RunResult): boolean {
  * Times stay right-aligned, penalty is small and muted
  */
 function RunTimeCell({
-  run,
+  cell,
   isBetter,
 }: {
-  run?: RunResult
+  cell: TimeCellView
   isBetter: boolean
 }) {
   const opacityClass = isBetter ? '' : styles.worseRun
 
   // No run data - show empty
-  if (!run) {
+  if (cell.kind === 'none') {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
         <span className={styles.runTime}></span>
@@ -96,30 +51,28 @@ function RunTimeCell({
   }
 
   // Invalid status
-  if (hasRunStatus(run)) {
+  if (cell.kind === 'status') {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
-        <span className={`${styles.runTime} ${styles.statusIndicator}`}>{run.status}</span>
+        <span className={`${styles.runTime} ${styles.statusIndicator}`}>{cell.text}</span>
       </div>
     )
   }
 
   // Missing time
-  if (hasRunMissingTime(run)) {
+  if (cell.kind === 'missing') {
     return (
       <div className={`${styles.runCell} ${opacityClass}`}>
-        <span className={styles.runTime}>-</span>
+        <span className={styles.runTime}>{cell.text}</span>
       </div>
     )
   }
 
   // Valid run - time with penalty badge (always shown for alignment)
-  const pen = run.pen ?? 0
-
   // Build badge classes
   let badgeClass = styles.runPenaltyBadge
-  if (pen >= 100) badgeClass += ` ${styles.runPenaltyBadgeLarge}`
-  if (pen === 0) {
+  if (cell.penaltyLarge) badgeClass += ` ${styles.runPenaltyBadgeLarge}`
+  if (cell.penaltyKind === 'clear') {
     // Invisible spacer for alignment
     badgeClass += ` ${styles.runPenaltyBadgeSpacer}`
   } else if (isBetter) {
@@ -130,10 +83,10 @@ function RunTimeCell({
   return (
     <div className={`${styles.runCell} ${opacityClass}`}>
       <span className={styles.runTime}>
-        {run.underInvestigation && <sup className={styles.investigationStar}>*</sup>}
-        {run.total}
+        {cell.underReview && <sup className={styles.investigationStar}>*</sup>}
+        {cell.text}
       </span>
-      <span className={badgeClass}>{pen > 0 ? pen : '0'}</span>
+      <span className={badgeClass}>{cell.penalty}</span>
     </div>
   )
 }
@@ -155,31 +108,22 @@ function RunTimeCell({
  * @example
  * ```tsx
  * <ResultRow
- *   result={result}
- *   isHighlighted={highlightBib === result.bib}
+ *   row={row}
+ *   isHighlighted={row.highlighted}
  *   showPenalty={layoutMode !== 'ledwall'}
  * />
  * ```
  */
 export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
   function ResultRow(
-    { result, isHighlighted = false, showPenalty = true, showBehind = true, layoutMode = 'vertical', isBR2 = false },
+    { row, isHighlighted = false, showPenalty = true, showBehind = true, layoutMode = 'vertical' },
     ref
   ) {
-    const explicitStatus = hasExplicitStatus(result.status)
-    const missingTime = hasMissingTime(result)
-    const showAsInvalid = explicitStatus || missingTime
-    const isUnderInvestigation = result.underInvestigation || result.run1?.underInvestigation || result.run2?.underInvestigation
+    const cell = row.result
+    const showAsInvalid = cell.kind !== 'time'
 
-    const rankDisplay = showAsInvalid
-      ? ''
-      : `${result.rank}.`
-
-    const nameDisplay = formatName(result.name)
-
-    // Check if we have BR2 merged data (run1/run2 populated)
-    const hasMergedData = isBR2 && (result.run1 || result.run2)
-    const showBR2Columns = hasMergedData && layoutMode === 'vertical'
+    // Both runs of a best-run race are shown on vertical only
+    const showBR2Columns = row.runs !== null && layoutMode === 'vertical'
 
     // Build row classes
     let rowClasses = styles.row
@@ -190,31 +134,18 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     }
     if (showBR2Columns) rowClasses += ` ${styles.br2Row}`
 
-    // Determine what to show in time column:
-    // - Explicit status (DNS/DNF/DSQ): show status text
-    // - Missing time without status: show nothing
-    // - Valid time: show total
-    const timeDisplay = explicitStatus
-      ? result.status
-      : missingTime
-        ? ''
-        : result.total
-
     // For BR2 with merged data on vertical, show two run columns
-    if (showBR2Columns) {
-      const run1Better = result.bestRun === 1
-      const run2Better = result.bestRun === 2
-
+    if (showBR2Columns && row.runs) {
       return (
-        <div ref={ref} className={rowClasses} data-bib={result.bib}>
-          <div className={styles.rank}>{rankDisplay}</div>
-          <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{nameDisplay}</div>
-          <RunTimeCell run={result.run1} isBetter={run1Better} />
-          <RunTimeCell run={result.run2} isBetter={run2Better} />
+        <div ref={ref} className={rowClasses} data-bib={row.bib}>
+          <div className={styles.rank}>{row.rank}</div>
+          <div className={styles.bib}>{row.bib}</div>
+          <div className={styles.name}>{row.name}</div>
+          <RunTimeCell cell={row.runs.first} isBetter={row.runs.better === 1} />
+          <RunTimeCell cell={row.runs.second} isBetter={row.runs.better === 2} />
           {showBehind && (
             <div className={styles.behind}>
-              {showAsInvalid ? '' : formatBehind(result.behind)}
+              {row.behind}
             </div>
           )}
         </div>
@@ -222,27 +153,21 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
     }
 
     // Single-run vertical layout - use same style as BR2 but with one time column
-    const useSingleRunVertical = layoutMode === 'vertical' && !showBR2Columns
-    if (useSingleRunVertical) {
+    if (layoutMode === 'vertical') {
       // Build classes for single-run vertical (without br2Row)
       let singleRunClasses = styles.row
       if (isHighlighted) singleRunClasses += ` ${styles.highlighted}`
       singleRunClasses += ` ${styles.singleRunVertical}`
 
-      // Convert result to RunResult format for RunTimeCell
-      const singleRun: RunResult | undefined = showAsInvalid
-        ? (explicitStatus ? { total: '', pen: 0, rank: result.rank, status: result.status! } : undefined)
-        : { total: result.total, pen: result.pen, rank: result.rank, status: '', underInvestigation: isUnderInvestigation }
-
       return (
-        <div ref={ref} className={singleRunClasses} data-bib={result.bib}>
-          <div className={styles.rank}>{rankDisplay}</div>
-          <div className={styles.bib}>{result.bib}</div>
-          <div className={styles.name}>{nameDisplay}</div>
-          <RunTimeCell run={singleRun} isBetter={true} />
+        <div ref={ref} className={singleRunClasses} data-bib={row.bib}>
+          <div className={styles.rank}>{row.rank}</div>
+          <div className={styles.bib}>{row.bib}</div>
+          <div className={styles.name}>{row.name}</div>
+          <RunTimeCell cell={cell} isBetter={true} />
           {showBehind && (
             <div className={styles.behind}>
-              {showAsInvalid ? '' : formatBehind(result.behind)}
+              {row.behind}
             </div>
           )}
         </div>
@@ -251,22 +176,22 @@ export const ResultRow = forwardRef<HTMLDivElement, ResultRowProps>(
 
     // Ledwall layout - separate penalty and time columns
     return (
-      <div ref={ref} className={rowClasses} data-bib={result.bib}>
-        <div className={styles.rank}>{rankDisplay}</div>
-        <div className={styles.bib}>{result.bib}</div>
-        <div className={styles.name}>{nameDisplay}</div>
+      <div ref={ref} className={rowClasses} data-bib={row.bib}>
+        <div className={styles.rank}>{row.rank}</div>
+        <div className={styles.bib}>{row.bib}</div>
+        <div className={styles.name}>{row.name}</div>
         {showPenalty && (
-          <div className={`${styles.penalty} ${showAsInvalid ? styles.penaltyHidden : getPenaltyClass(result.pen)}`}>
-            {showAsInvalid ? '' : result.pen}
+          <div className={`${styles.penalty} ${showAsInvalid ? styles.penaltyHidden : getPenaltyClass(cell)}`}>
+            {showAsInvalid ? '' : cell.penalty}
           </div>
         )}
         <div className={`${styles.time} ${showAsInvalid ? styles.statusIndicator : ''}`}>
-          {isUnderInvestigation && !showAsInvalid && <sup className={styles.investigationStar}>*</sup>}
-          {timeDisplay}
+          {cell.underReview && !showAsInvalid && <sup className={styles.investigationStar}>*</sup>}
+          {cell.text}
         </div>
         {showBehind && (
           <div className={styles.behind}>
-            {showAsInvalid ? '' : formatBehind(result.behind)}
+            {row.behind}
           </div>
         )}
       </div>

@@ -1,7 +1,19 @@
 import { describe, it, expect } from 'vitest'
+import type { ComponentProps } from 'react'
 import { render } from '@testing-library/react'
-import { ResultRow } from '../../ResultsList/ResultRow'
-import type { Result } from '@/types'
+import { ResultRow as ResultRowComponent } from '../../ResultsList/ResultRow'
+import { toResultRowView } from '@/view/legacyAdapter'
+
+type Result = Parameters<typeof toResultRowView>[0]
+
+// Renders a legacy result through the legacy adapter, as the board does
+function ResultRow({
+  result,
+  isBR2 = false,
+  ...props
+}: Omit<ComponentProps<typeof ResultRowComponent>, 'row'> & { result: Result; isBR2?: boolean }) {
+  return <ResultRowComponent row={toResultRowView(result, { bestRun: isBR2 })} {...props} />
+}
 
 const baseResult: Result = {
   rank: 1,

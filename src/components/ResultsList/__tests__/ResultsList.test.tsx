@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { ComponentProps } from 'react'
 import { render, screen } from '@testing-library/react'
-import { ResultsList } from '../ResultsList'
-import { ResultRow } from '../ResultRow'
-import type { Result } from '@/types'
+import { ResultsList as ResultsListComponent } from '../ResultsList'
+import { ResultRow as ResultRowComponent } from '../ResultRow'
+import { toResultRowView } from '@/view/legacyAdapter'
 
 // Mock scrollIntoView which is not available in JSDOM
 Element.prototype.scrollIntoView = vi.fn()
@@ -41,45 +42,28 @@ vi.mock('@/hooks/useAutoScroll', () => ({
   })),
 }))
 
-vi.mock('@/context/ScoreboardContext', () => ({
-  useScoreboard: vi.fn(() => ({
-    raceId: 'K1M_ST_XF_6',
-    results: [],
-    raceName: 'Test Race',
-    raceStatus: 'In Progress',
-    status: 'connected',
-    error: null,
-    initialDataReceived: true,
-    providerErrors: [],
-    activeRaceId: null,
-    lastActiveRaceId: null,
-    highlightBib: null,
-    highlightTimestamp: null,
-    currentCompetitor: null,
-    onCourse: [],
-    onCourseFinishedAt: {},
-    departingCompetitor: null,
-    departedAt: null,
-    pendingHighlightBib: null,
-    pendingHighlightTimestamp: null,
-    visibility: {
-      displayTopBar: true,
-      displayTitle: true,
-      displayFooter: true,
-      displayCurrent: true,
-      displayTop: true,
-      displayOnCourse: true,
-    },
-    title: '',
-    infoText: '',
-    dayTime: '',
-    reconnect: vi.fn(),
-    clearProviderErrors: vi.fn(),
-  })),
-}))
-
 import { useHighlight } from '@/hooks/useHighlight'
 import { useLayout } from '@/hooks/useLayout'
+
+type Result = Parameters<typeof toResultRowView>[0]
+
+// Renders a legacy result through the legacy adapter, as the board does
+function ResultRow({
+  result,
+  isBR2 = false,
+  ...props
+}: Omit<ComponentProps<typeof ResultRowComponent>, 'row'> & { result: Result; isBR2?: boolean }) {
+  return <ResultRowComponent row={toResultRowView(result, { bestRun: isBR2 })} {...props} />
+}
+
+// Maps legacy results to rows with the (mocked) highlight, as the board does
+function ResultsList({ results, visible }: { results: Result[]; visible?: boolean }) {
+  const { highlightBib, isActive } = useHighlight()
+  const rows = results.map((result) =>
+    toResultRowView(result, { highlighted: isActive && result.bib === highlightBib })
+  )
+  return <ResultsListComponent rows={rows} visible={visible} />
+}
 
 // Sample result data factory
 function createResult(overrides: Partial<Result> = {}): Result {

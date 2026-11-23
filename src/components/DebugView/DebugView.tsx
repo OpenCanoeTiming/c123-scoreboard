@@ -1,11 +1,11 @@
-import { useScoreboard } from '@/context'
+import { useBoardView } from '@/view/useBoardView'
 
 /**
- * Debug component showing raw scoreboard state
- * Used for development and testing ScoreboardContext
+ * Debug component showing the BoardView the components render
  */
 export function DebugView() {
-  const state = useScoreboard()
+  const view = useBoardView()
+  const featured = view.featured
 
   return (
     <div
@@ -26,67 +26,52 @@ export function DebugView() {
       </h2>
 
       <Section title="Connection">
-        <Row label="Status" value={state.status} />
-        <Row label="Error" value={state.error || 'none'} />
-        <Row label="Initial Data" value={state.initialDataReceived ? 'yes' : 'no'} />
+        <Row label="Connection" value={view.connection} />
       </Section>
 
-      <Section title="Race Info">
-        <Row label="Race Name" value={state.raceName || 'N/A'} />
-        <Row label="Status" value={state.raceStatus || 'N/A'} />
-        <Row label="Highlight Bib" value={state.highlightBib || 'none'} />
-        <Row label="Results Count" value={String(state.results.length)} />
+      <Section title="Title">
+        <Row label="Event" value={view.title.event || 'N/A'} />
+        <Row label="Category" value={view.title.category || 'N/A'} />
+        <Row label="Run" value={view.title.run ?? 'N/A'} />
+        <Row label="Day Time" value={view.dayTime || 'N/A'} />
       </Section>
 
-      <Section title="Current Competitor">
-        {state.currentCompetitor ? (
+      <Section title="Featured">
+        {featured ? (
           <>
-            <Row label="Bib" value={state.currentCompetitor.bib} />
-            <Row label="Name" value={state.currentCompetitor.name} />
-            <Row label="Club" value={state.currentCompetitor.club} />
-            <Row label="Time" value={state.currentCompetitor.time} />
-            <Row label="Total" value={state.currentCompetitor.total} />
-            <Row label="Pen" value={String(state.currentCompetitor.pen)} />
-            <Row label="TTB Diff" value={state.currentCompetitor.ttbDiff || 'N/A'} />
-            <Row label="Gates" value={state.currentCompetitor.gates || 'N/A'} />
+            <Row label="Bib" value={featured.bib} />
+            <Row label="Name" value={featured.name} />
+            <Row label="Time" value={featured.time} />
+            <Row label="Pen" value={featured.penalty} />
+            <Row
+              label="Gates"
+              value={featured.gatePenalties.map((g) => `${g.gate}:${g.kind}`).join(' ') || 'N/A'}
+            />
+            <Row label="Departing" value={featured.departing ? 'yes' : 'no'} />
           </>
         ) : (
           <div style={{ color: 'var(--color-text-secondary)' }}>No competitor on course</div>
         )}
       </Section>
 
-      <Section title="On Course">
-        <Row label="Count" value={String(state.onCourse.length)} />
-        {state.onCourse.map((c, i) => (
-          <div key={c.bib} style={{ marginLeft: '12px' }}>
-            [{i}] Bib {c.bib}: {c.name}
-          </div>
-        ))}
-      </Section>
-
-      <Section title="Event Info">
-        <Row label="Title" value={state.title || 'N/A'} />
-        <Row label="Info Text" value={state.infoText || 'N/A'} />
-        <Row label="Day Time" value={state.dayTime || 'N/A'} />
-      </Section>
-
       <Section title="Visibility">
-        <Row label="Current" value={state.visibility.displayCurrent ? 'ON' : 'OFF'} />
-        <Row label="Top" value={state.visibility.displayTop ? 'ON' : 'OFF'} />
-        <Row label="Title" value={state.visibility.displayTitle ? 'ON' : 'OFF'} />
-        <Row label="TopBar" value={state.visibility.displayTopBar ? 'ON' : 'OFF'} />
-        <Row label="Footer" value={state.visibility.displayFooter ? 'ON' : 'OFF'} />
-        <Row label="DayTime" value={state.visibility.displayDayTime ? 'ON' : 'OFF'} />
-        <Row label="OnCourse" value={state.visibility.displayOnCourse ? 'ON' : 'OFF'} />
+        <Row label="Featured" value={view.visibility.featured ? 'ON' : 'OFF'} />
+        <Row label="Results" value={view.visibility.results ? 'ON' : 'OFF'} />
+        <Row label="Title" value={view.visibility.title ? 'ON' : 'OFF'} />
+        <Row label="TopBar" value={view.visibility.topBar ? 'ON' : 'OFF'} />
+        <Row label="Footer" value={view.visibility.footer ? 'ON' : 'OFF'} />
+        <Row label="DayTime" value={view.visibility.dayTime ? 'ON' : 'OFF'} />
       </Section>
 
-      <Section title="Results (first 5)">
-        {state.results.slice(0, 5).map((r) => (
+      <Section title={`Results (first 5 of ${view.rows.length})`}>
+        {view.rows.slice(0, 5).map((r) => (
           <div key={r.bib} style={{ marginBottom: '4px' }}>
-            {r.rank}. [{r.bib}] {r.name} - {r.total}
+            {r.rank} [{r.bib}] {r.name} - {r.result.text}
+            {r.highlighted ? ' (highlighted)' : ''}
+            {r.provisional ? ' (provisional)' : ''}
           </div>
         ))}
-        {state.results.length === 0 && (
+        {view.rows.length === 0 && (
           <div style={{ color: 'var(--color-text-secondary)' }}>No results</div>
         )}
       </Section>

@@ -1,19 +1,16 @@
 import { useMemo, type CSSProperties } from 'react'
 import styles from './ResultsList.module.css'
 import { ResultRow } from './ResultRow'
-import type { Result } from '@/types'
-import { useHighlight } from '@/hooks/useHighlight'
+import type { ResultRowView } from '@/view/boardView'
 import { useLayout } from '@/hooks/useLayout'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
-import { useScoreboard } from '@/context/ScoreboardContext'
-import { isBR2Race } from '@/utils/raceUtils'
 
 /**
  * Props for ResultsList component
  */
 interface ResultsListProps {
-  /** Array of results to display */
-  results: Result[]
+  /** Result rows to display */
+  rows: ResultRowView[]
   /** Whether the component is visible */
   visible?: boolean
 }
@@ -37,23 +34,18 @@ interface ResultsListProps {
  * @example
  * ```tsx
  * <ResultsList
- *   results={results}
- *   visible={visibility.displayTop}
+ *   rows={view.rows}
+ *   visible={view.visibility.results}
  * />
  * ```
  */
-export function ResultsList({ results, visible = true }: ResultsListProps) {
-  const { highlightBib, isActive } = useHighlight()
+export function ResultsList({ rows, visible = true }: ResultsListProps) {
   const { disableScroll, layoutMode, displayRows, rowHeight } = useLayout()
-  const { raceId } = useScoreboard()
-
-  // Detect BR2 race for merged display (two-column times on vertical)
-  const isBR2 = isBR2Race(raceId)
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
   const { containerRef } = useAutoScroll({
-    enabled: results.length > 0 && !disableScroll,
+    enabled: rows.length > 0 && !disableScroll,
   })
 
   // When displayRows is set, fix the container height to enable scrolling
@@ -80,7 +72,7 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   const containerClasses = `${styles.container}${!visible ? ` ${styles.hidden}` : ''}`
 
   // Empty state
-  if (results.length === 0) {
+  if (rows.length === 0) {
     return (
       <div className={containerClasses} data-testid="results-list">
         <div className={styles.empty}>Zatím žádné výsledky</div>
@@ -91,20 +83,16 @@ export function ResultsList({ results, visible = true }: ResultsListProps) {
   return (
     <div className={containerClasses} ref={containerRef} style={containerStyle} data-testid="results-list">
       {/* Result rows - no header row to match original v1 */}
-      {results.map((result) => {
-        const isHighlighted = isActive && result.bib === highlightBib
-        return (
-          <ResultRow
-            key={result.bib}
-            result={result}
-            isHighlighted={isHighlighted}
-            showPenalty={showPenalty}
-            showBehind={showBehind}
-            layoutMode={layoutMode}
-            isBR2={isBR2}
-          />
-        )
-      })}
+      {rows.map((row) => (
+        <ResultRow
+          key={row.bib}
+          row={row}
+          isHighlighted={row.highlighted}
+          showPenalty={showPenalty}
+          showBehind={showBehind}
+          layoutMode={layoutMode}
+        />
+      ))}
     </div>
   )
 }

@@ -1,24 +1,20 @@
-import { useMemo } from 'react'
 import styles from './CurrentCompetitor.module.css'
-import type { OnCourseCompetitor } from '@/types'
-import { formatName } from '@/utils/formatName'
-import { createGateClassGetter } from '@/utils/getGateClass'
-import { getPenaltyGates } from '@/providers/utils/parseGates'
+import type { FeaturedRowView, GatePenaltyView } from '@/view/boardView'
 import { useLayout } from '@/hooks/useLayout'
 
 /**
  * Props for CurrentCompetitor component
  */
 interface CurrentCompetitorProps {
-  /** The competitor currently on course */
-  competitor: OnCourseCompetitor | null
+  /** The featured on-course row, or null when nobody is shown */
+  competitor: FeaturedRowView | null
   /** Whether the component is visible */
   visible?: boolean
-  /** Whether this is the departing competitor (visual distinction) */
-  isDeparting?: boolean
 }
 
-const getGateClass = createGateClassGetter(styles)
+function getGateClass(kind: GatePenaltyView['kind']): string {
+  return kind === 'touch' ? styles.penalty2 : styles.penalty50
+}
 
 /**
  * CurrentCompetitor component
@@ -34,41 +30,27 @@ const getGateClass = createGateClassGetter(styles)
  * @example
  * ```tsx
  * <CurrentCompetitor
- *   competitor={currentCompetitor}
- *   visible={visibility.displayCurrent}
+ *   competitor={view.featured}
+ *   visible={view.visibility.featured}
  * />
  * ```
  */
 export function CurrentCompetitor({
   competitor,
   visible = true,
-  isDeparting = false,
 }: CurrentCompetitorProps) {
   const { layoutMode } = useLayout()
-
-  // Get gates with penalties (2s or 50s)
-  const penaltyGates = useMemo(() => {
-    if (!competitor) return []
-    return getPenaltyGates(competitor.gates)
-  }, [competitor])
 
   // If no competitor, render nothing
   if (!competitor) {
     return null
   }
 
-  // Don't show competitor who hasn't started yet (unless departing)
-  // Competitors with dtStart=null and no valid time shouldn't be displayed
-  if (!isDeparting && !competitor.dtStart) {
-    return null
-  }
+  const isDeparting = competitor.departing
 
   // Container classes
   const containerClasses = `${styles.container} ${styles[layoutMode]}${!visible ? ` ${styles.hidden}` : ''}${isDeparting ? ` ${styles.departing}` : ''}`
 
-  // Display raw total time (not formatted) to match original v1 style
-  const displayTime = (competitor.total || competitor.time || '').trim()
-  const hasPenalty = competitor.pen > 0
 
   return (
     <div className={containerClasses} data-testid="oncourse">
@@ -81,29 +63,29 @@ export function CurrentCompetitor({
         <div className={styles.bib}>{competitor.bib}</div>
 
         {/* Name */}
-        <div className={styles.name}>{formatName(competitor.name)}</div>
+        <div className={styles.name}>{competitor.name}</div>
 
         {/* Gate penalties + total penalty */}
         <div className={styles.gatesContainer}>
-          {penaltyGates.map(({ gateNumber, penalty }) => (
+          {competitor.gatePenalties.map(({ gate, kind }) => (
             <span
-              key={`gate-${gateNumber}`}
-              className={`${styles.gatePenalty} ${getGateClass(penalty)}`}
+              key={`gate-${gate}`}
+              className={`${styles.gatePenalty} ${getGateClass(kind)}`}
             >
-              {gateNumber}
+              {gate}
             </span>
           ))}
 
           {/* Total penalty badge */}
           <div
-            className={`${styles.pen} ${hasPenalty ? styles.hasPenalty : styles.noPenalty}`}
+            className={`${styles.pen} ${competitor.hasPenalty ? styles.hasPenalty : styles.noPenalty}`}
           >
-            {competitor.pen}
+            {competitor.penalty}
           </div>
         </div>
 
         {/* Time - yellow color */}
-        <div className={styles.total}>{displayTime}</div>
+        <div className={styles.total}>{competitor.time}</div>
       </div>
     </div>
   )

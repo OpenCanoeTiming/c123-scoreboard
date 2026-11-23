@@ -1,7 +1,17 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { OnCourseDisplay } from '../OnCourseDisplay'
-import type { OnCourseCompetitor } from '@/types'
+import { OnCourseDisplay as OnCourseDisplayComponent } from '../OnCourseDisplay'
+import { toOnCourseRowView } from '@/view/legacyAdapter'
+
+type OnCourseCompetitor = Parameters<typeof toOnCourseRowView>[0]
+
+// Renders legacy competitors through the legacy adapter
+function OnCourseDisplay({
+  competitors,
+  ...props
+}: { competitors: OnCourseCompetitor[]; visible?: boolean; excludeBib?: string }) {
+  return <OnCourseDisplayComponent competitors={competitors.map(toOnCourseRowView)} {...props} />
+}
 
 // Mock useLayout hook
 vi.mock('@/hooks', () => ({

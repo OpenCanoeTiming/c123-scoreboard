@@ -1,7 +1,27 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { CurrentCompetitor } from '../../CurrentCompetitor/CurrentCompetitor'
-import type { OnCourseCompetitor } from '@/types'
+import { CurrentCompetitor as CurrentCompetitorComponent } from '../../CurrentCompetitor/CurrentCompetitor'
+import { toFeaturedRowView, toOnCourseRowView } from '@/view/legacyAdapter'
+
+type OnCourseCompetitor = Parameters<typeof toOnCourseRowView>[0]
+
+// Renders a legacy competitor through the legacy adapter, as the board does
+function CurrentCompetitor({
+  competitor,
+  isDeparting = false,
+  visible,
+}: {
+  competitor: OnCourseCompetitor | null
+  isDeparting?: boolean
+  visible?: boolean
+}) {
+  return (
+    <CurrentCompetitorComponent
+      competitor={toFeaturedRowView(competitor, isDeparting)}
+      visible={visible}
+    />
+  )
+}
 
 const baseCompetitor: OnCourseCompetitor = {
   bib: '42',
