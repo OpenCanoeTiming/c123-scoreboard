@@ -337,9 +337,10 @@ describe('transport: event.changed naming another eventId (§7.2)', () => {
     }
   }
 
-  /** Lets the transport act on the message; a new stream, if it opens one, opens (§1.6 step 1). */
-  async function rehydrated(t: ReturnType<typeof setup>) {
+  /** Sends the message and lets the transport act on it; a new stream, if it opens one, opens (§1.6 step 1). */
+  async function sendAndSettle(t: ReturnType<typeof setup>, msg: WsMessage) {
     const opened = t.sockets.length
+    t.send(msg)
     await settle()
     if (t.sockets.length > opened) t.socket().on.open()
     await settle()
@@ -355,8 +356,7 @@ describe('transport: event.changed naming another eventId (§7.2)', () => {
 
     for (const key of Object.keys(routes)) delete routes[key]
     Object.assign(routes, autumnRoutes())
-    t.send(autumn(60))
-    await rehydrated(t)
+    await sendAndSettle(t, autumn(60))
 
     expect(t.log.filter((l) => l === 'GET /api/events/current')).toHaveLength(reads + 1)
     expect(t.log).toContain('GET /api/phases/C1W_BR1_5/attempts')
@@ -377,8 +377,7 @@ describe('transport: event.changed naming another eventId (§7.2)', () => {
     expect(t.last().event).toBeNull()
 
     Object.assign(routes, autumnRoutes())
-    t.send(autumn(60))
-    await rehydrated(t)
+    await sendAndSettle(t, autumn(60))
 
     expect(t.log).toContain('GET /api/classes/C1W/phases')
     expect(t.last().event?.eventId).toBe('E2')
