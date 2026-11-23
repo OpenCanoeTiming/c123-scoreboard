@@ -1,6 +1,22 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Title } from '../EventInfo/Title'
+import { Title as TitleComponent } from '../EventInfo/Title'
+import { toTitleView } from '@/view/legacyAdapter'
+
+// Renders the legacy title fields through the legacy adapter, as the board does
+function Title({
+  title,
+  raceName,
+  raceId,
+  visible,
+}: {
+  title: string
+  raceName?: string
+  raceId?: string
+  visible?: boolean
+}) {
+  return <TitleComponent title={toTitleView(title, raceName, raceId)} visible={visible} />
+}
 
 // Mock useLayout hook
 vi.mock('@/hooks', () => ({

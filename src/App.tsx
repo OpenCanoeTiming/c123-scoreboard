@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect } from 'react'
-import { ScoreboardProvider, useScoreboard } from '@/context'
+import { useMemo, useState, useEffect, type ReactNode } from 'react'
+import { ScoreboardProvider } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
 import { CLIProvider } from '@/providers/CLIProvider'
 import { C123ServerProvider } from '@/providers/C123ServerProvider'
@@ -20,6 +20,8 @@ import { TimeDisplay } from '@/components/TimeDisplay'
 import { Footer } from '@/components/Footer'
 import { ConnectionStatus } from '@/components/ConnectionStatus'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { BoardViewContext, useBoardView } from '@/view/useBoardView'
+import { useLegacyBoardView } from '@/view/legacyAdapter'
 import styles from './App.module.css'
 
 /**
@@ -66,25 +68,24 @@ function getUrlParams(): {
 }
 
 /**
- * Main scoreboard content - uses context for data
+ * Provides the BoardView built from the legacy scoreboard context.
+ * Temporary bridge until the new producer replaces it (#158, #168).
+ */
+function LegacyBoardViewBridge({ children }: { children: ReactNode }) {
+  const view = useLegacyBoardView()
+  return <BoardViewContext.Provider value={view}>{children}</BoardViewContext.Provider>
+}
+
+/**
+ * Main scoreboard content - renders the BoardView
  *
  * Layout-specific behavior for multiple competitors on course:
  * - Both layouts now show only the primary competitor (highest time = current, or departing if just finished)
  * - OnCourseDisplay is no longer shown (simplified display)
  */
 function ScoreboardContent() {
-  const {
-    status,
-    initialDataReceived,
-    title,
-    raceName,
-    raceId,
-    dayTime,
-    currentCompetitor,
-    departingCompetitor,
-    results,
-    visibility,
-  } = useScoreboard()
+  const view = useBoardView()
+  const { visibility } = view
 
   const { layoutMode } = useLayout()
   const assets = useAssets()
@@ -92,57 +93,34 @@ function ScoreboardContent() {
   return (
     <>
       {/* Connection status overlay */}
-      <ConnectionStatus
-        status={status}
-        initialDataReceived={initialDataReceived}
-      />
+      <ConnectionStatus connection={view.connection} />
 
       <ScoreboardLayout
         header={
           <>
             <TopBar
-              visible={visibility.displayTopBar}
+              visible={visibility.topBar}
               logoUrl={assets.logoUrl}
               partnerLogoUrl={assets.partnerLogoUrl}
             />
             {/* TimeDisplay only in vertical layout */}
             {layoutMode !== 'ledwall' && (
-              <TimeDisplay time={dayTime} visible={visibility.displayDayTime} />
+              <TimeDisplay time={view.dayTime} visible={visibility.dayTime} />
             )}
-            <Title title={title} raceName={raceName} raceId={raceId} visible={visibility.displayTitle} />
+            <Title title={view.title} visible={visibility.title} />
           </>
         }
-        footer={<Footer visible={visibility.displayFooter} imageUrl={assets.footerImageUrl} />}
+        footer={<Footer visible={visibility.footer} imageUrl={assets.footerImageUrl} />}
       >
-        {/* Current competitor.
-            Finishers (departing with dtFinish) take precedence over the next
-            on-course competitor for FINISH_DISPLAY_DURATION — ensures the
-            final time gets a visible pause during interval racing.
-            Non-finishers only fill in when currentCompetitor is null. */}
+        {/* Featured on-course row (the producer picks who is featured) */}
         <ErrorBoundary componentName="CurrentCompetitor">
-          {(() => {
-            const finishingDeparture = departingCompetitor?.dtFinish
-              ? departingCompetitor
-              : null
-            const displayCompetitor =
-              finishingDeparture ?? currentCompetitor ?? departingCompetitor
-            const isDeparting =
-              !!finishingDeparture ||
-              (!currentCompetitor && !!departingCompetitor)
-            return (
-              <CurrentCompetitor
-                competitor={displayCompetitor}
-                visible={visibility.displayCurrent}
-                isDeparting={isDeparting}
-              />
-            )
-          })()}
+          <CurrentCompetitor competitor={view.featured} visible={visibility.featured} />
         </ErrorBoundary>
 
 
         {/* Results list */}
         <ErrorBoundary componentName="ResultsList">
-          <ResultsList results={results} visible={visibility.displayTop} />
+          <ResultsList rows={view.rows} visible={visibility.results} />
         </ErrorBoundary>
       </ScoreboardLayout>
     </>
@@ -358,7 +336,9 @@ function App() {
 
   return (
     <ScoreboardProvider provider={discoveryState.provider} fixedCategory={urlParams.category ?? undefined}>
-      <ScoreboardContent />
+      <LegacyBoardViewBridge>
+        <ScoreboardContent />
+      </LegacyBoardViewBridge>
     </ScoreboardProvider>
   )
 }

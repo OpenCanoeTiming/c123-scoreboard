@@ -1,9 +1,6 @@
 import { useMemo } from 'react'
 import styles from './OnCourseDisplay.module.css'
-import type { OnCourseCompetitor } from '@/types'
-import { formatName } from '@/utils/formatName'
-import { createGateClassGetter } from '@/utils/getGateClass'
-import { getPenaltyGates } from '@/providers/utils/parseGates'
+import type { GatePenaltyView, OnCourseRowView } from '@/view/boardView'
 import { useLayout } from '@/hooks/useLayout'
 
 /**
@@ -11,28 +8,15 @@ import { useLayout } from '@/hooks/useLayout'
  */
 interface OnCourseDisplayProps {
   /** Competitors currently on course */
-  competitors: OnCourseCompetitor[]
+  competitors: OnCourseRowView[]
   /** Whether the component is visible */
   visible?: boolean
   /** Bib of current competitor to exclude (already shown in CurrentCompetitor) */
   excludeBib?: string
 }
 
-const getGateClass = createGateClassGetter(styles)
-
-/**
- * Check if competitor is actively racing (has started).
- * Filters out competitors who are in the oncourse list but haven't started yet.
- */
-function isActivelyRacing(competitor: OnCourseCompetitor): boolean {
-  // Must have a start time to be considered actively racing
-  if (!competitor.dtStart) return false
-
-  // Also check for valid running time
-  const time = competitor.total || competitor.time
-  if (!time) return false
-  if (time === '0:00.00' || time === '0.00' || time === '0') return false
-  return true
+function getGateClass(kind: GatePenaltyView['kind']): string {
+  return kind === 'touch' ? styles.penalty2 : styles.penalty50
 }
 
 /**
@@ -73,7 +57,7 @@ export function OnCourseDisplay({
       // Exclude the current competitor (shown separately)
       if (excludeBib && competitor.bib === excludeBib) return false
       // Must be actively racing (has started and has valid time)
-      return isActivelyRacing(competitor)
+      return competitor.racing
     })
   }, [competitors, excludeBib])
 
@@ -99,19 +83,11 @@ export function OnCourseDisplay({
  * Single competitor row
  */
 interface OnCourseRowProps {
-  competitor: OnCourseCompetitor
+  competitor: OnCourseRowView
   layoutMode: 'vertical' | 'ledwall'
 }
 
 function OnCourseRow({ competitor, layoutMode }: OnCourseRowProps) {
-  // Get gates with penalties (2s or 50s)
-  const penaltyGates = useMemo(() => {
-    return getPenaltyGates(competitor.gates)
-  }, [competitor.gates])
-
-  const hasPenalty = competitor.pen > 0
-  const displayTime = competitor.total || competitor.time
-
   return (
     <div
       className={`${styles.row} ${styles[layoutMode]}`}
@@ -124,29 +100,29 @@ function OnCourseRow({ competitor, layoutMode }: OnCourseRowProps) {
       <div className={styles.bib}>{competitor.bib}</div>
 
       {/* Name */}
-      <div className={styles.name}>{formatName(competitor.name)}</div>
+      <div className={styles.name}>{competitor.name}</div>
 
       {/* Gate penalties - show gate numbers with penalties */}
       <div className={styles.gatesContainer}>
-        {penaltyGates.map(({ gateNumber, penalty }) => (
+        {competitor.gatePenalties.map(({ gate, kind }) => (
           <span
-            key={`gate-${gateNumber}`}
-            className={`${styles.gatePenalty} ${getGateClass(penalty)}`}
+            key={`gate-${gate}`}
+            className={`${styles.gatePenalty} ${getGateClass(kind)}`}
           >
-            {gateNumber}
+            {gate}
           </span>
         ))}
 
         {/* Total penalty */}
         <div
-          className={`${styles.pen} ${hasPenalty ? styles.hasPenalty : styles.noPenalty}`}
+          className={`${styles.pen} ${competitor.hasPenalty ? styles.hasPenalty : styles.noPenalty}`}
         >
-          {competitor.pen}
+          {competitor.penalty}
         </div>
       </div>
 
       {/* Time */}
-      <div className={styles.total}>{displayTime}</div>
+      <div className={styles.total}>{competitor.time}</div>
     </div>
   )
 }
