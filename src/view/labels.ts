@@ -6,15 +6,11 @@ import type { Phase } from '@opencanoetiming/c123-contract'
 import type { DisplayPolicy, NoResultStatus } from './displayPolicy'
 
 /**
- * The run label of the title (#170, choice 5): the organiser's race title when set; else the label of the
- * `format` token; else of the pair role; else the token verbatim.
+ * The run label of the title (#170, choice 5): the label of the `format` token, else the token verbatim,
+ * paired or not (DERIVATIONS §9, CONTRACTS §2.4). The organiser's `title` is not the on-site run label.
  */
 export function runLabel(phase: Phase, policy: DisplayPolicy): string {
-  if (phase.title?.state === 'known' && phase.title.value) return phase.title.value
-  const byFormat = policy.runLabel[phase.format]
-  if (byFormat !== undefined) return byFormat
-  if (phase.pair) return policy.pairRunLabel[phase.pair.role]
-  return phase.format
+  return policy.runLabel[phase.format] ?? phase.format
 }
 
 /** The mark of a no-result outcome (#170, choice 4). */

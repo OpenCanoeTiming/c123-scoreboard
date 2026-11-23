@@ -10,7 +10,7 @@
  * - Several races at once (#170, choice 9): one Phase, chosen in `phaseChoice.ts`; `?category=` pins a class.
  * - Featured row (#170, choice 10): the first of the server's on-course order.
  */
-import type { Outcome, PairRole } from '@opencanoetiming/c123-contract'
+import type { Outcome } from '@opencanoetiming/c123-contract'
 import type { BoardVisibility, PenaltyKind } from './boardView'
 
 export type NoResultStatus = Extract<Outcome, { kind: 'no-result' }>['status']
@@ -20,11 +20,9 @@ export interface DisplayPolicy {
   visibility: BoardVisibility
   /**
    * Run label of the title, `<event> <class> /N.` (#170, choice 5), by the Phase's `format` token.
-   * A token not listed takes the label of its pair role; a token neither listed nor paired is shown verbatim.
+   * A token not listed is shown verbatim, paired or not (CONTRACTS §2.4).
    */
   runLabel: Readonly<Record<string, string>>
-  /** Run label by the Phase's `pair.role`, for a paired token not listed in `runLabel`. */
-  pairRunLabel: Readonly<Record<PairRole['role'], string>>
   /** No-result marks (#170, choice 4). */
   noResultMark: Readonly<Record<NoResultStatus, string>>
   /** Penalty colour: up to `touchUpTo` seconds a touch, more a miss; three digits from `largeFrom`. */
@@ -41,7 +39,6 @@ export const displayPolicy: DisplayPolicy = {
     footer: true,
   },
   runLabel: { BR1: '1', BR2: '2' },
-  pairRunLabel: { first: '1', second: '2' },
   noResultMark: {
     dns: 'DNS',
     dnf: 'DNF',
