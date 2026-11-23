@@ -241,6 +241,7 @@ type LegacyState = Pick<
   | 'departingCompetitor'
   | 'results'
   | 'visibility'
+  | 'onCourse'
 >
 
 /**
@@ -261,6 +262,10 @@ export function toBoardView(state: LegacyState, highlightBib: string | null): Bo
         highlighted: highlightBib !== null && result.bib === highlightBib,
       })
     ),
+    resultsScroll: {
+      highlightBib,
+      someoneRacing: state.onCourse.some((c) => !!c.dtStart && !c.dtFinish),
+    },
   }
 }
 

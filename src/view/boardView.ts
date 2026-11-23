@@ -99,6 +99,14 @@ export interface BoardVisibility {
   footer: boolean
 }
 
+/** What paces the results auto-scroll. */
+export interface ResultsScrollView {
+  /** Bib of the active finish highlight, or null; the list holds and scrolls to its row */
+  highlightBib: string | null
+  /** Someone on course has started and not finished; on the ledwall the list rests at the top */
+  someoneRacing: boolean
+}
+
 export interface BoardView {
   connection: ConnectionView
   title: TitleView
@@ -108,4 +116,5 @@ export interface BoardView {
   /** The featured on-course row, or null */
   featured: FeaturedRowView | null
   rows: ResultRowView[]
+  resultsScroll: ResultsScrollView
 }

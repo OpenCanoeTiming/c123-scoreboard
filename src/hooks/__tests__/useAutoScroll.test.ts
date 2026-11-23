@@ -3,15 +3,6 @@ import { renderHook, act } from '@testing-library/react'
 import { useAutoScroll } from '../useAutoScroll'
 
 // Mock dependencies
-vi.mock('../useHighlight', () => ({
-  useHighlight: vi.fn(() => ({
-    highlightBib: null,
-    isActive: false,
-    timeRemaining: 0,
-    progress: 0,
-  })),
-}))
-
 vi.mock('../useLayout', () => ({
   useLayout: vi.fn(() => ({
     layoutMode: 'vertical',
@@ -29,21 +20,28 @@ vi.mock('../useLayout', () => ({
   })),
 }))
 
-vi.mock('@/context/ScoreboardContext', () => ({
-  useScoreboard: vi.fn(() => ({
-    currentCompetitor: null,
-    onCourse: [],
-  })),
-}))
-
 // Import mocks for manipulation
-import { useHighlight } from '../useHighlight'
 import { useLayout } from '../useLayout'
-import { useScoreboard } from '@/context/ScoreboardContext'
 
-const mockUseHighlight = useHighlight as ReturnType<typeof vi.fn>
 const mockUseLayout = useLayout as ReturnType<typeof vi.fn>
-const mockUseScoreboard = useScoreboard as ReturnType<typeof vi.fn>
+
+// The hook takes its highlight and on-course inputs from the BoardView (`resultsScroll`), not from the
+// scoreboard context, so it also runs under a bare BoardProvider. The tests set them as the producer does:
+// the active highlight's bib, and whether someone on course has started and not finished.
+type OnCourseInput = { dtStart?: string | null; dtFinish?: string | null }
+let inputs = { highlightBib: null as string | null, someoneRacing: false }
+
+function mockHighlight(h: { highlightBib: string | null; isActive: boolean; [field: string]: unknown }) {
+  inputs = { ...inputs, highlightBib: h.isActive ? h.highlightBib : null }
+}
+
+function mockOnCourse(s: { onCourse: OnCourseInput[]; [field: string]: unknown }) {
+  inputs = { ...inputs, someoneRacing: s.onCourse.some((c) => !!c.dtStart && !c.dtFinish) }
+}
+
+function useHook(config: { enabled?: boolean } = {}) {
+  return useAutoScroll({ ...config, ...inputs })
+}
 
 describe('useAutoScroll', () => {
   beforeEach(() => {
@@ -52,7 +50,7 @@ describe('useAutoScroll', () => {
     // requestAnimationFrame and cancelAnimationFrame are handled by Vitest fake timers
 
     // Reset mocks to default values
-    mockUseHighlight.mockReturnValue({
+    mockHighlight({
       highlightBib: null,
       isActive: false,
       timeRemaining: 0,
@@ -74,7 +72,7 @@ describe('useAutoScroll', () => {
       scrollToFinished: true,
     })
 
-    mockUseScoreboard.mockReturnValue({
+    mockOnCourse({
       currentCompetitor: null,
       onCourse: [],
     })
@@ -88,13 +86,13 @@ describe('useAutoScroll', () => {
 
   describe('initial state', () => {
     it('starts in IDLE phase', () => {
-      const { result } = renderHook(() => useAutoScroll())
+      const { result } = renderHook(() => useHook())
 
       expect(result.current.phase).toBe('IDLE')
     })
 
     it('returns control functions', () => {
-      const { result } = renderHook(() => useAutoScroll())
+      const { result } = renderHook(() => useHook())
 
       expect(typeof result.current.pause).toBe('function')
       expect(typeof result.current.resume).toBe('function')
@@ -102,7 +100,7 @@ describe('useAutoScroll', () => {
     })
 
     it('provides containerRef', () => {
-      const { result } = renderHook(() => useAutoScroll())
+      const { result } = renderHook(() => useHook())
 
       expect(result.current.containerRef).toBeDefined()
       expect(result.current.containerRef.current).toBeNull()
@@ -112,7 +110,7 @@ describe('useAutoScroll', () => {
   describe('phase transitions', () => {
     it('remains in IDLE when container ref is not set (null)', async () => {
       // Without a container, the hook should stay in IDLE
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -123,7 +121,7 @@ describe('useAutoScroll', () => {
     })
 
     it('respects enabled flag and stays IDLE when disabled', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: false }))
+      const { result } = renderHook(() => useHook({ enabled: false }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -133,14 +131,14 @@ describe('useAutoScroll', () => {
     })
 
     it('stays in IDLE when highlight is active', async () => {
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 3000,
         progress: 0.4,
       })
 
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -153,7 +151,7 @@ describe('useAutoScroll', () => {
 
   describe('manual controls', () => {
     it('pause() sets phase to IDLE from any state', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       // Pause from IDLE state should still work
       act(() => {
@@ -164,7 +162,7 @@ describe('useAutoScroll', () => {
     })
 
     it('resume() clears manuallyPaused flag', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       // Pause first
       act(() => {
@@ -184,7 +182,7 @@ describe('useAutoScroll', () => {
     })
 
     it('reset() sets phase to IDLE', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       act(() => {
         result.current.reset()
@@ -210,7 +208,7 @@ describe('useAutoScroll', () => {
       })
 
       // Render hook to verify it uses the ledwall layout
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       // Hook should initialize correctly with ledwall config
       expect(result.current.phase).toBe('IDLE')
@@ -230,12 +228,12 @@ describe('useAutoScroll', () => {
         disableScroll: false,
       })
 
-      mockUseScoreboard.mockReturnValue({
+      mockOnCourse({
         currentCompetitor: { bib: '42', name: 'Test Athlete', total: '123', pen: 0, gates: [] },
         onCourse: [],
       })
 
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -259,13 +257,13 @@ describe('useAutoScroll', () => {
         disableScroll: false,
       })
 
-      mockUseScoreboard.mockReturnValue({
+      mockOnCourse({
         currentCompetitor: null,
         onCourse: [],
       })
 
       // Without a container, it still stays in IDLE but shouldScroll would be true
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       expect(result.current.phase).toBe('IDLE')
     })
@@ -284,13 +282,13 @@ describe('useAutoScroll', () => {
         disableScroll: false,
       })
 
-      mockUseScoreboard.mockReturnValue({
+      mockOnCourse({
         currentCompetitor: { bib: '42', name: 'Test Athlete', total: '123', pen: 0, gates: [] },
         onCourse: [],
       })
 
       // Even with active competitor, vertical layout should allow scrolling
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       expect(result.current.phase).toBe('IDLE')
     })
@@ -298,12 +296,12 @@ describe('useAutoScroll', () => {
 
   describe('configuration options', () => {
     it('uses layout-specific scroll config', () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
       expect(result.current.phase).toBe('IDLE')
     })
 
     it('uses default enabled value when not specified', () => {
-      const { result } = renderHook(() => useAutoScroll())
+      const { result } = renderHook(() => useHook())
       expect(result.current.phase).toBe('IDLE')
     })
   })
@@ -311,7 +309,7 @@ describe('useAutoScroll', () => {
   describe('scroll container detection', () => {
     it('stays in IDLE without a scrollable container', async () => {
       // Without attaching a container, the hook should stay in IDLE
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -325,14 +323,14 @@ describe('useAutoScroll', () => {
   describe('highlight interaction', () => {
     it('resumes auto-scroll when highlight expires', async () => {
       // Start with highlight active
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
@@ -341,7 +339,7 @@ describe('useAutoScroll', () => {
       expect(result.current.phase).toBe('IDLE')
 
       // Highlight expires
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -363,7 +361,7 @@ describe('useAutoScroll', () => {
   describe('PAUSED_AT_BOTTOM phase', () => {
     it('uses layout-specific bottom pause time', () => {
       // Vertical layout has 8s bottom pause time
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       // Verify hook initializes correctly
       expect(result.current.phase).toBe('IDLE')
@@ -372,7 +370,7 @@ describe('useAutoScroll', () => {
 
   describe('edge cases', () => {
     it('handles null containerRef gracefully', async () => {
-      const { result } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result } = renderHook(() => useHook({ enabled: true }))
 
       // containerRef.current is null by default
       await act(async () => {
@@ -385,7 +383,7 @@ describe('useAutoScroll', () => {
 
     it('handles rapid enable/disable toggling', async () => {
       const { result, rerender } = renderHook(
-        ({ enabled }) => useAutoScroll({ enabled }),
+        ({ enabled }) => useHook({ enabled }),
         { initialProps: { enabled: true } }
       )
 
@@ -406,7 +404,7 @@ describe('useAutoScroll', () => {
     })
 
     it('handles simultaneous pause() and resume() calls', () => {
-      const { result } = renderHook(() => useAutoScroll())
+      const { result } = renderHook(() => useHook())
 
       act(() => {
         result.current.pause()
@@ -417,7 +415,7 @@ describe('useAutoScroll', () => {
     })
 
     it('handles component unmount properly', async () => {
-      const { unmount } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { unmount } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.advanceTimersByTime(1000)
@@ -446,21 +444,21 @@ describe('useAutoScroll', () => {
       })
 
       // Start with highlight active
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
       })
 
       // End highlight
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -493,21 +491,21 @@ describe('useAutoScroll', () => {
         scrollToFinished: true,
       })
 
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.runAllTimers()
       })
 
       // End highlight
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -541,14 +539,14 @@ describe('useAutoScroll', () => {
       })
 
       // Start with highlight active
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       // The hook needs a real container to enter HIGHLIGHT_VIEW (effect guards on containerRef.current).
       // Directly assign to the ref's current property — this bypasses the null guard.
@@ -560,7 +558,7 @@ describe('useAutoScroll', () => {
 
       // Force React to re-run the highlight effect by toggling highlightBib
       // (deps change → effect re-runs with container now present)
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -568,7 +566,7 @@ describe('useAutoScroll', () => {
       })
       rerender()
 
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
@@ -584,7 +582,7 @@ describe('useAutoScroll', () => {
       expect(result.current.phase).toBe('HIGHLIGHT_VIEW')
 
       // End highlight
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -619,14 +617,14 @@ describe('useAutoScroll', () => {
       })
 
       // Start with highlight active
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       // Set up mock container with scrollTo
       const mockContainer = document.createElement('div')
@@ -637,7 +635,7 @@ describe('useAutoScroll', () => {
       ;(result.current.containerRef as any).current = mockContainer
 
       // Toggle highlight to trigger effect with container
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -645,7 +643,7 @@ describe('useAutoScroll', () => {
       })
       rerender()
 
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: '42',
         isActive: true,
         timeRemaining: 5000,
@@ -663,7 +661,7 @@ describe('useAutoScroll', () => {
       vi.advanceTimersByTime(3 * 60 * 1000 + 1000)
 
       // End highlight
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
@@ -698,7 +696,7 @@ describe('useAutoScroll', () => {
         scrollToFinished: true,
       })
 
-      const { unmount } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { unmount } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
         vi.advanceTimersByTime(1000)
@@ -736,20 +734,20 @@ describe('useAutoScroll', () => {
 
     /** Mount the hook, attach the container, then raise a highlight for `bib`. */
     async function highlight(bib: string) {
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: null,
         isActive: false,
         timeRemaining: 0,
         progress: 0,
       })
 
-      const { result, rerender } = renderHook(() => useAutoScroll({ enabled: true }))
+      const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       const container = buildContainer()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(result.current.containerRef as any).current = container
 
-      mockUseHighlight.mockReturnValue({
+      mockHighlight({
         highlightBib: bib,
         isActive: true,
         timeRemaining: 5000,
