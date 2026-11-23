@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
+import { ClockProvider } from '@/clock/clockContext'
+import { createFakeClock, type FakeClock } from '@/clock/fakeClock'
 import { ScoreboardProvider } from '@/context/ScoreboardContext'
 import { DEPARTING_TIMEOUT } from '@/context/constants'
 import { useDeparting } from '../useDeparting'
@@ -28,19 +30,22 @@ function createMockProvider(
 }
 
 describe('useDeparting', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
+  // The legacy context stamps with the real Date.now(); the fake Clock starts there.
+  let clock: FakeClock
+  const advance = (ms: number) => {
+    clock.advance(ms)
+    clock.frame()
+  }
 
-  afterEach(() => {
-    vi.useRealTimers()
+  beforeEach(() => {
+    clock = createFakeClock(Date.now())
   })
 
   it('returns inactive state when no departing competitor', () => {
     const mockProvider = createMockProvider()
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
@@ -63,7 +68,7 @@ describe('useDeparting', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
@@ -94,7 +99,8 @@ describe('useDeparting', () => {
     expect(result.current.departingCompetitor).not.toBeNull()
     expect(result.current.departingCompetitor?.bib).toBe('42')
     expect(result.current.timeRemaining).toBeGreaterThan(0)
-    expect(result.current.timeRemaining).toBeLessThanOrEqual(DEPARTING_TIMEOUT)
+    // the legacy context stamps with the real clock, a few ms after the fake Clock was created
+    expect(result.current.timeRemaining).toBeLessThanOrEqual(DEPARTING_TIMEOUT + 100)
   })
 
   it('expires departing after DEPARTING_TIMEOUT', () => {
@@ -110,7 +116,7 @@ describe('useDeparting', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
@@ -138,7 +144,7 @@ describe('useDeparting', () => {
 
     // Advance time past the departing timeout
     act(() => {
-      vi.advanceTimersByTime(DEPARTING_TIMEOUT + 100)
+      advance(DEPARTING_TIMEOUT + 100)
     })
 
     expect(result.current.isActive).toBe(false)
@@ -166,7 +172,7 @@ describe('useDeparting', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
@@ -235,7 +241,7 @@ describe('useDeparting', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 
@@ -264,14 +270,14 @@ describe('useDeparting', () => {
 
     // Advance to 50% of duration
     act(() => {
-      vi.advanceTimersByTime(DEPARTING_TIMEOUT / 2)
+      advance(DEPARTING_TIMEOUT / 2)
     })
 
     expect(result.current.progress).toBeCloseTo(0.5, 1)
 
     // After timeout, departing is cleared, so progress becomes 0 and isActive becomes false
     act(() => {
-      vi.advanceTimersByTime(DEPARTING_TIMEOUT / 2 + 100)
+      advance(DEPARTING_TIMEOUT / 2 + 100)
     })
 
     // After timeout, departing is expired/cleared
@@ -292,7 +298,7 @@ describe('useDeparting', () => {
     })
 
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ScoreboardProvider, { provider: mockProvider, children })
+      createElement(ClockProvider, { clock, children: createElement(ScoreboardProvider, { provider: mockProvider, children }) })
 
     const { result } = renderHook(() => useDeparting(), { wrapper })
 

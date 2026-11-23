@@ -1,6 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook as renderHookBare, act } from '@testing-library/react'
+import { createElement, type ReactNode } from 'react'
+import { ClockProvider } from '@/clock/clockContext'
+import { createFakeClock, type FakeClock } from '@/clock/fakeClock'
 import { useAutoScroll } from '../useAutoScroll'
+
+
+// Time comes from the injected fake Clock (no global fake timers).
+let clock: FakeClock
+function renderHook<T, P = undefined>(cb: (props: P) => T, options?: { initialProps?: P }) {
+  const wrapper = ({ children }: { children: ReactNode }) => createElement(ClockProvider, { clock, children })
+  return renderHookBare(cb, { ...options, wrapper })
+}
+/** Runs the one pending timer of the state machine (the longest wait is 12 s). */
+const runPending = () => clock.advance(12_000)
+/** Advances in 16 ms steps, one frame each, as a display would. */
+function advanceFrames(ms: number) {
+  for (let t = 0; t < ms; t += 16) {
+    clock.advance(16)
+    clock.frame()
+  }
+}
 
 // Mock dependencies
 vi.mock('../useLayout', () => ({
@@ -45,9 +65,7 @@ function useHook(config: { enabled?: boolean } = {}) {
 
 describe('useAutoScroll', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
-
-    // requestAnimationFrame and cancelAnimationFrame are handled by Vitest fake timers
+    clock = createFakeClock(1_700_000_000_000)
 
     // Reset mocks to default values
     mockHighlight({
@@ -79,7 +97,6 @@ describe('useAutoScroll', () => {
   })
 
   afterEach(() => {
-    vi.useRealTimers()
     vi.clearAllMocks()
     vi.unstubAllGlobals()
   })
@@ -113,7 +130,7 @@ describe('useAutoScroll', () => {
       const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // Cannot transition to SCROLLING without a valid container
@@ -124,7 +141,7 @@ describe('useAutoScroll', () => {
       const { result } = renderHook(() => useHook({ enabled: false }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       expect(result.current.phase).toBe('IDLE')
@@ -141,7 +158,7 @@ describe('useAutoScroll', () => {
       const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // With highlight active, shouldScroll is false, so phase stays IDLE
@@ -236,7 +253,7 @@ describe('useAutoScroll', () => {
       const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // With active competitor on ledwall, shouldScroll is false
@@ -312,7 +329,7 @@ describe('useAutoScroll', () => {
       const { result } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // No container means no scrolling - stays IDLE
@@ -333,7 +350,7 @@ describe('useAutoScroll', () => {
       const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       expect(result.current.phase).toBe('IDLE')
@@ -349,7 +366,7 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // Without a container, it stays in IDLE but shouldScroll would be true
@@ -374,7 +391,7 @@ describe('useAutoScroll', () => {
 
       // containerRef.current is null by default
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // Should not crash and remain in initial state
@@ -391,11 +408,11 @@ describe('useAutoScroll', () => {
       for (let i = 0; i < 5; i++) {
         rerender({ enabled: false })
         await act(async () => {
-          vi.runAllTimers()
+          runPending()
         })
         rerender({ enabled: true })
         await act(async () => {
-          vi.runAllTimers()
+          runPending()
         })
       }
 
@@ -418,7 +435,7 @@ describe('useAutoScroll', () => {
       const { unmount } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.advanceTimersByTime(1000)
+        advanceFrames(1000)
       })
 
       // Unmount should not throw
@@ -454,7 +471,7 @@ describe('useAutoScroll', () => {
       const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // End highlight
@@ -468,7 +485,7 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.advanceTimersByTime(1000)
+        advanceFrames(1000)
       })
 
       // Should NOT be in browse mode — vertical layout
@@ -501,7 +518,7 @@ describe('useAutoScroll', () => {
       const { result, rerender } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // End highlight
@@ -515,7 +532,7 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.advanceTimersByTime(1000)
+        advanceFrames(1000)
       })
 
       // Should NOT be in browse mode — feature disabled
@@ -575,7 +592,7 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       // Verify we're in HIGHLIGHT_VIEW
@@ -593,7 +610,7 @@ describe('useAutoScroll', () => {
 
       // Wait for the 500ms delay after highlight fade
       await act(async () => {
-        vi.advanceTimersByTime(600)
+        clock.advance(600)
       })
 
       // Should transition to BROWSE_SCROLLING
@@ -652,13 +669,13 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       expect(result.current.phase).toBe('HIGHLIGHT_VIEW')
 
       // Advance time by >3 minutes to expire the top-shown threshold
-      vi.advanceTimersByTime(3 * 60 * 1000 + 1000)
+      clock.advance(3 * 60 * 1000 + 1000)
 
       // End highlight
       mockHighlight({
@@ -672,7 +689,7 @@ describe('useAutoScroll', () => {
 
       // Wait for the 500ms delay after highlight fade
       await act(async () => {
-        vi.advanceTimersByTime(600)
+        clock.advance(600)
       })
 
       // Should NOT browse — top threshold exceeded, returns to normal scroll cycle
@@ -699,7 +716,7 @@ describe('useAutoScroll', () => {
       const { unmount } = renderHook(() => useHook({ enabled: true }))
 
       await act(async () => {
-        vi.advanceTimersByTime(1000)
+        advanceFrames(1000)
       })
 
       expect(() => unmount()).not.toThrow()
@@ -756,7 +773,7 @@ describe('useAutoScroll', () => {
       rerender()
 
       await act(async () => {
-        vi.runAllTimers()
+        runPending()
       })
 
       return container
@@ -808,6 +825,52 @@ describe('useAutoScroll', () => {
 
       expect(container.scrollTo).not.toHaveBeenCalled()
       expect(scrollIntoViewSpy).not.toHaveBeenCalled()
+    })
+
+    it('uses instant scrolling under prefers-reduced-motion', async () => {
+      const matchMedia = window.matchMedia
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }))
+      try {
+        const container = await highlight('5')
+
+        expect(container.scrollTo).toHaveBeenCalledWith({ top: 175, behavior: 'auto' })
+      } finally {
+        window.matchMedia = matchMedia
+      }
+    })
+
+    it('paces the page scroll on the Clock: initial delay, then one page per interval (vertical)', async () => {
+      const container = buildContainer()
+      const { result } = renderHook(() => {
+        const scroll = useHook({ enabled: true })
+        // attached during render, so the state machine sees the container on its first effect run
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(scroll.containerRef as any).current = container
+        return scroll
+      })
+      await act(async () => {})
+
+      // IDLE -> WAITING; the first scroll waits initialDelay (3 s) and then pageInterval (12 s)
+      await act(async () => clock.advance(2_999))
+      expect(result.current.phase).toBe('WAITING')
+      await act(async () => clock.advance(1))
+      expect(result.current.phase).toBe('SCROLLING')
+
+      await act(async () => clock.advance(11_999))
+      expect(container.scrollTo).not.toHaveBeenCalled()
+      await act(async () => clock.advance(1))
+      // 200 px / 50 px rows = 4 rows, minus 1 of overlap = 3 rows per page
+      expect(container.scrollTo).toHaveBeenCalledTimes(1)
+      expect(container.scrollTo).toHaveBeenLastCalledWith({ top: 150, behavior: 'smooth' })
+
+      await act(async () => clock.advance(12_000))
+      expect(container.scrollTo).toHaveBeenCalledTimes(2)
+      expect(container.scrollTo).toHaveBeenLastCalledWith({ top: 300, behavior: 'smooth' })
     })
   })
 })

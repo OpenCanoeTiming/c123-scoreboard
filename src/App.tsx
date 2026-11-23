@@ -25,6 +25,8 @@ import { useLegacyBoardView } from '@/view/legacyAdapter'
 import { BoardProvider } from '@/view/BoardProvider'
 import { useFixtureStore } from '@/fixture/FixtureSource'
 import { productionClock } from '@/clock/productionClock'
+import { ClockProvider, useClock } from '@/clock/clockContext'
+import type { Clock } from '@/clock/clock'
 import styles from './App.module.css'
 
 /**
@@ -151,7 +153,7 @@ type DiscoveryState =
  * 3. Auto-discovery -> scan network for C123 Server
  * 4. Error -> show manual configuration
  */
-async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promise<DataProvider> {
+async function createProvider(urlParams: ReturnType<typeof getUrlParams>, clock: Clock): Promise<DataProvider> {
   // 1. Replay mode (development/testing)
   if (urlParams.source === 'replay') {
     return new ReplayProvider('recordings/rec-2025-12-28T09-34-10.jsonl', {
@@ -182,13 +184,13 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
     // If not, throw error - don't fallback to CLI for unreachable server
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), PROBE_TIMEOUT)
+      const timeoutId = clock.setTimeout(() => controller.abort(), PROBE_TIMEOUT)
       const response = await fetch(`${serverUrl}/api/discover`, {
         signal: controller.signal,
         mode: 'cors',
         credentials: 'omit',
       }).catch(() => null)
-      clearTimeout(timeoutId)
+      clock.clearTimeout(timeoutId)
 
       if (!response) {
         // Server doesn't respond at all - throw error
@@ -232,6 +234,7 @@ async function createProvider(urlParams: ReturnType<typeof getUrlParams>): Promi
  * Hook for provider discovery with loading state
  */
 function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): DiscoveryState {
+  const clock = useClock()
   const [state, setState] = useState<DiscoveryState>({ status: 'discovering' })
 
   useEffect(() => {
@@ -239,7 +242,7 @@ function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): Disco
 
     async function discover() {
       try {
-        const provider = await createProvider(urlParams)
+        const provider = await createProvider(urlParams, clock)
         if (!cancelled) {
           setState({ status: 'ready', provider })
         }
@@ -256,7 +259,7 @@ function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): Disco
     return () => {
       cancelled = true
     }
-  }, [urlParams])
+  }, [urlParams, clock])
 
   return state
 }
@@ -328,7 +331,8 @@ function ErrorScreen({ message }: { message: string }) {
  * `?source=fixture&fixture=<id>`: the fixture through the store and the view-model (#158)
  */
 function FixtureApp({ id, category }: { id: string; category: string | null }) {
-  const fixture = useFixtureStore(id, productionClock)
+  const clock = useClock()
+  const fixture = useFixtureStore(id, clock)
 
   if (fixture.status === 'loading') {
     return <DiscoveryScreen />
@@ -337,13 +341,21 @@ function FixtureApp({ id, category }: { id: string; category: string | null }) {
     return <ErrorScreen message={fixture.message} />
   }
   return (
-    <BoardProvider store={fixture.state} clock={productionClock} connection="live" category={category}>
+    <BoardProvider store={fixture.state} clock={clock} connection="live" category={category}>
       <ScoreboardContent />
     </BoardProvider>
   )
 }
 
 function App() {
+  return (
+    <ClockProvider clock={productionClock}>
+      <AppRoot />
+    </ClockProvider>
+  )
+}
+
+function AppRoot() {
   // Parse URL parameters for configuration
   const urlParams = useMemo(() => getUrlParams(), [])
 

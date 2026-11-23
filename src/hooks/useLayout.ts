@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useClock } from '@/clock/clockContext'
 
 /**
  * Layout mode - vertical (portrait TV) or ledwall (wide display)
@@ -250,6 +251,7 @@ function updateCSSVariables(config: LayoutConfig): void {
  * ```
  */
 export function useLayout(): LayoutConfig {
+  const clock = useClock()
   const [viewport, setViewport] = useState(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1080,
     height: typeof window !== 'undefined' ? window.innerHeight : 1920,
@@ -257,14 +259,14 @@ export function useLayout(): LayoutConfig {
 
   // Handle resize with debounce
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    let timeoutId: number | null = null
 
     const handleResize = () => {
       if (timeoutId) {
-        clearTimeout(timeoutId)
+        clock.clearTimeout(timeoutId)
       }
 
-      timeoutId = setTimeout(() => {
+      timeoutId = clock.setTimeout(() => {
         setViewport({
           width: window.innerWidth,
           height: window.innerHeight,
@@ -277,10 +279,10 @@ export function useLayout(): LayoutConfig {
     return () => {
       window.removeEventListener('resize', handleResize)
       if (timeoutId) {
-        clearTimeout(timeoutId)
+        clock.clearTimeout(timeoutId)
       }
     }
-  }, [])
+  }, [clock])
 
   // Get URL parameters (memoized)
   const urlParams = useMemo(() => getLayoutParamsFromURL(), [])

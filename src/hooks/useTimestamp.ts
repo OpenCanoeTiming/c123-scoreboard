@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useClock } from '@/clock/clockContext'
 
 /**
  * Return type for useTimestamp hook
@@ -15,7 +16,7 @@ export interface UseTimestampReturn {
 /**
  * Shared hook for timestamp-based expiration logic
  *
- * Uses requestAnimationFrame for smooth updates during the active period.
+ * Uses the Clock's frames for smooth updates during the active period.
  * After the specified duration, the timestamp is considered expired.
  *
  * This is a low-level hook used by useHighlight and useDeparting.
@@ -41,7 +42,8 @@ export function useTimestamp(
   // Current time for calculating remaining time
   // Note: setNow triggers re-renders to update time-based calculations
   // Using lazy initializer to avoid impure function call during render
-  const [, setNow] = useState(() => Date.now())
+  const clock = useClock()
+  const [, setNow] = useState(() => clock.now())
 
   /**
    * Calculate whether timestamp is active based on elapsed time
@@ -50,8 +52,8 @@ export function useTimestamp(
     if (timestamp === null) {
       return false
     }
-    return Date.now() - timestamp < duration
-  }, [timestamp, duration])
+    return clock.now() - timestamp < duration
+  }, [timestamp, duration, clock])
 
   /**
    * Calculate time remaining until expiration
@@ -60,10 +62,10 @@ export function useTimestamp(
     if (timestamp === null) {
       return 0
     }
-    const elapsed = Date.now() - timestamp
+    const elapsed = clock.now() - timestamp
     const remaining = duration - elapsed
     return Math.max(0, remaining)
-  }, [timestamp, duration])
+  }, [timestamp, duration, clock])
 
   /**
    * Calculate progress (0 to 1, where 1 is fully elapsed)
@@ -72,12 +74,12 @@ export function useTimestamp(
     if (timestamp === null) {
       return 0
     }
-    const elapsed = Date.now() - timestamp
+    const elapsed = clock.now() - timestamp
     return Math.min(1, elapsed / duration)
-  }, [timestamp, duration])
+  }, [timestamp, duration, clock])
 
   /**
-   * Use requestAnimationFrame to update time during active period
+   * Use Clock frames to update time during active period
    * This ensures smooth animations without excessive re-renders
    */
   useEffect(() => {
@@ -88,23 +90,23 @@ export function useTimestamp(
     let animationFrameId: number
 
     const updateTime = () => {
-      setNow(Date.now())
+      setNow(clock.now())
 
       // Continue animation if still active
-      if (Date.now() - timestamp < duration) {
-        animationFrameId = requestAnimationFrame(updateTime)
+      if (clock.now() - timestamp < duration) {
+        animationFrameId = clock.requestFrame(updateTime)
       }
     }
 
     // Start the animation loop
-    animationFrameId = requestAnimationFrame(updateTime)
+    animationFrameId = clock.requestFrame(updateTime)
 
     return () => {
       if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
+        clock.cancelFrame(animationFrameId)
       }
     }
-  }, [timestamp, duration])
+  }, [timestamp, duration, clock])
 
   // Force recalculation when `now` changes
   const isActive = calculateIsActive()

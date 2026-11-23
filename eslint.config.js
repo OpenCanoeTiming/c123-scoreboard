@@ -30,7 +30,9 @@ export default defineConfig([
   },
   {
     // TEST-ARCHITECTURE §5: time is read only through the injected Clock; only src/clock calls the real timers.
-    files: ['src/{store,view,transport,fixture}/**/*.{ts,tsx}'],
+    files: ['src/{store,view,transport,fixture,hooks,components}/**/*.{ts,tsx}', 'src/App.tsx'],
+    // tests seed the fake Clock from the wall clock
+    ignores: ['**/__tests__/**', '**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-globals': [
         'error',
