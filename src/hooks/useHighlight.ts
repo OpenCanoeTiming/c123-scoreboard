@@ -19,7 +19,7 @@ export interface UseHighlightReturn {
 /**
  * Hook for managing highlight state with timestamp-based expiration
  *
- * Uses requestAnimationFrame for smooth updates during the highlight period.
+ * Uses the Clock's frames for smooth updates during the highlight period.
  * After HIGHLIGHT_DURATION (5s), the highlight is considered expired.
  *
  * @example

@@ -64,3 +64,14 @@ h6 {
 #root {
   isolation: isolate;
 }
+
+/* prefers-reduced-motion: no smooth scrolling, no keyframe animation, no transition (#163) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

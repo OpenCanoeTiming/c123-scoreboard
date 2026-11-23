@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
+import { useClock } from '@/clock/clockContext'
 import { useLayout } from './useLayout'
 
 /**
@@ -107,6 +108,7 @@ interface UseAutoScrollReturn {
 export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollReturn {
   const { enabled = true, highlightBib = null, someoneRacing = false } = config
 
+  const clock = useClock()
   const containerRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<ScrollPhase>('IDLE')
   const [manuallyPaused, setManuallyPaused] = useState(false)
@@ -117,7 +119,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   const currentRowIndexRef = useRef(0)
 
   // Browse scroll: track when top of results was last shown to spectators
-  // Initialized lazily in the first effect to satisfy react-hooks/purity (no Date.now in render)
+  // Initialized lazily in the first effect to satisfy react-hooks/purity (no clock read in render)
   const lastTopShownAtRef = useRef<number>(0)
   // Browse scroll: rAF handle for continuous pixel scrolling
   const browseRafRef = useRef<number | null>(null)
@@ -146,29 +148,31 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     []
   )
+  // Smooth scrolling is off under prefers-reduced-motion
+  const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth'
 
   const scrollToTop = useCallback(() => {
     containerRef.current?.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: scrollBehavior,
     })
-  }, [])
+  }, [scrollBehavior])
 
   /** Stop the browse scroll rAF loop and remove data-browsing attribute */
   const stopBrowseScroll = useCallback(() => {
     if (browseRafRef.current !== null) {
-      cancelAnimationFrame(browseRafRef.current)
+      clock.cancelFrame(browseRafRef.current)
       browseRafRef.current = null
     }
     if (containerRef.current) {
       containerRef.current.removeAttribute('data-browsing')
     }
-  }, [])
+  }, [clock])
 
   /** Mark that the top of results is currently visible */
   const updateLastTopShown = useCallback(() => {
-    lastTopShownAtRef.current = Date.now()
-  }, [])
+    lastTopShownAtRef.current = clock.now()
+  }, [clock])
 
   // Control functions - memoized since they're returned to consumers
   const pause = useCallback(() => {
@@ -199,12 +203,12 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    */
   const shouldScroll = enabled && !manuallyPaused && !isHighlightActive && !prefersReducedMotion && !hasActivelyRunningCompetitor
 
-  // Initialize lastTopShownAt on mount (can't use Date.now() in ref initializer — react-hooks/purity)
+  // Initialize lastTopShownAt on mount (can't read the clock in a ref initializer — react-hooks/purity)
   useEffect(() => {
     if (lastTopShownAtRef.current === 0) {
-      lastTopShownAtRef.current = Date.now()
+      lastTopShownAtRef.current = clock.now()
     }
-  }, [])
+  }, [clock])
 
   // Reset scroll tracking when highlight bib changes
   useEffect(() => {
@@ -262,10 +266,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       container.scrollTo({
         top: Math.max(0, Math.min(centered, maxScroll)),
-        behavior: 'smooth',
+        behavior: scrollBehavior,
       })
     }
-  }, [isHighlightActive, highlightBib, scrollToFinished, stopBrowseScroll])
+  }, [isHighlightActive, highlightBib, scrollToFinished, stopBrowseScroll, scrollBehavior])
 
   /**
    * Return to normal after highlight ends
@@ -273,8 +277,8 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
    */
   useEffect(() => {
     if (!isHighlightActive && phase === 'HIGHLIGHT_VIEW') {
-      const timeoutId = setTimeout(() => {
-        const timeSinceTopShown = Date.now() - lastTopShownAtRef.current
+      const timeoutId = clock.setTimeout(() => {
+        const timeSinceTopShown = clock.now() - lastTopShownAtRef.current
         const shouldBrowse = layoutMode === 'ledwall'
           && browseAfterHighlight
           && !prefersReducedMotion
@@ -292,9 +296,9 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         }
       }, 500) // Small delay for highlight to fade
 
-      return () => clearTimeout(timeoutId)
+      return () => clock.clearTimeout(timeoutId)
     }
-  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion, updateLastTopShown])
+  }, [isHighlightActive, phase, scrollToTop, layoutMode, browseAfterHighlight, prefersReducedMotion, updateLastTopShown, clock])
 
   /**
    * Main auto-scroll state machine
@@ -311,11 +315,11 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
       scrollToTop()
       currentRowIndexRef.current = 0
       // After scrolling to top, transition to IDLE
-      const timeoutId = setTimeout(() => {
+      const timeoutId = clock.setTimeout(() => {
         updateLastTopShown()
         setPhase('IDLE')
       }, 500) // Wait for scroll animation
-      return () => clearTimeout(timeoutId)
+      return () => clock.clearTimeout(timeoutId)
     }
 
     // Competitor just started running - scroll to top first if we're mid-scroll
@@ -355,7 +359,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
         return container.scrollHeight - container.scrollTop - container.clientHeight <= BOTTOM_THRESHOLD_PX
       }
 
-      let lastTime = performance.now()
+      let lastTime = clock.now()
       // Track fractional scroll position to avoid rounding stutter
       // (scrollTop rounds to integer; 20px/s at 60fps = ~0.33px/frame would stutter without accumulator)
       let currentScroll = container.scrollTop
@@ -371,10 +375,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
           setPhase('BROWSE_PAUSED_AT_BOTTOM')
           return
         }
-        browseRafRef.current = requestAnimationFrame(step)
+        browseRafRef.current = clock.requestFrame(step)
       }
 
-      browseRafRef.current = requestAnimationFrame(step)
+      browseRafRef.current = clock.requestFrame(step)
 
       return () => {
         stopBrowseScroll()
@@ -383,14 +387,14 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
     // Handle BROWSE_PAUSED_AT_BOTTOM phase
     if (phase === 'BROWSE_PAUSED_AT_BOTTOM') {
-      const timeoutId = setTimeout(() => {
+      const timeoutId = clock.setTimeout(() => {
         scrollToTop()
         updateLastTopShown()
         currentRowIndexRef.current = 0
         setPhase('IDLE')
       }, BROWSE_BOTTOM_PAUSE)
 
-      return () => clearTimeout(timeoutId)
+      return () => clock.clearTimeout(timeoutId)
     }
 
     // Don't run if disabled or highlight active
@@ -465,11 +469,11 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       container.scrollTo({
         top: targetRow.offsetTop,
-        behavior: 'smooth',
+        behavior: scrollBehavior,
       })
     }
 
-    let timeoutId: ReturnType<typeof setTimeout>
+    let timeoutId: number
 
     switch (phase) {
       case 'IDLE':
@@ -482,14 +486,14 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       case 'WAITING':
         // Wait initialDelay, then start scrolling
-        timeoutId = setTimeout(() => {
+        timeoutId = clock.setTimeout(() => {
           setPhase('SCROLLING')
         }, scrollConfig.initialDelay)
         break
 
       case 'SCROLLING':
         // Scroll to next page after pageInterval
-        timeoutId = setTimeout(() => {
+        timeoutId = clock.setTimeout(() => {
           const rowsPerPage = getRowsPerPage()
           const totalRows = getTotalRows()
           const nextRowIndex = currentRowIndexRef.current + rowsPerPage
@@ -509,7 +513,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       case 'PAUSED_AT_BOTTOM':
         // Pause at bottom, then return to top
-        timeoutId = setTimeout(() => {
+        timeoutId = clock.setTimeout(() => {
           scrollToTop()
           setPhase('RETURNING_TO_TOP')
         }, scrollConfig.bottomPauseTime)
@@ -517,7 +521,7 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
       case 'RETURNING_TO_TOP':
         // Wait for scroll animation + delay, then restart cycle
-        timeoutId = setTimeout(() => {
+        timeoutId = clock.setTimeout(() => {
           currentRowIndexRef.current = 0
           updateLastTopShown()
           setPhase('WAITING')
@@ -534,10 +538,10 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
 
     return () => {
       if (timeoutId) {
-        clearTimeout(timeoutId)
+        clock.clearTimeout(timeoutId)
       }
     }
-  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor, layoutMode, stopBrowseScroll, updateLastTopShown])
+  }, [shouldScroll, phase, scrollConfig, rowHeight, scrollTick, scrollToTop, hasActivelyRunningCompetitor, layoutMode, stopBrowseScroll, updateLastTopShown, clock, scrollBehavior])
 
   // Cleanup browse scroll on unmount
   useEffect(() => {

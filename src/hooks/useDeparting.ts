@@ -20,7 +20,7 @@ export interface UseDepartingReturn {
 /**
  * Hook for managing departing competitor state with timestamp-based expiration
  *
- * Uses requestAnimationFrame for smooth updates during the departing period.
+ * Uses the Clock's frames for smooth updates during the departing period.
  * After DEPARTING_TIMEOUT (3s), the departing competitor is considered expired.
  *
  * The departing competitor is the competitor who just left the course
