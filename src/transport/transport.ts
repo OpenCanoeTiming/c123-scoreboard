@@ -179,6 +179,11 @@ export function startTransport(o: TransportOptions): () => void {
         }
         held = applyMessage(held!, msg)
         o.onState(held)
+        if (held.rehydrationNeeded) {
+          // another event (§7.2): the store dropped everything; repeat the whole handshake
+          drop()
+          connect()
+        }
       },
       close() {
         if (current()) failed()
