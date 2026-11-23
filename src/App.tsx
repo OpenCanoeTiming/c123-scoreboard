@@ -327,7 +327,7 @@ function ErrorScreen({ message }: { message: string }) {
 /**
  * `?source=fixture&fixture=<id>`: the fixture through the store and the view-model (#158)
  */
-function FixtureApp({ id }: { id: string }) {
+function FixtureApp({ id, category }: { id: string; category: string | null }) {
   const fixture = useFixtureStore(id, productionClock)
 
   if (fixture.status === 'loading') {
@@ -337,7 +337,7 @@ function FixtureApp({ id }: { id: string }) {
     return <ErrorScreen message={fixture.message} />
   }
   return (
-    <BoardProvider store={fixture.state} clock={productionClock} connection="live">
+    <BoardProvider store={fixture.state} clock={productionClock} connection="live" category={category}>
       <ScoreboardContent />
     </BoardProvider>
   )
@@ -348,7 +348,7 @@ function App() {
   const urlParams = useMemo(() => getUrlParams(), [])
 
   if (urlParams.source === 'fixture') {
-    return <FixtureApp id={urlParams.fixture ?? ''} />
+    return <FixtureApp id={urlParams.fixture ?? ''} category={urlParams.category} />
   }
   return <LegacyApp urlParams={urlParams} />
 }

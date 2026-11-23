@@ -25,11 +25,11 @@ import type {
   ConnectionView,
   FeaturedRowView,
   OnCourseRowView,
-  PenaltyKind,
   ResultRowView,
   TimeCellView,
   TitleView,
 } from './boardView'
+import { classifyPenalty } from './displayPolicy'
 
 // ---------------------------------------------------------------------------
 // Connection
@@ -70,12 +70,6 @@ export function toTitleView(title: string, raceName = '', raceId = ''): TitleVie
 // Result rows
 // ---------------------------------------------------------------------------
 
-function penaltyKind(pen: number): PenaltyKind {
-  if (pen === 0) return 'clear'
-  if (pen <= 4) return 'touch'
-  return 'miss'
-}
-
 function formatBehind(behind: string): string {
   if (!behind || behind === '0' || behind === '0.00') return ''
   if (behind.startsWith('+')) return behind
@@ -103,8 +97,7 @@ function timeCell(total: string, pen: number, underReview: boolean): TimeCellVie
     kind: 'time',
     text: total,
     penalty: String(pen),
-    penaltyKind: penaltyKind(pen),
-    penaltyLarge: pen >= 100,
+    ...classifyPenalty(pen),
     underReview,
   }
 }

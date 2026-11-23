@@ -2,10 +2,10 @@
 // tier-3 harness does, on a given Clock: the hydration step at once, each later step after its gap to the
 // previous one (§3.3 step 3). The fixture files and their validator load lazily, outside the main bundle.
 import { useEffect, useState } from 'react'
-import type { WsMessage } from '@opencanoetiming/c123-contract'
 import type { Clock, TimerHandle } from '../clock/clock'
-import { applyMessage, hydrate, type StoreState } from '../store/store'
+import type { StoreState } from '../store/store'
 import type { Fixture } from './harness'
+import { createStepper } from './stepper'
 
 const files = import.meta.glob<unknown>('../../tests/fixtures/synthetic/*.json', { import: 'default' })
 
@@ -19,31 +19,25 @@ export async function loadFixtureById(id: string): Promise<Fixture> {
 
 /** Plays `fixture` on `clock`, reporting every new store state. Returns stop. */
 export function playFixture(fixture: Fixture, clock: Clock, onState: (state: StoreState) => void): () => void {
-  const [hydration, ...deltas] = fixture.steps
-  let state = hydrate(hydration.responses, hydration.asOfSeq)
-  let previousAt = hydration.observedAt
-  let index = 0
+  const stepper = createStepper(fixture)
   let handle: TimerHandle | null = null
+  let stopped = false
 
   const scheduleNext = () => {
     handle = null
-    if (index >= deltas.length) return
-    const { observedAt, ...message } = deltas[index]
+    if (stopped || stepper.done) return
     handle = clock.setTimeout(() => {
-      index++
-      previousAt = observedAt
-      state = applyMessage(state, message as WsMessage) // the wire message carries no observedAt
-      onState(state)
+      onState(stepper.apply())
       scheduleNext()
-    }, Date.parse(observedAt) - Date.parse(previousAt))
+    }, stepper.gapToNext)
   }
 
-  onState(state)
+  onState(stepper.state)
   scheduleNext()
   return () => {
     if (handle !== null) clock.clearTimeout(handle)
     handle = null
-    index = deltas.length
+    stopped = true
   }
 }
 

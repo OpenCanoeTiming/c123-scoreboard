@@ -6,7 +6,8 @@ import type { WsMessage } from '@opencanoetiming/c123-contract'
 import contractPackage from '@opencanoetiming/c123-contract/package.json'
 import admittedSchema from '@opencanoetiming/c123-contract/schemas/fixture-admitted.schema.json'
 import { createFakeClock, type FakeClock } from '../clock/fakeClock'
-import { applyMessage, hydrate, type StoreState } from '../store/store'
+import type { StoreState } from '../store/store'
+import { createStepper } from './stepper'
 
 /** The contract a fixture must have been produced against: the pinned package's version (c123-server#440). */
 export const PINNED_CONTRACT: string = contractPackage.version
@@ -96,31 +97,25 @@ export type Harness = {
  */
 export function startHarness(fixture: Fixture, options: { offsetMs: number }): Harness {
   if (options.offsetMs === 0) throw new Error('startHarness: the clock offset from observedAt must be non-zero')
-  const [hydration, ...deltas] = fixture.steps
-  const clock = createFakeClock(Date.parse(hydration.observedAt) + options.offsetMs)
-  let state = hydrate(hydration.responses, hydration.asOfSeq)
-  let previousAt = hydration.observedAt
-  let index = 0
+  const clock = createFakeClock(Date.parse(fixture.steps[0].observedAt) + options.offsetMs)
+  const stepper = createStepper(fixture)
 
   const next = () => {
-    if (index >= deltas.length) throw new Error(`fixture ${fixture.fixtureId}: no step left`)
-    const { observedAt, ...message } = deltas[index++]
-    clock.advance(Date.parse(observedAt) - Date.parse(previousAt))
-    previousAt = observedAt
-    state = applyMessage(state, message as WsMessage) // the wire message carries no observedAt
+    clock.advance(stepper.gapToNext)
+    stepper.apply()
   }
 
   return {
     clock,
     get state() {
-      return state
+      return stepper.state
     },
     get done() {
-      return index >= deltas.length
+      return stepper.done
     },
     next,
     runToEnd() {
-      while (index < deltas.length) next()
+      while (!stepper.done) next()
     },
   }
 }

@@ -2,23 +2,33 @@
  * The board's display choices, in one place (CLIENT-OBLIGATIONS "c123-scoreboard": the board owns its
  * display policy; c123-scoreboard#170 lists the choices and their defaults).
  *
- * It holds what the walking skeleton needs. Marks, pairs and the Phase choice join in #161; durations
- * and the tick period of the display lifetimes in #162.
+ * Durations and the tick period of the display lifetimes join in #162.
  *
- * Stated here without a setting, because the skeleton has only one way:
+ * Stated here without a setting, because the board has only one way:
+ * - Provisional result (#170, choice 1): no mark; the row carries the flag.
+ * - Under review (#170, choice 2): `*` at the result, drawn by the components.
+ * - Several races at once (#170, choice 9): one Phase, chosen in `phaseChoice.ts`; `?category=` pins a class.
  * - Featured row (#170, choice 10): the first of the server's on-course order.
- * - Phase (#170, choice 9, built in #161): the single Phase the store holds.
  */
-import type { BoardVisibility } from './boardView'
+import type { Outcome, PairRole } from '@opencanoetiming/c123-contract'
+import type { BoardVisibility, PenaltyKind } from './boardView'
+
+export type NoResultStatus = Extract<Outcome, { kind: 'no-result' }>['status']
 
 export interface DisplayPolicy {
   /** Which parts of the board are shown. Time of day is off: the contract does not carry it (#170, choice 12). */
   visibility: BoardVisibility
   /**
    * Run label of the title, `<event> <class> /N.` (#170, choice 5), by the Phase's `format` token.
-   * A token not listed is shown verbatim.
+   * A token not listed takes the label of its pair role; a token neither listed nor paired is shown verbatim.
    */
   runLabel: Readonly<Record<string, string>>
+  /** Run label by the Phase's `pair.role`, for a paired token not listed in `runLabel`. */
+  pairRunLabel: Readonly<Record<PairRole['role'], string>>
+  /** No-result marks (#170, choice 4). */
+  noResultMark: Readonly<Record<NoResultStatus, string>>
+  /** Penalty colour: up to `touchUpTo` seconds a touch, more a miss; three digits from `largeFrom`. */
+  penalty: { touchUpTo: number; largeFrom: number }
 }
 
 export const displayPolicy: DisplayPolicy = {
@@ -31,4 +41,27 @@ export const displayPolicy: DisplayPolicy = {
     footer: true,
   },
   runLabel: { BR1: '1', BR2: '2' },
+  pairRunLabel: { first: '1', second: '2' },
+  noResultMark: {
+    dns: 'DNS',
+    dnf: 'DNF',
+    dsq: 'DSQ',
+    'dsq-r': 'DSQ-R',
+    dqb: 'DQB',
+    cap: 'CAP',
+    ral: 'RAL',
+    other: 'OTHER',
+  },
+  penalty: { touchUpTo: 4, largeFrom: 100 },
+}
+
+/** The colour and width of a penalty value, shared by every producer of a BoardView. */
+export function classifyPenalty(
+  seconds: number,
+  thresholds: DisplayPolicy['penalty'] = displayPolicy.penalty
+): { penaltyKind: PenaltyKind; penaltyLarge: boolean } {
+  return {
+    penaltyKind: seconds === 0 ? 'clear' : seconds <= thresholds.touchUpTo ? 'touch' : 'miss',
+    penaltyLarge: seconds >= thresholds.largeFrom,
+  }
 }
