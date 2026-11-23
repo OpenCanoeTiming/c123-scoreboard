@@ -1,7 +1,7 @@
 import { useMemo, type CSSProperties } from 'react'
 import styles from './ResultsList.module.css'
 import { ResultRow } from './ResultRow'
-import type { ResultRowView } from '@/view/boardView'
+import type { ResultRowView, ResultsScrollView } from '@/view/boardView'
 import { useLayout } from '@/hooks/useLayout'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 
@@ -13,7 +13,11 @@ interface ResultsListProps {
   rows: ResultRowView[]
   /** Whether the component is visible */
   visible?: boolean
+  /** What paces the auto-scroll; default: no highlight, nobody racing */
+  scroll?: ResultsScrollView
 }
+
+const NO_SCROLL_INPUTS: ResultsScrollView = { highlightBib: null, someoneRacing: false }
 
 /**
  * ResultsList component
@@ -39,13 +43,15 @@ interface ResultsListProps {
  * />
  * ```
  */
-export function ResultsList({ rows, visible = true }: ResultsListProps) {
+export function ResultsList({ rows, visible = true, scroll = NO_SCROLL_INPUTS }: ResultsListProps) {
   const { disableScroll, layoutMode, displayRows, rowHeight } = useLayout()
 
   // Auto-scroll through results when no highlight is active
   // Disabled via URL parameter for stable screenshots
   const { containerRef } = useAutoScroll({
     enabled: rows.length > 0 && !disableScroll,
+    highlightBib: scroll.highlightBib,
+    someoneRacing: scroll.someoneRacing,
   })
 
   // When displayRows is set, fix the container height to enable scrolling

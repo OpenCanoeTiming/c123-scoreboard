@@ -22,6 +22,9 @@ import { ConnectionStatus } from '@/components/ConnectionStatus'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { BoardViewContext, useBoardView } from '@/view/useBoardView'
 import { useLegacyBoardView } from '@/view/legacyAdapter'
+import { BoardProvider } from '@/view/BoardProvider'
+import { useFixtureStore } from '@/fixture/FixtureSource'
+import { productionClock } from '@/clock/productionClock'
 import styles from './App.module.css'
 
 /**
@@ -30,6 +33,7 @@ import styles from './App.module.css'
  * Supported parameters:
  * - server: string (C123 Server address, e.g., "192.168.1.50:27123")
  * - source: 'replay' (only for development/testing)
+ * - source: 'fixture' with fixture: <id> (a synthetic fixture through the store; development/testing)
  * - speed: number (replay speed multiplier, default: 10)
  * - loop: 'true' | 'false' (replay loop, default: 'true')
  * - pauseAfter: number (pause playback after N messages, for testing)
@@ -44,7 +48,8 @@ import styles from './App.module.css'
  */
 function getUrlParams(): {
   server: string | null
-  source: 'replay' | null
+  source: 'replay' | 'fixture' | null
+  fixture: string | null
   speed: number
   loop: boolean
   pauseAfter: number | null
@@ -55,7 +60,9 @@ function getUrlParams(): {
 
   const server = params.get('server')
   const sourceParam = params.get('source')
-  const source: 'replay' | null = sourceParam === 'replay' ? 'replay' : null
+  const source: 'replay' | 'fixture' | null =
+    sourceParam === 'replay' || sourceParam === 'fixture' ? sourceParam : null
+  const fixture = params.get('fixture')
   const speedParam = params.get('speed')
   const speed = speedParam ? parseFloat(speedParam) : 10.0
   const loop = params.get('loop') !== 'false'
@@ -64,7 +71,7 @@ function getUrlParams(): {
   const disableScroll = params.get('disableScroll') === 'true'
   const category = params.get('category')
 
-  return { server, source, speed, loop, pauseAfter, disableScroll, category }
+  return { server, source, fixture, speed, loop, pauseAfter, disableScroll, category }
 }
 
 /**
@@ -83,7 +90,7 @@ function LegacyBoardViewBridge({ children }: { children: ReactNode }) {
  * - Both layouts now show only the primary competitor (highest time = current, or departing if just finished)
  * - OnCourseDisplay is no longer shown (simplified display)
  */
-function ScoreboardContent() {
+export function ScoreboardContent() {
   const view = useBoardView()
   const { visibility } = view
 
@@ -120,7 +127,7 @@ function ScoreboardContent() {
 
         {/* Results list */}
         <ErrorBoundary componentName="ResultsList">
-          <ResultsList rows={view.rows} visible={visibility.results} />
+          <ResultsList rows={view.rows} visible={visibility.results} scroll={view.resultsScroll} />
         </ErrorBoundary>
       </ScoreboardLayout>
     </>
@@ -317,10 +324,36 @@ function ErrorScreen({ message }: { message: string }) {
   )
 }
 
+/**
+ * `?source=fixture&fixture=<id>`: the fixture through the store and the view-model (#158)
+ */
+function FixtureApp({ id }: { id: string }) {
+  const fixture = useFixtureStore(id, productionClock)
+
+  if (fixture.status === 'loading') {
+    return <DiscoveryScreen />
+  }
+  if (fixture.status === 'error') {
+    return <ErrorScreen message={fixture.message} />
+  }
+  return (
+    <BoardProvider store={fixture.state} clock={productionClock} connection="live">
+      <ScoreboardContent />
+    </BoardProvider>
+  )
+}
+
 function App() {
   // Parse URL parameters for configuration
   const urlParams = useMemo(() => getUrlParams(), [])
 
+  if (urlParams.source === 'fixture') {
+    return <FixtureApp id={urlParams.fixture ?? ''} />
+  }
+  return <LegacyApp urlParams={urlParams} />
+}
+
+function LegacyApp({ urlParams }: { urlParams: ReturnType<typeof getUrlParams> }) {
   // Discover and create provider
   const discoveryState = useProviderDiscovery(urlParams)
 

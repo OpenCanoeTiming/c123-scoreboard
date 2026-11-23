@@ -1,7 +1,5 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
-import { useHighlight } from './useHighlight'
 import { useLayout } from './useLayout'
-import { useScoreboard } from '@/context/ScoreboardContext'
 
 /**
  * Auto-scroll phases (matching original v1)
@@ -56,6 +54,10 @@ const SCROLL_CONFIG = {
 interface AutoScrollConfig {
   /** Whether auto-scroll is enabled (default: true) */
   enabled?: boolean
+  /** Bib of the active finish highlight, or null (BoardView `resultsScroll`) */
+  highlightBib?: string | null
+  /** Someone on course has started and not finished (BoardView `resultsScroll`) */
+  someoneRacing?: boolean
 }
 
 /**
@@ -103,7 +105,7 @@ interface UseAutoScrollReturn {
  * ```
  */
 export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollReturn {
-  const { enabled = true } = config
+  const { enabled = true, highlightBib = null, someoneRacing = false } = config
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<ScrollPhase>('IDLE')
@@ -123,21 +125,15 @@ export function useAutoScroll(config: AutoScrollConfig = {}): UseAutoScrollRetur
   // Track previous hasActivelyRunningCompetitor state for transition detection
   const prevHasActivelyRunningRef = useRef(false)
 
-  // Get highlight state - auto-scroll stops during highlight
-  const { isActive: isHighlightActive, highlightBib } = useHighlight()
+  // Highlight state - auto-scroll stops during highlight
+  const isHighlightActive = highlightBib !== null
 
   // Get layout for config
   const { layoutMode, rowHeight, scrollToFinished, browseAfterHighlight } = useLayout()
 
-  // Get OnCourse state - on ledwall, auto-scroll stops when competitor is actively running
-  // A competitor is "actively running" if they have dtStart set (actually started)
-  // This prevents stopping scroll for competitors who are just waiting at start
-  const { onCourse } = useScoreboard()
-
-  // Check if any competitor is actively running (has dtStart but no dtFinish)
-  const hasActivelyRunningCompetitor = layoutMode === 'ledwall' && onCourse.some(
-    c => c.dtStart && !c.dtFinish
-  )
+  // On ledwall, auto-scroll stops while someone on course has started and not finished
+  // (not for an athlete just waiting at the start)
+  const hasActivelyRunningCompetitor = layoutMode === 'ledwall' && someoneRacing
 
   // Track if we've already scrolled to the highlighted row
   const hasScrolledToHighlight = useRef(false)
