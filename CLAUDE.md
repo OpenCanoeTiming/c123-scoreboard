@@ -91,6 +91,21 @@ Available recordings: `node tools/recordings-cli.js list`. Full player
 documentation, Control API for scripted seek/speed, and additional recipes:
 [`../c123-protocol-docs/recordings/README.md`](../c123-protocol-docs/recordings/README.md#quick-start).
 
+### Real-race check (tier 4, local)
+
+`npm run check:race` compares the built board with a c123-server on-site process replaying a recording. Not in CI: the recordings are not public.
+
+```bash
+npm run build                    # the script serves dist/ and does not build
+# in c123-server (ports are in <state-dir>/state.json)
+NODE_AUTH_TOKEN=$(gh auth token) C123_PROTOCOL_DOCS=../c123-protocol-docs \
+  node scripts/dev-env.mjs --recording 2026-04-19-jarni-ne-odp --speed 10 --state-dir <fresh dir>
+npm run check:race -- --server 127.0.0.1:<serverPort> --control 127.0.0.1:<controlPort>
+node scripts/dev-env.mjs --down --state-dir <dir>      # in c123-server
+```
+
+One board per class in both layouts, every row read from the DOM and compared with `/api/classes/{classId}/standings` (rank, bib, time, penalty, behind, mark, `*`); a missing or extra row, a different order or cell fails the run (exit 1). The compared standing is the Phase of the latest whole-class Standing, and the board's title must name that Phase. Rules and format are in the header of `scripts/race-check.mjs`. Without `--control` the run waits only for a quiet period (`--quiet`, default 30 s).
+
 ---
 
 ## Workflow
