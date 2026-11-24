@@ -314,7 +314,7 @@ const wanted = await eventNow()
 const late = wanted.filter((c) => !startClasses.some((s) => s.classId === c.classId))
 const results = []
 const sawPush = []
-const record = (name, exp, diffs) => results.push({ name, rows: exp.rows.length, diffs })
+const record = (name, exp, diffs) => results.push({ name, rows: exp.rows.length, diffs, phase: exp.phase ? `${exp.phase.phaseId} (${exp.standing.scope.kind} standing)` : 'no standing' })
 
 for (const [classId, { handle, atOpen }] of early) {
   const klass = wanted.find((c) => c.classId === classId) ?? startClasses.find((c) => c.classId === classId)
@@ -350,6 +350,7 @@ if (sawPush.length === 0) {
   failed++
   console.log('FAIL push path: no board opened before the end saw its compared standing change; the pushed updates were not exercised')
 } else console.log(`push path seen by early boards: ${sawPush.join(', ')}`)
+for (const r of results.filter((r) => r.name.includes('vertical'))) console.log(`compared ${r.name}: ${r.phase}, ${r.rows} rows`)
 const empty = results.filter((r) => r.rows === 0).length
 const rowsCompared = results.reduce((n, r) => n + r.rows, 0)
 console.log(`race-check: ${results.length} boards (${wanted.length} classes: ${early.size} early vertical + ${results.length - early.size} after the end${late.length ? `, ${late.length} late class(es)` : ''}), ${rowsCompared} rows compared, ${empty} boards with zero rows, ${failed} failures -> ${failed ? 'FAIL' : 'PASS'}`)
