@@ -10,7 +10,8 @@
  * - Provisional result (#170, choice 1): no mark; the row carries the flag.
  * - Under review (#170, choice 2): `*` at the result, drawn by the components.
  * - Several races at once (#170, choice 9): one Phase, chosen in `phaseChoice.ts`; `?category=` pins a class.
- * - Featured row (#170, choice 10): the first of the server's on-course order.
+ * - Featured row (#170, choice 10): the first of the server's on-course order; the start queue (`at-start`)
+ *   is not on course, and `?category=` limits the featured row to the pinned class (#182).
  * - Running time (#170, choice 7): shown as delivered, never ticked locally.
  * - Leaving without a finish (#170, choice 3): off the on-course row at once, no label, no departing row.
  * - A withdrawn finish (#170, choice 11; c123-server#309): shown and withdrawn as stated, no smoothing.

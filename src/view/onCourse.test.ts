@@ -305,3 +305,48 @@ describe('a split hold (slalom-split-hold)', () => {
     expect(b.view().featured).toMatchObject({ bib: '3', time: '48', departing: false })
   })
 })
+
+// c123-scoreboard#182, #170 rows 9 and 10: the start queue is not on course; ?category= pins the featured row.
+describe('an athlete at the start (slalom-athlete-at-start)', () => {
+  it('is not featured and does not choose the Phase while nobody is running', () => {
+    const b = board('slalom-athlete-at-start')
+    b.steps(2)
+    const v = b.view()
+    expect(v.featured).toBeNull()
+    expect(v.title.category).toBe('C1W') // the most recently changed Standing, not the athlete's class
+    expect(v.resultsScroll.someoneRacing).toBe(false)
+  })
+
+  it('is featured, and chooses the Phase, once on course', () => {
+    const b = board('slalom-athlete-at-start')
+    b.steps(3)
+    const v = b.view()
+    expect(v.featured).toMatchObject({ bib: '2', racing: true })
+    expect(v.title.category).toBe('K1M')
+  })
+})
+
+describe('?category= pins the featured row (slalom-category-pinned)', () => {
+  it('shows the first on-course athlete of the pinned class, not the first of the set', () => {
+    const b = board('slalom-category-pinned')
+    b.steps(4)
+    expect(b.view().featured?.bib).toBe('11')
+    expect(b.view('K1M').featured?.bib).toBe('2')
+    expect(b.view('C1W').featured?.bib).toBe('11')
+  })
+
+  it('shows nothing when nobody of the pinned class is on course', () => {
+    const b = board('slalom-category-pinned')
+    b.steps(2)
+    expect(b.view('C1W').featured).toBeNull()
+    expect(b.view('C1W').resultsScroll.someoneRacing).toBe(false)
+  })
+
+  it('a finisher of another class is not put on top', () => {
+    const b = board('slalom-category-pinned')
+    b.steps(5)
+    expect(b.view().featured).toMatchObject({ bib: '11', departing: true })
+    expect(b.view('K1M').featured).toMatchObject({ bib: '2', racing: true })
+    expect(b.view('K1M').title.category).toBe('K1M')
+  })
+})
