@@ -1,0 +1,859 @@
+{
+  "fixtureId": "slalom-category-pinned",
+  "source": {
+    "kind": "synthetic",
+    "reason": "Hand-authored from CONTRACTS §7.1 (several athletes on course at once, in the server order, the next to pass the finish first) and §1.6: two classes with one run each, the second class has no result yet. An athlete of the first class starts, then an athlete of the second class starts and is next to pass the finish, then the second-class athlete finishes and stays listed. Evidence for the scoreboard featured row under ?category= (c123-scoreboard#182, #170 rows 9 and 10) only; it says nothing about how the domain layer derives these values."
+  },
+  "domainLayerVersion": {
+    "contract": "0.2.0"
+  },
+  "asOfSeq": 0,
+  "steps": [
+    {
+      "kind": "hydration",
+      "observedAt": "2026-09-15T10:00:00.000Z",
+      "asOfSeq": 5040,
+      "responses": {
+        "/api/events/current": {
+          "asOfSeq": 5040,
+          "event": {
+            "eventId": "ev1",
+            "name": "Autumn Slalom",
+            "details": {
+              "state": "not-yet"
+            }
+          },
+          "classes": [
+            {
+              "classId": "K1M",
+              "eventId": "ev1",
+              "code": "K1M",
+              "name": {
+                "state": "known",
+                "value": "K1 Men",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "discipline": "slalom",
+              "ageCategories": {
+                "state": "known",
+                "value": [],
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            },
+            {
+              "classId": "C1W",
+              "eventId": "ev1",
+              "code": "C1W",
+              "name": {
+                "state": "known",
+                "value": "C1 Women",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "discipline": "slalom",
+              "ageCategories": {
+                "state": "known",
+                "value": [],
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            }
+          ],
+          "courses": [
+            {
+              "courseId": "1",
+              "eventId": "ev1",
+              "layout": {
+                "state": "known",
+                "value": "DDUDD",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "gates": {
+                "state": "not-yet"
+              },
+              "slots": {
+                "state": "not-yet"
+              },
+              "sectorEndsAfterGate": {
+                "state": "not-yet"
+              },
+              "splitsAfterGate": {
+                "state": "not-yet"
+              },
+              "captions": {
+                "state": "not-yet"
+              }
+            }
+          ],
+          "pendingPhaseIds": []
+        },
+        "/api/classes/K1M/phases": {
+          "asOfSeq": 5040,
+          "phases": [
+            {
+              "phaseId": "race-k",
+              "classId": "K1M",
+              "format": "BR1",
+              "kind": "race",
+              "scoringKind": "duration",
+              "pair": {
+                "role": "first",
+                "siblingPhaseId": null,
+                "combination": "best"
+              },
+              "heats": false,
+              "stage": "run",
+              "date": "2026-09-15",
+              "courseId": {
+                "state": "known",
+                "value": "1",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "scheduledStart": {
+                "state": "not-yet"
+              },
+              "programmeOrder": {
+                "state": "known",
+                "value": 1,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "title": {
+                "state": "not-yet"
+              },
+              "status": {
+                "state": "known",
+                "value": "running",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            }
+          ]
+        },
+        "/api/classes/C1W/phases": {
+          "asOfSeq": 5040,
+          "phases": [
+            {
+              "phaseId": "race-w",
+              "classId": "C1W",
+              "format": "BR1",
+              "kind": "race",
+              "scoringKind": "duration",
+              "pair": {
+                "role": "first",
+                "siblingPhaseId": null,
+                "combination": "best"
+              },
+              "heats": false,
+              "stage": "run",
+              "date": "2026-09-15",
+              "courseId": {
+                "state": "known",
+                "value": "1",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "scheduledStart": {
+                "state": "not-yet"
+              },
+              "programmeOrder": {
+                "state": "known",
+                "value": 2,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "title": {
+                "state": "not-yet"
+              },
+              "status": {
+                "state": "known",
+                "value": "running",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            }
+          ]
+        },
+        "/api/classes/K1M/entries": {
+          "asOfSeq": 5040,
+          "entries": [
+            {
+              "entryId": "E1",
+              "classId": "K1M",
+              "displayName": {
+                "state": "known",
+                "value": "NOVAK Jan",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "members": {
+                "state": "known",
+                "value": [
+                  {
+                    "givenName": "Jan",
+                    "familyName": "Novak",
+                    "externalId": null,
+                    "birthYear": 2001
+                  }
+                ],
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "club": {
+                "state": "known",
+                "value": "Club A",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "nation": {
+                "state": "known",
+                "value": "CZE",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "ageCategoryId": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "eventBib": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "isTeam": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            },
+            {
+              "entryId": "E2",
+              "classId": "K1M",
+              "displayName": {
+                "state": "known",
+                "value": "SVOBODA Petr",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "members": {
+                "state": "known",
+                "value": [
+                  {
+                    "givenName": "Petr",
+                    "familyName": "Svoboda",
+                    "externalId": null,
+                    "birthYear": 2001
+                  }
+                ],
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "club": {
+                "state": "known",
+                "value": "Club A",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "nation": {
+                "state": "known",
+                "value": "CZE",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "ageCategoryId": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "eventBib": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "isTeam": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            }
+          ]
+        },
+        "/api/classes/C1W/entries": {
+          "asOfSeq": 5040,
+          "entries": [
+            {
+              "entryId": "W1",
+              "classId": "C1W",
+              "displayName": {
+                "state": "known",
+                "value": "BENESOVA Eva",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "members": {
+                "state": "known",
+                "value": [
+                  {
+                    "givenName": "Eva",
+                    "familyName": "Benesova",
+                    "externalId": null,
+                    "birthYear": 2001
+                  }
+                ],
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "club": {
+                "state": "known",
+                "value": "Club A",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "nation": {
+                "state": "known",
+                "value": "CZE",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "ageCategoryId": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "eventBib": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "isTeam": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              }
+            }
+          ]
+        },
+        "/api/phases/race-k/attempts": {
+          "asOfSeq": 5040,
+          "attempts": [
+            {
+              "attemptId": "race-k:1",
+              "phaseId": "race-k",
+              "bib": "1",
+              "entry": {
+                "state": "known",
+                "value": {
+                  "entryId": "E1"
+                },
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "run": {
+                "state": "known",
+                "value": 1,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "startOrder": {
+                "state": "known",
+                "value": 1,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "scheduledStart": {
+                "state": "not-yet"
+              },
+              "heat": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "startLane": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "status": {
+                "state": "known",
+                "value": "finished",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "outcome": {
+                "state": "known",
+                "value": {
+                  "kind": "duration",
+                  "runSeconds": 88,
+                  "penaltySeconds": 2,
+                  "totalSeconds": 90
+                },
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "gates": {
+                "state": "not-yet"
+              },
+              "splits": {
+                "state": "not-yet"
+              },
+              "faults": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "courseOrder": {
+                "state": "not-yet"
+              },
+              "timeToBeat": {
+                "state": "not-yet"
+              },
+              "placement": {
+                "state": "known",
+                "value": {
+                  "rank": 1,
+                  "order": 1
+                },
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "pairTotal": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "countingRun": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "underReview": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "qualified": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              }
+            },
+            {
+              "attemptId": "race-k:2",
+              "phaseId": "race-k",
+              "bib": "2",
+              "entry": {
+                "state": "known",
+                "value": {
+                  "entryId": "E2"
+                },
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "run": {
+                "state": "known",
+                "value": 1,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "startOrder": {
+                "state": "known",
+                "value": 2,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "scheduledStart": {
+                "state": "not-yet"
+              },
+              "heat": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "startLane": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "status": {
+                "state": "known",
+                "value": "not-started",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "outcome": {
+                "state": "not-yet"
+              },
+              "gates": {
+                "state": "not-yet"
+              },
+              "splits": {
+                "state": "not-yet"
+              },
+              "faults": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "courseOrder": {
+                "state": "not-yet"
+              },
+              "timeToBeat": {
+                "state": "not-yet"
+              },
+              "placement": {
+                "state": "not-yet"
+              },
+              "pairTotal": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "countingRun": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "underReview": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "qualified": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              }
+            }
+          ]
+        },
+        "/api/phases/race-w/attempts": {
+          "asOfSeq": 5040,
+          "attempts": [
+            {
+              "attemptId": "race-w:11",
+              "phaseId": "race-w",
+              "bib": "11",
+              "entry": {
+                "state": "known",
+                "value": {
+                  "entryId": "W1"
+                },
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "run": {
+                "state": "known",
+                "value": 1,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "startOrder": {
+                "state": "known",
+                "value": 11,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "xml",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "scheduledStart": {
+                "state": "not-yet"
+              },
+              "heat": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "startLane": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "status": {
+                "state": "known",
+                "value": "not-started",
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "outcome": {
+                "state": "not-yet"
+              },
+              "gates": {
+                "state": "not-yet"
+              },
+              "splits": {
+                "state": "not-yet"
+              },
+              "faults": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "courseOrder": {
+                "state": "not-yet"
+              },
+              "timeToBeat": {
+                "state": "not-yet"
+              },
+              "placement": {
+                "state": "not-yet"
+              },
+              "pairTotal": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "countingRun": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              },
+              "underReview": {
+                "state": "known",
+                "value": false,
+                "observedAt": "2026-09-15T10:00:00.000Z",
+                "source": "tcp",
+                "confidence": "authoritative",
+                "provisional": false
+              },
+              "qualified": {
+                "state": "unavailable",
+                "reason": "not-applicable"
+              }
+            }
+          ]
+        },
+        "/api/classes/K1M/standings": {
+          "asOfSeq": 5040,
+          "standings": [
+            {
+              "standingKey": "phase:race-k/all",
+              "classId": "K1M",
+              "scope": {
+                "kind": "phase",
+                "phaseId": "race-k"
+              },
+              "ageCategoryId": null,
+              "asOf": "2026-09-15T09:50:00.000Z",
+              "entries": [
+                {
+                  "entryId": "E1",
+                  "bib": "1",
+                  "rank": 1,
+                  "order": 1,
+                  "result": {
+                    "kind": "duration",
+                    "runSeconds": 88,
+                    "penaltySeconds": 2,
+                    "totalSeconds": 90
+                  },
+                  "behindSeconds": 0,
+                  "provisional": false,
+                  "underReview": false
+                }
+              ],
+              "anomalies": []
+            }
+          ]
+        },
+        "/api/classes/C1W/standings": {
+          "asOfSeq": 5040,
+          "standings": [
+            {
+              "standingKey": "phase:race-w/all",
+              "classId": "C1W",
+              "scope": {
+                "kind": "phase",
+                "phaseId": "race-w"
+              },
+              "ageCategoryId": null,
+              "asOf": "2026-09-15T09:55:00.000Z",
+              "entries": [],
+              "anomalies": []
+            }
+          ]
+        },
+        "/api/oncourse": {
+          "asOfSeq": 5040,
+          "attempts": [],
+          "featuredByUpstream": null,
+          "asOf": "2026-09-15T10:00:00.000Z"
+        }
+      }
+    },
+    {
+      "seq": 5041,
+      "observedAt": "2026-09-15T10:01:00.000Z",
+      "type": "attempt.updated",
+      "attemptId": "race-k:2",
+      "fields": {
+        "status": {
+          "state": "known",
+          "value": "on-course",
+          "observedAt": "2026-09-15T10:01:00.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        },
+        "outcome": {
+          "state": "known",
+          "value": {
+            "kind": "running",
+            "elapsedSeconds": 0,
+            "penaltySeconds": 0
+          },
+          "observedAt": "2026-09-15T10:01:00.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        }
+      }
+    },
+    {
+      "seq": 5042,
+      "observedAt": "2026-09-15T10:01:00.000Z",
+      "type": "oncourse.updated",
+      "attemptIds": [
+        "race-k:2"
+      ],
+      "featuredByUpstream": null,
+      "asOf": "2026-09-15T10:01:00.000Z"
+    },
+    {
+      "seq": 5043,
+      "observedAt": "2026-09-15T10:01:10.000Z",
+      "type": "attempt.updated",
+      "attemptId": "race-w:11",
+      "fields": {
+        "status": {
+          "state": "known",
+          "value": "on-course",
+          "observedAt": "2026-09-15T10:01:10.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        },
+        "outcome": {
+          "state": "known",
+          "value": {
+            "kind": "running",
+            "elapsedSeconds": 0,
+            "penaltySeconds": 0
+          },
+          "observedAt": "2026-09-15T10:01:10.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        }
+      }
+    },
+    {
+      "seq": 5044,
+      "observedAt": "2026-09-15T10:01:10.000Z",
+      "type": "oncourse.updated",
+      "attemptIds": [
+        "race-w:11",
+        "race-k:2"
+      ],
+      "featuredByUpstream": null,
+      "asOf": "2026-09-15T10:01:10.000Z"
+    },
+    {
+      "seq": 5045,
+      "observedAt": "2026-09-15T10:02:00.000Z",
+      "type": "attempt.updated",
+      "attemptId": "race-w:11",
+      "fields": {
+        "status": {
+          "state": "known",
+          "value": "finished",
+          "observedAt": "2026-09-15T10:02:00.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        },
+        "outcome": {
+          "state": "known",
+          "value": {
+            "kind": "duration",
+            "runSeconds": 112,
+            "penaltySeconds": 0,
+            "totalSeconds": 112
+          },
+          "observedAt": "2026-09-15T10:02:00.000Z",
+          "source": "tcp",
+          "confidence": "authoritative",
+          "provisional": false
+        }
+      }
+    }
+  ]
+}
