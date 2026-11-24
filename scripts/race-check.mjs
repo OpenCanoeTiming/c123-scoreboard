@@ -20,9 +20,14 @@
  * - Replay ended: with `--control` the player reports `state: stopped` after it played (`position > 0`); always,
  *   every class's standings must then stay unchanged for `--quiet` ms (default 30000). Without `--control`
  *   only the quiet period decides, so give it room.
- * - Live path: one board (vertical, the class with most entries) is opened before the wait and read at the
- *   end with the others, so the push path is compared as well as hydration. The other boards open after the
- *   end (hydration only), a few at a time.
+ * - Push path: every vertical board of a class known at the start is opened before the wait, kept open
+ *   through the replay and read at the end; the ledwall boards (and a class that appears later) open after
+ *   the end, from hydration. Once such a board has settled, the script records the class's standings; at the
+ *   end, a board counts as having seen a push when the standing it is compared with differs from that
+ *   record (or did not exist). The run FAILS when no early board saw a push, and lists those that did.
+ * - Tie: where whole-class Standings share the newest `asOf`, the one of the Phase with the later `date`,
+ *   then the larger `programmeOrder`, is compared. The script does not take the board's tie-break.
+ * - Classes: the class list is read again after the end; a late class is compared like the others.
  * - All rows: `disableScroll=true`; rows are read from the DOM whether visible or not, and the row count
  *   must equal the REST entry count (nothing virtualised away) before cells are compared.
  * - Cells are formatted by this script, not by the view-model: time and total with two decimals, penalty
@@ -93,16 +98,17 @@ function serveDist() {
 
 // ---- waiting for the replay ---------------------------------------------------------------------------------
 
-async function standingsSnapshot(classIds) {
+async function standingsSnapshot() {
+  const { classes } = await getJson(`${base}/api/events/current`)
   const all = {}
-  for (const id of classIds) {
+  for (const { classId: id } of classes) {
     const { standings } = await getJson(`${base}/api/classes/${id}/standings`)
     all[id] = standings
   }
   return JSON.stringify(all)
 }
 
-async function waitForEnd(classIds) {
+async function waitForEnd() {
   const deadline = Date.now() + opts.timeoutMin * 60_000
   if (opts.control) {
     for (;;) {
@@ -114,12 +120,12 @@ async function waitForEnd(classIds) {
     }
     process.stderr.write('\n')
   }
-  let last = await standingsSnapshot(classIds)
+  let last = await standingsSnapshot()
   let since = Date.now()
   while (Date.now() - since < opts.quietMs) {
     if (Date.now() > deadline) throw new Error('timeout waiting for the standings to settle')
     await sleep(2000)
-    const now = await standingsSnapshot(classIds)
+    const now = await standingsSnapshot()
     if (now !== last) {
       last = now
       since = Date.now()
@@ -141,8 +147,17 @@ async function expectationFor(classId, klass) {
   const byId = Object.fromEntries(phases.map((p) => [p.phaseId, p]))
   const phaseOf = (s) => (s.scope.kind === 'pair' ? s.scope.secondPhaseId : s.scope.phaseId)
   const whole = standings.filter((s) => s.ageCategoryId === null && (s.scope.kind === 'phase' || s.scope.kind === 'pair'))
-  if (whole.length === 0) return { classId, code: klass.code, phase: null, rows: [] }
-  const latest = whole.reduce((a, b) => (Date.parse(b.asOf) > Date.parse(a.asOf) ? b : a))
+  if (whole.length === 0) return { classId, code: klass.code, phase: null, rows: [], standing: null }
+  // Newest asOf; on a tie the Phase with the later date, then the larger programmeOrder.
+  const order = (s) => known(byId[phaseOf(s)].programmeOrder) ?? -1
+  const newer = (a, b) => {
+    const d = Date.parse(b.asOf) - Date.parse(a.asOf)
+    if (d !== 0) return d > 0
+    const pa = byId[phaseOf(a)], pb = byId[phaseOf(b)]
+    if (pa.date !== pb.date) return pb.date > pa.date
+    return order(b) > order(a)
+  }
+  const latest = whole.reduce((a, b) => (newer(a, b) ? b : a))
   const phase = byId[phaseOf(latest)]
   const second = phase.pair?.role === 'second'
   const pairStanding = whole.find((s) => s.scope.kind === 'pair' && s.scope.secondPhaseId === phase.phaseId)
@@ -182,7 +197,7 @@ async function expectationFor(classId, klass) {
     }
     return { bib: e.bib, rank, behind, vertical, ledwallTime }
   })
-  return { classId, code: klass.code, phase, label: runLabel(phase.format), second, rows }
+  return { classId, code: klass.code, phase, label: runLabel(phase.format), second, rows, standing }
 }
 
 // ---- reading a board ----------------------------------------------------------------------------------------
@@ -265,10 +280,9 @@ function compare(exp, board, layout) {
 
 // ---- main ---------------------------------------------------------------------------------------------------
 
-const { classes } = await getJson(`${base}/api/events/current`)
-const wanted = classes.filter((c) => !opts.classes || opts.classes.includes(c.classId))
-if (wanted.length === 0) usage('the server holds no class')
-const classIds = wanted.map((c) => c.classId)
+const eventNow = async () => (await getJson(`${base}/api/events/current`)).classes.filter((c) => !opts.classes || opts.classes.includes(c.classId))
+const startClasses = await eventNow()
+if (startClasses.length === 0) usage('the server holds no class')
 const dist = await serveDist()
 const browser = await chromium.launch({ args: ['--force-prefers-reduced-motion'] })
 
@@ -280,40 +294,47 @@ const open = async (classId, layout) => {
   await page.goto(urlFor(classId, layout))
   return { page, ctx }
 }
-
-// The live board: the class with most entries, opened before the replay has ended.
-let liveClass = classIds[0]
-{
-  let most = -1
-  for (const id of classIds) {
-    const { entries } = await getJson(`${base}/api/classes/${id}/entries`)
-    if (entries.length > most) [most, liveClass] = [entries.length, id]
-  }
+const standingsOf = async (classId) => (await getJson(`${base}/api/classes/${classId}/standings`)).standings
+const pool = async (items, fn) => {
+  const queue = items.slice()
+  await Promise.all(Array.from({ length: opts.concurrency }, async () => { for (let it; (it = queue.shift()); ) await fn(it) }))
 }
-const live = await open(liveClass, 'vertical')
 
-await waitForEnd(classIds)
+// Early boards: vertical, every class known now, opened before the replay has ended.
+const early = new Map()
+await pool(startClasses, async (klass) => {
+  const handle = await open(klass.classId, 'vertical')
+  await settledBoard(handle.page)
+  early.set(klass.classId, { handle, atOpen: await standingsOf(klass.classId) })
+})
 
+await waitForEnd()
+
+const wanted = await eventNow()
+const late = wanted.filter((c) => !startClasses.some((s) => s.classId === c.classId))
 const results = []
-let rowsCompared = 0
-const jobs = []
-for (const klass of wanted) for (const layout of ['vertical', 'ledwall']) jobs.push({ klass, layout })
-const run = async (klass, layout, handle, label) => {
-  const own = handle ?? (await open(klass.classId, layout))
-  const exp = await expectationFor(klass.classId, klass)
-  const board = await settledBoard(own.page)
-  const diffs = compare(exp, board, layout)
-  rowsCompared += exp.rows.length
-  results.push({ name: `${klass.classId} ${layout}${label}`, rows: exp.rows.length, diffs })
-  if (!handle) await own.ctx.close()
+const sawPush = []
+const record = (name, exp, diffs) => results.push({ name, rows: exp.rows.length, diffs })
+
+for (const [classId, { handle, atOpen }] of early) {
+  const klass = wanted.find((c) => c.classId === classId) ?? startClasses.find((c) => c.classId === classId)
+  const exp = await expectationFor(classId, klass)
+  const board = await settledBoard(handle.page)
+  const before = atOpen.find((s) => exp.standing && s.standingKey === exp.standing.standingKey)
+  const pushed = exp.standing !== null && JSON.stringify(before ?? null) !== JSON.stringify(exp.standing)
+  if (pushed) sawPush.push(`${classId} ${exp.phase.phaseId}`)
+  record(`${classId} vertical (early${pushed ? ', saw a push' : ''})`, exp, compare(exp, board, 'vertical'))
+  await handle.ctx.close()
 }
-await run(wanted.find((c) => c.classId === liveClass), 'vertical', live, ' (live)')
-const queue = jobs.slice()
-await Promise.all(
-  Array.from({ length: opts.concurrency }, async () => {
-    for (let job; (job = queue.shift()); ) await run(job.klass, job.layout, null, '')
-  })
-)
+const after = []
+for (const klass of wanted) for (const layout of ['vertical', 'ledwall']) if (layout === 'ledwall' || late.includes(klass)) after.push({ klass, layout })
+await pool(after, async ({ klass, layout }) => {
+  const handle = await open(klass.classId, layout)
+  const exp = await expectationFor(klass.classId, klass)
+  const board = await settledBoard(handle.page)
+  record(`${klass.classId} ${layout}${late.includes(klass) ? ' (late class)' : ''}`, exp, compare(exp, board, layout))
+  await handle.ctx.close()
+})
 await browser.close()
 dist.server.close()
 
@@ -325,5 +346,11 @@ for (const r of results.sort((a, b) => a.name.localeCompare(b.name))) {
     for (const d of r.diffs) console.log(`  ${d}`)
   }
 }
-console.log(`race-check: ${results.length} boards (${wanted.length} classes x 2 layouts + 1 live), ${rowsCompared} rows compared, ${failed} boards differ -> ${failed ? 'FAIL' : 'PASS'}`)
+if (sawPush.length === 0) {
+  failed++
+  console.log('FAIL push path: no board opened before the end saw its compared standing change; the pushed updates were not exercised')
+} else console.log(`push path seen by early boards: ${sawPush.join(', ')}`)
+const empty = results.filter((r) => r.rows === 0).length
+const rowsCompared = results.reduce((n, r) => n + r.rows, 0)
+console.log(`race-check: ${results.length} boards (${wanted.length} classes: ${early.size} early vertical + ${results.length - early.size} after the end${late.length ? `, ${late.length} late class(es)` : ''}), ${rowsCompared} rows compared, ${empty} boards with zero rows, ${failed} failures -> ${failed ? 'FAIL' : 'PASS'}`)
 process.exit(failed ? 1 : 0)
