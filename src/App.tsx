@@ -1,17 +1,9 @@
 import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import { ScoreboardProvider } from '@/context'
 import { ReplayProvider } from '@/providers/ReplayProvider'
-import { CLIProvider } from '@/providers/CLIProvider'
-import { C123ServerProvider } from '@/providers/C123ServerProvider'
-import type { DataProvider } from '@/providers/types'
 import { useLayout } from '@/hooks/useLayout'
 import { useAssets } from '@/hooks/useAssets'
-import {
-  discoverC123Server,
-  isC123Server,
-  normalizeServerUrl,
-  PROBE_TIMEOUT,
-} from '@/providers/utils/discovery-client'
+import { discoverC123Server, normalizeServerUrl } from '@/providers/utils/discovery-client'
 import { ScoreboardLayout } from '@/components/Layout'
 import { TopBar, Title } from '@/components/EventInfo'
 import { CurrentCompetitor } from '@/components/CurrentCompetitor'
@@ -22,19 +14,21 @@ import { ConnectionStatus } from '@/components/ConnectionStatus'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { BoardViewContext, useBoardView } from '@/view/useBoardView'
 import { useLegacyBoardView } from '@/view/legacyAdapter'
-import { BoardProvider } from '@/view/BoardProvider'
+import { BoardProvider, LiveBoardProvider } from '@/view/BoardProvider'
 import { useFixtureStore } from '@/fixture/FixtureSource'
 import { productionClock } from '@/clock/productionClock'
 import { ClockProvider, useClock } from '@/clock/clockContext'
-import type { Clock } from '@/clock/clock'
+import { browserSocket, type FetchLike } from '@/transport/transport'
+import { browserClientSocket, browserPage, startClientChannel } from '@/config/clientChannel'
+import { APP_VERSION } from '@/version'
 import styles from './App.module.css'
 
 /**
  * Parse URL parameters for app configuration
  *
  * Supported parameters:
- * - server: string (C123 Server address, e.g., "192.168.1.50:27123")
- * - source: 'replay' (only for development/testing)
+ * - server: string (C123 Server address, e.g., "192.168.1.50:27123"); without it the board discovers the server
+ * - source: 'replay' (the legacy recording; only the feed of the CI e2e job until #167)
  * - source: 'fixture' with fixture: <id> (a synthetic fixture through the store; development/testing)
  * - speed: number (replay speed multiplier, default: 10)
  * - loop: 'true' | 'false' (replay loop, default: 'true')
@@ -136,132 +130,32 @@ export function ScoreboardContent() {
   )
 }
 
-/**
- * Provider discovery states
- */
-type DiscoveryState =
+/** Where the live board finds the server: `?server=` as given, else discovery. */
+type ServerState =
   | { status: 'discovering' }
-  | { status: 'ready'; provider: DataProvider }
+  | { status: 'ready'; url: string }
   | { status: 'error'; message: string }
 
-/**
- * Create provider based on URL params and discovery
- *
- * Priority:
- * 1. source=replay -> ReplayProvider (development only)
- * 2. server=host:port -> probe, use C123ServerProvider if c123-server, else CLIProvider
- * 3. Auto-discovery -> scan network for C123 Server
- * 4. Error -> show manual configuration
- */
-async function createProvider(urlParams: ReturnType<typeof getUrlParams>, clock: Clock): Promise<DataProvider> {
-  // 1. Replay mode (development/testing)
-  if (urlParams.source === 'replay') {
-    return new ReplayProvider('recordings/rec-2025-12-28T09-34-10.jsonl', {
-      speed: urlParams.speed,
-      sources: ['ws', 'tcp'],
-      autoPlay: true,
-      loop: urlParams.loop,
-      pauseAfter: urlParams.pauseAfter,
-    })
-  }
-
-  // 2. Explicit server parameter (URL has highest priority)
-  if (urlParams.server) {
-    const serverUrl = normalizeServerUrl(urlParams.server)
-
-    // Probe to check if it's C123 Server (with longer timeout)
-    if (await isC123Server(serverUrl, PROBE_TIMEOUT)) {
-      console.log('Using C123ServerProvider:', serverUrl)
-      return new C123ServerProvider(serverUrl, {
-        autoReconnect: true,
-        initialReconnectDelay: 1000,
-        maxReconnectDelay: 30000,
-        fixedCategory: urlParams.category ?? undefined,
-      })
-    }
-
-    // Check if server responds at all (any HTTP response)
-    // If not, throw error - don't fallback to CLI for unreachable server
-    try {
-      const controller = new AbortController()
-      const timeoutId = clock.setTimeout(() => controller.abort(), PROBE_TIMEOUT)
-      const response = await fetch(`${serverUrl}/api/discover`, {
-        signal: controller.signal,
-        mode: 'cors',
-        credentials: 'omit',
-      }).catch(() => null)
-      clock.clearTimeout(timeoutId)
-
-      if (!response) {
-        // Server doesn't respond at all - throw error
-        throw new Error(`Server ${serverUrl} is not reachable`)
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('not reachable')) {
-        throw err
-      }
-      // Other error - server might be reachable but not C123 server
-    }
-
-    // Fallback to CLI provider (server responds but is not C123 Server)
-    console.log('Falling back to CLIProvider:', urlParams.server)
-    return new CLIProvider(urlParams.server, {
-      autoReconnect: true,
-      initialReconnectDelay: 1000,
-      maxReconnectDelay: 30000,
-    })
-  }
-
-  // 3. Auto-discovery
-  console.log('Starting C123 Server discovery...')
-  const discovered = await discoverC123Server({ ignoreUrlParam: true })
-
-  if (discovered) {
-    console.log('Discovered C123 Server:', discovered)
-    return new C123ServerProvider(discovered, {
-      autoReconnect: true,
-      initialReconnectDelay: 1000,
-      maxReconnectDelay: 30000,
-      fixedCategory: urlParams.category ?? undefined,
-    })
-  }
-
-  // 4. No server found
-  throw new Error('No C123 Server found. Use ?server=host:port or ?source=replay')
-}
-
-/**
- * Hook for provider discovery with loading state
- */
-function useProviderDiscovery(urlParams: ReturnType<typeof getUrlParams>): DiscoveryState {
-  const clock = useClock()
-  const [state, setState] = useState<DiscoveryState>({ status: 'discovering' })
+function useServerUrl(server: string | null): ServerState {
+  const [discovered, setDiscovered] = useState<ServerState>({ status: 'discovering' })
 
   useEffect(() => {
+    if (server) return
     let cancelled = false
-
-    async function discover() {
-      try {
-        const provider = await createProvider(urlParams, clock)
-        if (!cancelled) {
-          setState({ status: 'ready', provider })
-        }
-      } catch (err) {
-        if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Unknown error'
-          setState({ status: 'error', message })
-        }
-      }
-    }
-
-    discover()
-
+    discoverC123Server({ ignoreUrlParam: true }).then((url) => {
+      if (cancelled) return
+      setDiscovered(
+        url
+          ? { status: 'ready', url }
+          : { status: 'error', message: 'No C123 Server found. Use ?server=host:port' }
+      )
+    })
     return () => {
       cancelled = true
     }
-  }, [urlParams, clock])
+  }, [server])
 
-  return state
+  return server ? { status: 'ready', url: normalizeServerUrl(server) } : discovered
 }
 
 /**
@@ -317,7 +211,6 @@ function ErrorScreen({ message }: { message: string }) {
         <div className={styles.helpBox}>
           <div className={styles.helpTitle}>Možnosti:</div>
           <div className={styles.helpItem}>• ?server=192.168.1.50:27123 - C123 Server</div>
-          <div className={styles.helpItem}>• ?server=192.168.1.50:8081 - CLI nástroj</div>
           <div className={styles.helpItem}>• ?source=replay - Testovací data</div>
         </div>
       </main>
@@ -362,25 +255,59 @@ function AppRoot() {
   if (urlParams.source === 'fixture') {
     return <FixtureApp id={urlParams.fixture ?? ''} category={urlParams.category} />
   }
-  return <LegacyApp urlParams={urlParams} />
+  if (urlParams.source === 'replay') {
+    return <ReplayApp urlParams={urlParams} />
+  }
+  return <LiveApp urlParams={urlParams} />
 }
 
-function LegacyApp({ urlParams }: { urlParams: ReturnType<typeof getUrlParams> }) {
-  // Discover and create provider
-  const discoveryState = useProviderDiscovery(urlParams)
+const browserFetch: FetchLike = (url) => fetch(url)
 
-  // Show loading screen during discovery
-  if (discoveryState.status === 'discovering') {
+/** The board on the new server: transport -> store -> view-model, and the client channel on `/ws/client`. */
+function LiveApp({ urlParams }: { urlParams: ReturnType<typeof getUrlParams> }) {
+  const clock = useClock()
+  const server = useServerUrl(urlParams.server)
+  const serverUrl = server.status === 'ready' ? server.url : null
+
+  useEffect(() => {
+    if (!serverUrl) return
+    return startClientChannel({ serverUrl, openSocket: browserClientSocket, clock, page: browserPage, version: APP_VERSION })
+  }, [serverUrl, clock])
+
+  if (server.status === 'discovering') {
     return <DiscoveryScreen />
   }
-
-  // Show error screen if no server found
-  if (discoveryState.status === 'error') {
-    return <ErrorScreen message={discoveryState.message} />
+  if (server.status === 'error') {
+    return <ErrorScreen message={server.message} />
   }
+  return (
+    <LiveBoardProvider
+      serverUrl={server.url}
+      fetch={browserFetch}
+      openSocket={browserSocket}
+      clock={clock}
+      category={urlParams.category}
+    >
+      <ScoreboardContent />
+    </LiveBoardProvider>
+  )
+}
+
+/** `?source=replay`: the legacy recording through the legacy reducer, kept only as the CI e2e feed (#152). */
+function ReplayApp({ urlParams }: { urlParams: ReturnType<typeof getUrlParams> }) {
+  const [provider] = useState(
+    () =>
+      new ReplayProvider('recordings/rec-2025-12-28T09-34-10.jsonl', {
+        speed: urlParams.speed,
+        sources: ['ws', 'tcp'],
+        autoPlay: true,
+        loop: urlParams.loop,
+        pauseAfter: urlParams.pauseAfter,
+      })
+  )
 
   return (
-    <ScoreboardProvider provider={discoveryState.provider} fixedCategory={urlParams.category ?? undefined}>
+    <ScoreboardProvider provider={provider} fixedCategory={urlParams.category ?? undefined}>
       <LegacyBoardViewBridge>
         <ScoreboardContent />
       </LegacyBoardViewBridge>

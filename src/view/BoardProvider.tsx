@@ -6,6 +6,7 @@ import { displayPolicy as defaultPolicy, type DisplayPolicy } from './displayPol
 import { anyOpen, emptyLifetimes, observeLifetimes, type Lifetimes } from './lifetimes'
 import { selectBoardView } from './selectBoardView'
 import { BoardViewContext } from './useBoardView'
+import { useLiveStore, type LiveStoreOptions } from './useLiveStore'
 
 interface BoardProviderProps {
   /** The store's domain state */
@@ -57,4 +58,15 @@ export function BoardProvider({
     [store, policy, clock, category, connection, lifetimes, tick]
   )
   return <BoardViewContext.Provider value={view}>{children}</BoardViewContext.Provider>
+}
+
+type LiveBoardProviderProps = LiveStoreOptions & Omit<BoardProviderProps, 'store' | 'connection'>
+
+/**
+ * The live board: the transport keeps a store in step with the server (`?server=` or discovery), and
+ * BoardProvider turns it into the BoardView. The connection dot is the transport's state.
+ */
+export function LiveBoardProvider({ serverUrl, fetch, openSocket, clock, ...board }: LiveBoardProviderProps) {
+  const live = useLiveStore({ serverUrl, fetch, openSocket, clock })
+  return <BoardProvider store={live.state} clock={clock} connection={live.connection} {...board} />
 }
