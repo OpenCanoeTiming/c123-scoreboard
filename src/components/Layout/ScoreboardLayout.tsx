@@ -1,5 +1,6 @@
-import { useMemo, type ReactNode, type CSSProperties } from 'react'
+import { useMemo, useRef, type ReactNode, type CSSProperties } from 'react'
 import { useLayout } from '@/hooks/useLayout'
+import { useFitScale } from '@/hooks/useFitScale'
 import styles from './ScoreboardLayout.module.css'
 
 /**
@@ -27,7 +28,7 @@ interface ScoreboardLayoutProps {
  *
  * When displayRows URL parameter is used, the layout is scaled using
  * CSS transform to fill the viewport height with the specified number
- * of result rows.
+ * of result rows; the scale comes from the measured content height.
  *
  * @example
  * ```tsx
@@ -45,10 +46,13 @@ export function ScoreboardLayout({
   children,
   footer,
 }: ScoreboardLayoutProps) {
-  const { layoutMode, showFooter, scaleFactor, displayRows, viewportWidth } = useLayout()
+  const { layoutMode, showFooter, displayRows, viewportWidth, viewportHeight } = useLayout()
+  const layoutRef = useRef<HTMLDivElement>(null)
 
-  // Apply scaling when displayRows is set
-  const isScaled = displayRows !== null && scaleFactor !== 1.0
+  // Scale when displayRows is set; the layout then takes its natural height (.scaled)
+  // and the scale is derived from the measured height
+  const isScaled = displayRows !== null
+  const scaleFactor = useFitScale(layoutRef, isScaled, viewportHeight)
 
   // Memoize layout style to avoid object recreation on every render
   // Only transform/transformOrigin/width needed - height constraints handled by CSS .scaled class
@@ -63,6 +67,7 @@ export function ScoreboardLayout({
 
   return (
     <div
+      ref={layoutRef}
       className={`${styles.layout} ${isScaled ? styles.scaled : ''}`}
       data-layout-mode={layoutMode}
       style={layoutStyle}

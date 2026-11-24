@@ -32,8 +32,6 @@ export interface LayoutConfig {
   disableScroll: boolean
   /** Fixed number of display rows from URL param (null = auto-calculated) */
   displayRows: number | null
-  /** Scale factor for ledwall scaling (1.0 = no scaling, only set when displayRows is used) */
-  scaleFactor: number
   /** Whether to scroll to finished competitor position (default: true). When false, only highlights without scrolling. */
   scrollToFinished: boolean
   /** Whether to browse-scroll through results after highlight on ledwall (default: false). */
@@ -310,22 +308,11 @@ export function useLayout(): LayoutConfig {
     // Use displayRows from URL param if specified, otherwise auto-calculate
     let visibleRows: number
     let rowHeight: number
-    let scaleFactor = 1.0
 
     if (urlParams.displayRows !== null) {
       // Fixed row count from URL - use for ledwall scaling
       visibleRows = urlParams.displayRows
       rowHeight = modeConfig.targetRowHeight
-
-      // Calculate scale factor to fill viewport height
-      // Content height = header + currentCompetitor + (displayRows * rowHeight)
-      const unscaledContentHeight =
-        modeConfig.headerHeight +
-        modeConfig.currentCompetitorHeight +
-        urlParams.displayRows * rowHeight
-
-      // Scale to fill viewport height (guard against division by zero)
-      scaleFactor = unscaledContentHeight > 0 ? viewport.height / unscaledContentHeight : 1.0
     } else {
       // Auto-calculate based on available height
       const calculated = calculateVisibleRows(Math.max(availableHeight, 200), modeConfig)
@@ -347,7 +334,6 @@ export function useLayout(): LayoutConfig {
       fontSizeCategory,
       disableScroll: urlParams.disableScroll,
       displayRows: urlParams.displayRows,
-      scaleFactor,
       scrollToFinished: urlParams.scrollToFinished,
       browseAfterHighlight: urlParams.browseAfterHighlight,
     }
