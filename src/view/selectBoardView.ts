@@ -36,7 +36,7 @@ export function selectBoardView(
 ): StoreBoardView {
   const now = clock.now()
   const lifetimes = options.lifetimes ?? emptyLifetimes
-  const onCourse = countedOnCourse(state, lifetimes, policy, now)
+  const onCourse = countedOnCourse(state, lifetimes, policy, now, options.category ?? null)
   const phase = choosePhase(state, options.category ?? null, onCourse)
   const klass = phase ? state.classes[phase.classId] : undefined
 
@@ -53,7 +53,7 @@ export function selectBoardView(
     title,
     dayTime: '',
     visibility: policy.visibility,
-    featured: featuredRow(state, onCourse, lifetimes, policy, now),
+    featured: featuredRow(state, onCourse, lifetimes, policy, now, options.category ?? null),
     rows,
     resultsScroll: {
       highlightBib: rows.some((r) => r.highlighted) ? highlight : null,

@@ -1,7 +1,8 @@
 /**
  * Which Phase the board shows (CLIENT-OBLIGATIONS L73; c123-scoreboard#170, choice 9). The server names no
  * current race. One Phase at a time, no cycling:
- * - the Phase of the first Attempt the board counts as on course (`onCourse.ts`), in the server's order;
+ * - the Phase of the first Attempt the board counts as on course (`onCourse.ts`: not at the start, of the
+ *   pinned class), in the server's order;
  * - with nobody on course, the Phase of the most recently changed whole-class Standing (`asOf`);
  * - `?category=` pins a class: only its Phases are candidates.
  * Only held Phases are candidates: an on-course Attempt whose Phase is not held yet is passed over (L104).

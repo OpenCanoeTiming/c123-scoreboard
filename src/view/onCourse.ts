@@ -5,13 +5,15 @@
  * The on-course set is upstream's list, in the server's order. Who the board counts as on course is its
  * own policy on top of it:
  * - an Attempt of the set whose run has not ended: not finished, no mark, not `left-without-finish`
- *   (the last leaves the row at once, with no label);
+ *   (the last leaves the row at once, with no label), and not `at-start` (the start queue is not on
+ *   course, #182);
  * - a finisher for `finishedGraceMs` from the receipt of its finish, listed or not: never from the
  *   Attempt leaving the set, which is upstream's closure.
  *
  * The featured row: the latest finisher for `finishDisplayMs`; else the first Attempt counted on course;
  * else, for `departingMs`, an athlete whose run on course ended in a mark. Time and penalty are shown as
- * delivered and never ticked; gate penalties come from `gates`, a gate not judged (`null`) shows nothing.
+ * delivered and never ticked; with `?category=` every part of it considers only Attempts of the pinned
+ * class (#182); gate penalties come from `gates`, a gate not judged (`null`) shows nothing.
  */
 import type { Attempt, Gate, Observed } from '@opencanoetiming/c123-contract'
 import type { StoreState } from '../store/store'
@@ -38,15 +40,26 @@ export function isRunning(attempt: Attempt): boolean {
   return known(attempt.outcome)?.kind === 'running'
 }
 
+/** Whether the Attempt is of the pinned class; a Phase not held cannot be told, so it is not. No pin: all. */
+function inCategory(state: StoreState, category: string | null, attempt: Attempt): boolean {
+  return category === null || state.phases[attempt.phaseId]?.classId === category
+}
+
 /** The Attempts the board counts as on course, in the server's order; finishers in their grace period last. */
-export function countedOnCourse(state: StoreState, lifetimes: Lifetimes, policy: DisplayPolicy, now: number): Attempt[] {
+export function countedOnCourse(
+  state: StoreState,
+  lifetimes: Lifetimes,
+  policy: DisplayPolicy,
+  now: number,
+  category: string | null = null
+): Attempt[] {
   const listed = state.onCourse.attemptIds
     .map((id) => state.attempts[id])
-    .filter((a): a is Attempt => !!a && !runEnded(a))
+    .filter((a): a is Attempt => !!a && !runEnded(a) && statusOf(a) !== 'at-start' && inCategory(state, category, a))
   const finishers = within(lifetimes.finishedAt, policy.lifetimes.finishedGraceMs, now)
     .reverse()
     .map((id) => state.attempts[id])
-    .filter((a): a is Attempt => !!a)
+    .filter((a): a is Attempt => !!a && inCategory(state, category, a))
   return [...listed, ...finishers]
 }
 
@@ -80,11 +93,12 @@ export function featuredRow(
   onCourse: Attempt[],
   lifetimes: Lifetimes,
   policy: DisplayPolicy,
-  now: number
+  now: number,
+  category: string | null = null
 ): FeaturedRowView | null {
   const finisher = within(lifetimes.finishedAt, policy.lifetimes.finishDisplayMs, now)
     .map((id) => state.attempts[id])
-    .find((a) => !!a)
+    .find((a) => !!a && inCategory(state, category, a))
   if (finisher) return toFeatured(state, finisher, true, policy)
 
   const first = onCourse.find((a) => !runEnded(a))
@@ -92,7 +106,7 @@ export function featuredRow(
 
   const marked = within(lifetimes.markedAt, policy.lifetimes.departingMs, now)
     .map((id) => state.attempts[id])
-    .find((a) => !!a)
+    .find((a) => !!a && inCategory(state, category, a))
   return marked ? toFeatured(state, marked, true, policy) : null
 }
 
