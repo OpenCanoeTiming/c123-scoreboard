@@ -355,7 +355,6 @@ interface LayoutConfig {
   showFooter: boolean
   disableScroll: boolean
   displayRows: number | null
-  scaleFactor: number
   scrollToFinished: boolean
 }
 ```
