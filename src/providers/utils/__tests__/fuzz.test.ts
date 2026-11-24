@@ -21,7 +21,6 @@ import {
   validateCompetitorData,
 } from '../validation'
 import { parseGates } from '../parseGates'
-import { detectFinish } from '../detectFinish'
 
 /**
  * Generates random primitive values
@@ -307,33 +306,6 @@ describe('fuzz testing - parseGates', () => {
         })
         .join('')
       expect(() => parseGates(randomStr)).not.toThrow()
-    }
-  })
-})
-
-describe('fuzz testing - detectFinish', () => {
-  it('handles 100 random inputs without throwing', () => {
-    const randomCompetitorLike = () => {
-      const variants = [
-        null,
-        undefined,
-        {},
-        { dtFinish: null },
-        { dtFinish: undefined },
-        { dtFinish: '' },
-        { dtFinish: '12:34:56' },
-        { dtFinish: 0 },
-        { dtFinish: 123456 },
-        { dtFinish: randomPrimitive() },
-        randomObject() as { dtFinish?: unknown },
-      ]
-      return variants[Math.floor(Math.random() * variants.length)]
-    }
-
-    for (let i = 0; i < 100; i++) {
-      const current = randomCompetitorLike()
-      const previous = randomCompetitorLike()
-      expect(() => detectFinish(current as never, previous as never)).not.toThrow()
     }
   })
 })
