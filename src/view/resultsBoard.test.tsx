@@ -121,4 +121,9 @@ describe('Phase choice on the DOM', () => {
     expect(screen.getByTestId('title')).toHaveTextContent('C1W')
     expect(rows().map((r) => r.bib)).toEqual(['11'])
   })
+
+  it('on an asOf tie the pinned class shows the later Phase: by date, then programmeOrder (c123-scoreboard#189)', () => {
+    renderBoard(start('slalom-asof-tie'), 'vertical', 'K1M')
+    expect(rows().map((r) => r.bib)).toEqual(['3'])
+  })
 })
