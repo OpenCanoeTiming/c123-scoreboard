@@ -15,6 +15,7 @@
     "c123-proxy": "node scripts/c123-proxy.js",
     "mock:tcp": "npx tsx scripts/mock-c123-tcp.ts",
     "mock:ws": "npx tsx scripts/mock-cli-ws.ts",
+    "check:race": "node scripts/race-check.mjs",
     "test:visual": "playwright test cli-vs-c123.spec.ts --project=vertical"
   },
   "dependencies": {
